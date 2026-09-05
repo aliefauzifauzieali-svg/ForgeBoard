@@ -80,7 +80,7 @@ export function TaskModal(): React.JSX.Element {
       {projects.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-4 text-sm dark:border-zinc-700">
           <p className="font-semibold">Nenhum projeto ainda</p>
-          <p className="mt-1 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-zinc-600 dark:text-zinc-400">
             Crie um projeto antes de adicionar tarefas.
           </p>
           <button type="button" className="btn-primary mt-3" onClick={openNewProject}>

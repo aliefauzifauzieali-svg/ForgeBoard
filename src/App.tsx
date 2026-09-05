@@ -5,7 +5,10 @@ import { TopBar } from './components/layout/TopBar';
 import { ProjectModal } from './components/projects/ProjectModal';
 import { TaskModal } from './components/tasks/TaskModal';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
+import { ShortcutsDialog } from './components/ui/ShortcutsDialog';
 import { QuarantineBanner, StorageErrorBanner } from './components/ui/StorageBanners';
+import { ToastStack } from './components/ui/Toasts';
+import { CommandPalette } from './features/palette/CommandPalette';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProjectPage } from './pages/ProjectPage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -29,6 +32,7 @@ export default function App(): React.JSX.Element {
   const view = useUIStore((s) => s.view);
   const projectModal = useUIStore((s) => s.projectModal);
   const taskModal = useUIStore((s) => s.taskModal);
+  const paletteOpen = useUIStore((s) => s.paletteOpen);
 
   return (
     <div className="min-h-dvh">
@@ -50,12 +54,13 @@ export default function App(): React.JSX.Element {
           ) : (
             <ProjectPage key={view.projectId} projectId={view.projectId} />
           )}
-          <footer className="mt-10 border-t border-zinc-200 pt-4 text-center text-[11px] text-zinc-500 dark:border-zinc-800">
+          <footer className="mt-10 border-t border-zinc-200 pt-4 text-center text-[11px] text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
             ForgeBoard · seus dados ficam no navegador (localStorage) · exporte JSON para backup
           </footer>
         </main>
       </div>
       <BottomNav />
+      <ToastStack />
       {/* `key` força remount a cada abertura: os formulários inicializam no mount. */}
       <ProjectModal
         key={projectModal.open ? `project-${projectModal.editingId ?? 'new'}` : 'project-closed'}
@@ -67,6 +72,8 @@ export default function App(): React.JSX.Element {
             : 'task-closed'
         }
       />
+      <CommandPalette key={paletteOpen ? 'palette-open' : 'palette-closed'} />
+      <ShortcutsDialog />
       <ConfirmDialog />
     </div>
   );

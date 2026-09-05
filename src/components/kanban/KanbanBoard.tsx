@@ -82,7 +82,7 @@ export function KanbanColumn({
 
       <div className="flex min-h-24 flex-col gap-2">
         {tasks.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-zinc-300 px-3 py-6 text-center text-xs text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-xl border border-dashed border-zinc-300 px-3 py-6 text-center text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
             Arraste tarefas para cá
             <br />
             ou crie uma nova.

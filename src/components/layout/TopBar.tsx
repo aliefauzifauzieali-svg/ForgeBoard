@@ -1,4 +1,4 @@
-import { Menu, Moon, Plus, Search, Sun } from 'lucide-react';
+import { Command, Menu, Moon, Plus, Search, Sun } from 'lucide-react';
 import type { RefObject } from 'react';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -12,6 +12,7 @@ export function TopBar({
   const filters = useUIStore((s) => s.filters);
   const setFilters = useUIStore((s) => s.setFilters);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+  const setPaletteOpen = useUIStore((s) => s.setPaletteOpen);
   const openNewTask = useUIStore((s) => s.openNewTask);
   const openNewProject = useUIStore((s) => s.openNewProject);
   const view = useUIStore((s) => s.view);
@@ -57,6 +58,16 @@ export function TopBar({
         <span className="ml-auto hidden items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-600 md:inline-flex dark:bg-zinc-900 dark:text-zinc-300">
           {openCount} em aberto
         </span>
+
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Abrir paleta de comandos e busca global (Ctrl+K)"
+          title="Paleta de comandos (Ctrl+K)"
+          onClick={() => setPaletteOpen(true)}
+        >
+          <Command size={18} />
+        </button>
 
         <button
           type="button"

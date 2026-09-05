@@ -6,7 +6,24 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ## [Unreleased]
 
+### Added
+
+- Paleta de comandos (`Ctrl/⌘+K`) com busca global em projetos, tarefas,
+  descrições e tags (insensível a acentos), navegação por teclado e ações
+  principais (criar, navegar, tema, exportar, desfazer/refazer, atalhos).
+- Desfazer/refazer (`Ctrl/⌘+Z`, `Ctrl/⌘+Shift+Z`, `Ctrl+Y`) com histórico de
+  30 instantâneos por sessão e botão Desfazer nos toasts de exclusão/importação.
+- Sistema de toasts (sucesso/erro/info, auto-dispensa, com ação).
+- Diálogo de atalhos de teclado (tecla `?`).
+- Estado de carregamento na importação (botão desabilitado + spinner + `aria-busy`).
+- Testes axe (crítico/sério) no dashboard, Kanban, modal e paleta.
+
 ### Changed
+
+- Texto secundário escurecido (`zinc-500` → `zinc-600` no modo claro) para
+  contraste AA; scans axe aguardam o fim das animações de entrada.
+
+### Changed (Fase 1)
 
 - Downloads JSON (exportação, backups, quarentena) centralizados em
   `src/services/download.ts` (`downloadJson` + `datedFilename`).

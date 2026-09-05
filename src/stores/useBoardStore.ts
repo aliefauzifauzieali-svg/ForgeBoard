@@ -21,6 +21,14 @@ export interface CreateTaskInput {
   tags?: string[];
 }
 
+export interface HistorySnapshot {
+  label: string;
+  projects: Project[];
+  tasks: Task[];
+}
+
+const HISTORY_LIMIT = 30;
+
 interface BoardState extends BoardData {
   /** true após `hydrate()` ter carregado o storage (main.tsx chama no boot). */
   hydrated: boolean;
@@ -28,6 +36,11 @@ interface BoardState extends BoardData {
   /** Mensagem quando a persistência falha (ex.: cota excedida). */
   saveError: string | null;
   dismissSaveError: () => void;
+  /** Histórico de desfazer/refazer — somente sessão, máx. 30 instantâneos. */
+  undoStack: HistorySnapshot[];
+  redoStack: HistorySnapshot[];
+  undo: () => void;
+  redo: () => void;
   createProject: (input: CreateProjectInput) => Project;
   updateProject: (id: string, patch: Partial<Pick<Project, 'name' | 'description' | 'color'>>) => void;
   deleteProject: (id: string) => void;
@@ -47,6 +60,27 @@ function announce(message: string): void {
   } catch {
     /* loja de UI pode não existir em testes isolados */
   }
+}
+
+function pushToast(t: {
+  kind: 'success' | 'error' | 'info';
+  message: string;
+  action?: { label: string; run: () => void };
+}): void {
+  try {
+    useUIStore.getState().pushToast(t);
+  } catch {
+    /* ignore */
+  }
+}
+
+function pushHistory(get: () => BoardState, label: string): void {
+  const { projects, tasks, undoStack } = get();
+  // Arrays/objetos nunca são mutados in-place: a referência já é um instantâneo.
+  useBoardStore.setState({
+    undoStack: [...undoStack.slice(-(HISTORY_LIMIT - 1)), { label, projects, tasks }],
+    redoStack: [],
+  });
 }
 
 function persist(get: () => BoardState): void {
@@ -71,6 +105,8 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   tasks: [],
   hydrated: false,
   saveError: null,
+  undoStack: [],
+  redoStack: [],
 
   hydrate: () => {
     if (get().hydrated) return;
@@ -80,7 +116,36 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
 
   dismissSaveError: () => set({ saveError: null }),
 
+  undo: () => {
+    const { undoStack, projects, tasks } = get();
+    const last = undoStack[undoStack.length - 1];
+    if (!last) return;
+    set((s) => ({
+      projects: last.projects,
+      tasks: last.tasks,
+      undoStack: s.undoStack.slice(0, -1),
+      redoStack: [...s.redoStack, { label: last.label, projects, tasks }],
+    }));
+    persist(get);
+    announce(`Desfeita: ${last.label}`);
+  },
+
+  redo: () => {
+    const { redoStack, projects, tasks } = get();
+    const next = redoStack[redoStack.length - 1];
+    if (!next) return;
+    set((s) => ({
+      projects: next.projects,
+      tasks: next.tasks,
+      redoStack: s.redoStack.slice(0, -1),
+      undoStack: [...s.undoStack.slice(-(HISTORY_LIMIT - 1)), { label: next.label, projects, tasks }],
+    }));
+    persist(get);
+    announce(`Refeita: ${next.label}`);
+  },
+
   createProject: (input) => {
+    pushHistory(get, 'criar projeto');
     const name = input.name.trim();
     if (!name) throw new Error('Nome do projeto é obrigatório');
     const project: Project = {
@@ -98,6 +163,7 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   },
 
   updateProject: (id, patch) => {
+    pushHistory(get, 'editar projeto');
     const name = patch.name !== undefined && patch.name.trim() ? patch.name.trim().slice(0, 80) : undefined;
     set((s) => ({
       projects: s.projects.map((p) =>
@@ -119,17 +185,22 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   },
 
   deleteProject: (id) => {
+    pushHistory(get, 'excluir projeto');
     const gone = get().projects.find((p) => p.id === id);
-    const count = get().tasks.filter((t) => t.projectId === id).length;
     set((s) => ({
       projects: s.projects.filter((p) => p.id !== id),
       tasks: s.tasks.filter((t) => t.projectId !== id),
     }));
     persist(get);
-    announce(gone ? `Projeto “${gone.name}” excluído com ${count} tarefas` : 'Projeto excluído');
+    pushToast({
+      kind: 'success',
+      message: gone ? `Projeto “${gone.name}” excluído` : 'Projeto excluído',
+      action: { label: 'Desfazer', run: () => useBoardStore.getState().undo() },
+    });
   },
 
   createTask: (input) => {
+    pushHistory(get, 'criar tarefa');
     const title = input.title.trim();
     if (!title) throw new Error('Título da tarefa é obrigatório');
     if (!input.projectId) throw new Error('Projeto é obrigatório');
@@ -152,6 +223,7 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   },
 
   updateTask: (id, patch) => {
+    pushHistory(get, 'editar tarefa');
     const title =
       patch.title !== undefined && patch.title.trim() ? patch.title.trim().slice(0, 140) : undefined;
     set((s) => ({
@@ -181,6 +253,7 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   moveTask: (id, status) => {
     const found = get().tasks.find((t) => t.id === id);
     if (!found || found.status === status) return;
+    pushHistory(get, 'mover tarefa');
     set((s) => ({
       tasks: s.tasks.map((t) =>
         t.id === id
@@ -198,15 +271,21 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   },
 
   deleteTask: (id) => {
+    pushHistory(get, 'excluir tarefa');
     const gone = get().tasks.find((t) => t.id === id);
     set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) }));
     persist(get);
-    announce(gone ? `Tarefa “${gone.title}” excluída` : 'Tarefa excluída');
+    pushToast({
+      kind: 'success',
+      message: gone ? `Tarefa “${gone.title}” excluída` : 'Tarefa excluída',
+      action: { label: 'Desfazer', run: () => useBoardStore.getState().undo() },
+    });
   },
 
   duplicateTask: (id) => {
     const found = get().tasks.find((t) => t.id === id);
     if (!found) return null;
+    pushHistory(get, 'duplicar tarefa');
     const copy: Task = {
       ...found,
       id: generateId(),
@@ -221,12 +300,18 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   },
 
   replaceAll: (data) => {
+    pushHistory(get, 'importar dados');
     set({ projects: data.projects, tasks: data.tasks });
     persist(get);
-    announce(`Dados importados: ${data.projects.length} projetos e ${data.tasks.length} tarefas`);
+    pushToast({
+      kind: 'success',
+      message: `Dados importados: ${data.projects.length} projetos e ${data.tasks.length} tarefas`,
+      action: { label: 'Desfazer', run: () => useBoardStore.getState().undo() },
+    });
   },
 
   resetAll: () => {
+    pushHistory(get, 'apagar tudo');
     set({ projects: [], tasks: [] });
     persist(get);
     announce('Todos os dados foram apagados');
@@ -234,6 +319,7 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
 
   seedSample: () => {
     if (get().projects.length > 0) return;
+    pushHistory(get, 'carregar exemplo');
     const t = nowIso();
     const p1: Project = {
       id: generateId(),

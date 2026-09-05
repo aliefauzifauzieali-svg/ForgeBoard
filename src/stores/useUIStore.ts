@@ -1,8 +1,23 @@
 import { create } from 'zustand';
 import type { SortDir, SortKey, TaskFilters, TaskPriority, TaskStatus } from '../types';
 import { DEFAULT_FILTERS } from '../services/taskQuery';
+import { generateId } from '../utils/core';
 
 export type View = { kind: 'dashboard' } | { kind: 'project'; projectId: string };
+
+export type ToastKind = 'success' | 'error' | 'info';
+
+export interface ToastAction {
+  label: string;
+  run: () => void;
+}
+
+export interface ToastItem {
+  id: string;
+  kind: ToastKind;
+  message: string;
+  action?: ToastAction;
+}
 
 interface UIState {
   view: View;
@@ -54,6 +69,17 @@ interface UIState {
   sidebarOpen: boolean;
   setSidebarOpen: (v: boolean) => void;
 
+  paletteOpen: boolean;
+  setPaletteOpen: (v: boolean) => void;
+  togglePalette: () => void;
+
+  shortcutsOpen: boolean;
+  setShortcutsOpen: (v: boolean) => void;
+
+  toasts: ToastItem[];
+  pushToast: (t: Omit<ToastItem, 'id'>) => void;
+  dismissToast: (id: string) => void;
+
   toggleStatusFilter: (s: TaskStatus) => void;
   togglePriorityFilter: (p: TaskPriority) => void;
 }
@@ -104,6 +130,18 @@ export const useUIStore = create<UIState>()((set) => ({
 
   sidebarOpen: false,
   setSidebarOpen: (v) => set({ sidebarOpen: v }),
+
+  paletteOpen: false,
+  setPaletteOpen: (v) => set({ paletteOpen: v }),
+  togglePalette: () => set((s) => ({ paletteOpen: !s.paletteOpen })),
+
+  shortcutsOpen: false,
+  setShortcutsOpen: (v) => set({ shortcutsOpen: v }),
+
+  toasts: [],
+  pushToast: (t) =>
+    set((s) => ({ toasts: [...s.toasts.slice(-4), { ...t, id: generateId() }] })),
+  dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
   toggleStatusFilter: (st) =>
     set((s) => ({

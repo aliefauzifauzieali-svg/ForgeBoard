@@ -64,7 +64,7 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
       <button
         type="button"
         onClick={goDashboard}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
       >
         <ArrowLeft size={14} aria-hidden /> Dashboard
       </button>
@@ -80,11 +80,11 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
             <div className="min-w-0">
               <h1 className="text-xl font-extrabold tracking-tight">{project.name}</h1>
               {project.description ? (
-                <p className="mt-1 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
                   {project.description}
                 </p>
               ) : null}
-              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
                 {mine.length} {mine.length === 1 ? 'tarefa' : 'tarefas'}
                 {overdue > 0 ? ` · ${overdue} atrasada${overdue === 1 ? '' : 's'}` : ' · sem atrasos'}
               </p>
@@ -118,7 +118,7 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
         </div>
         <div className="mt-4 max-w-xl">
           <div className="mb-1.5 flex justify-between text-xs font-semibold">
-            <span className="text-zinc-500">Progresso</span>
+            <span className="text-zinc-600 dark:text-zinc-400">Progresso</span>
             <span className="tabular-nums">
               {progress.done}/{progress.total} · {progress.percent}%
             </span>
@@ -128,7 +128,7 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-500">Quadro Kanban</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">Quadro Kanban</h2>
         <TaskFiltersBar />
       </div>
 

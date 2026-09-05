@@ -1,6 +1,6 @@
 # ForgeBoard
 
-Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tema claro/escuro, atalhos de teclado, importação/exportação JSON e persistência em `localStorage`.
+Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON e persistência em `localStorage`.
 
 ## Screenshots (placeholder)
 
@@ -35,6 +35,8 @@ ForgeBoard/
 │   ├── helpers.ts            # resetBoard, createProject, createTask…
 │   ├── projects.spec.ts
 │   ├── tasks.spec.ts
+│   ├── palette.spec.ts
+│   ├── a11y.spec.ts
 │   └── persistence.spec.ts
 ├── src/
 │   ├── components/           # UI burra/reutilizável
@@ -42,9 +44,10 @@ ForgeBoard/
 │   │   ├── layout/           # Sidebar, TopBar, BottomNav (mobile)
 │   │   ├── projects/         # ProjectCard, ProjectModal
 │   │   ├── tasks/            # TaskCard, TaskRow, TaskModal, TaskFiltersBar
-│   │   └── ui/               # Modal, ConfirmDialog, Badges, Stats, EmptyState
+│   │   └── ui/               # Modal, ConfirmDialog, Badges, Stats, EmptyState, Toasts
 │   ├── features/             # Seções com regra de negócio
 │   │   ├── dashboard/        # estatísticas, projetos, atrasadas, recentes
+│   │   ├── palette/          # paleta de comandos + busca global
 │   │   └── project/          # visão do projeto + Kanban filtrado
 │   ├── pages/                # wrappers finos sobre features
 │   ├── hooks/                # useKeyboardShortcuts (N/P///Esc)
@@ -95,7 +98,7 @@ npm run test          # testes unitários (Vitest)
 npm run test:e2e      # testes E2E no Chromium (desktop + mobile)
 ```
 
-Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError` e ErrorBoundary/focus-trap. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, reload mantendo os dados, recuperação de quarentena e fluxos mobile.
+Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, busca global, undo/redo, toasts, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError` e ErrorBoundary/focus-trap. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, paleta de comandos, undo via toast e atalho, diálogo de atalhos, axe (dashboard/Kanban/modal/paleta), reload mantendo os dados, recuperação de quarentena e fluxos mobile.
 
 ## Atalhos de teclado
 
@@ -104,9 +107,13 @@ Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`,
 | `N` | nova tarefa (herda o projeto aberto) |
 | `P` | novo projeto |
 | `/` | focar pesquisa |
-| `Esc` | fechar modal / confirmação / menu mobile |
+| `Ctrl/⌘+K` | paleta de comandos e busca global (funciona em qualquer lugar) |
+| `Ctrl/⌘+Z` | desfazer última alteração |
+| `Ctrl/⌘+Shift+Z` ou `Ctrl+Y` | refazer alteração desfeita |
+| `?` | abrir lista de atalhos |
+| `Esc` | fechar modal / confirmação / paleta / menu mobile |
 
-Ignorados enquanto o foco está em `input`, `textarea`, `select` ou conteúdo editável — e também quando qualquer modal/confirmação está aberto (só `Esc` age).
+Teclas simples ignoradas enquanto o foco está em `input`, `textarea`, `select` ou conteúdo editável — e também quando qualquer modal/confirmação está aberto (só `Esc` age). `Ctrl/⌘+Z` em campos de texto mantém o comportamento nativo do navegador.
 
 ## Robustez dos dados
 
@@ -141,4 +148,4 @@ Ignorados enquanto o foco está em `input`, `textarea`, `select` ou conteúdo ed
 - [ ] Busca global com `⌘K` (paleta de comandos) e mais atalhos (ex.: `c` concluir, `?` ajuda).
 - [ ] Arrastar com `@dnd-kit` + suporte completo a toque.
 - [ ] PWA instalável + exportação CSV/Markdown.
-- [ ] Testes de acessibilidade automatizados (axe) no CI.
+- [x] Testes de acessibilidade automatizados (axe) no CI.

@@ -1,12 +1,13 @@
 import { Download, LayoutDashboard, Plus, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { parseImport, serializeBoard } from '../../services/validation';
-import { datedFilename, downloadJson } from '../../services/download';
+import { parseImport } from '../../services/validation';
+import { exportBoardNow } from '../../services/boardIO';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { MAX_IMPORT_BYTES } from '../../utils/constants';
 import { cn } from '../../utils/core';
+import { Spinner } from '../ui/Spinner';
 
 export function ThemeToggle({ compact }: { compact?: boolean }): React.JSX.Element {
   const preference = useThemeStore((s) => s.preference);
@@ -36,17 +37,14 @@ function label(p: string): string {
 }
 
 export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Element {
-  const projects = useBoardStore((s) => s.projects);
-  const tasks = useBoardStore((s) => s.tasks);
   const replaceAll = useBoardStore((s) => s.replaceAll);
   const askConfirm = useUIStore((s) => s.askConfirm);
-  const announce = useUIStore((s) => s.announce);
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const doExport = (): void => {
-    downloadJson(datedFilename('forgeboard'), serializeBoard({ version: 1, projects, tasks }));
-    announce('Dados exportados em JSON');
+    exportBoardNow();
     onDone?.();
   };
 
@@ -58,32 +56,50 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
       );
       return;
     }
-    const raw = await file.text();
-    const result = parseImport(raw);
-    if (!result.ok || !result.data) {
-      setError(`Arquivo inválido: ${result.errors.slice(0, 3).join(' · ')}`);
-      return;
+    setBusy(true);
+    try {
+      const raw = await file.text();
+      const result = parseImport(raw);
+      if (!result.ok || !result.data) {
+        setError(`Arquivo inválido: ${result.errors.slice(0, 3).join(' · ')}`);
+        return;
+      }
+      const data = result.data;
+      askConfirm({
+        title: 'Substituir dados?',
+        description: `O arquivo contém ${data.projects.length} projetos e ${data.tasks.length} tarefas validadas. Os dados atuais serão substituídos.`,
+        confirmLabel: 'Substituir',
+        action: () => {
+          replaceAll(data);
+          onDone?.();
+        },
+      });
+    } finally {
+      setBusy(false);
     }
-    const data = result.data;
-    askConfirm({
-      title: 'Substituir dados?',
-      description: `O arquivo contém ${data.projects.length} projetos e ${data.tasks.length} tarefas validadas. Os dados atuais serão substituídos.`,
-      confirmLabel: 'Substituir',
-      action: () => {
-        replaceAll(data);
-        onDone?.();
-      },
-    });
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" aria-busy={busy}>
       <div className="flex gap-2">
         <button type="button" className="btn-ghost flex-1 text-xs" onClick={doExport}>
           <Download size={14} aria-hidden /> Exportar
         </button>
-        <button type="button" className="btn-ghost flex-1 text-xs" onClick={() => fileRef.current?.click()}>
-          <Upload size={14} aria-hidden /> Importar
+        <button
+          type="button"
+          className="btn-ghost flex-1 text-xs"
+          disabled={busy}
+          onClick={() => fileRef.current?.click()}
+        >
+          {busy ? (
+            <>
+              <Spinner label="Importando arquivo" /> Importando…
+            </>
+          ) : (
+            <>
+              <Upload size={14} aria-hidden /> Importar
+            </>
+          )}
         </button>
         <input
           ref={fileRef}
@@ -146,7 +162,7 @@ export function Sidebar(): React.JSX.Element {
           </span>
           <div>
             <p className="text-[15px] font-extrabold leading-none tracking-tight">ForgeBoard</p>
-            <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">local-first · offline</p>
+            <p className="mt-1 text-[11px] text-zinc-600 dark:text-zinc-400">local-first · offline</p>
           </div>
         </div>
 
@@ -167,7 +183,7 @@ export function Sidebar(): React.JSX.Element {
           </button>
 
           <div className="flex items-center justify-between px-3 pb-1 pt-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Projetos</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Projetos</p>
             <button
               type="button"
               onClick={openNewProject}
@@ -206,7 +222,7 @@ export function Sidebar(): React.JSX.Element {
             })}
           </ul>
           {projects.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-zinc-500">Nenhum projeto. Crie o primeiro com “P”.</p>
+            <p className="px-3 py-2 text-xs text-zinc-600 dark:text-zinc-400">Nenhum projeto. Crie o primeiro com “P”.</p>
           ) : null}
         </nav>
 
@@ -219,8 +235,9 @@ export function Sidebar(): React.JSX.Element {
           </button>
           <DataButtons />
           <ThemeToggle />
-          <p className="text-center text-[10px] text-zinc-500">
-            Atalhos: <kbd>N</kbd> tarefa · <kbd>P</kbd> projeto · <kbd>/</kbd> busca · <kbd>Esc</kbd> fecha
+          <p className="text-center text-[10px] text-zinc-600 dark:text-zinc-400">
+            Atalhos: <kbd>N</kbd> tarefa · <kbd>P</kbd> projeto · <kbd>/</kbd> busca ·{' '}
+            <kbd>Ctrl K</kbd> paleta · <kbd>?</kbd> ajuda · <kbd>Esc</kbd> fecha
           </p>
         </div>
       </aside>

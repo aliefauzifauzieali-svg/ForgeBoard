@@ -20,7 +20,7 @@ export function EmptyState({
         <Icon size={24} />
       </span>
       <h3 className="mt-4 text-base font-bold">{title}</h3>
-      <p className="mt-1 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">{description}</p>
+      <p className="mt-1 max-w-sm text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );

@@ -21,7 +21,7 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
         onClick={() => moveTask(task.id, done ? (task.previousStatus ?? 'backlog') : 'done')}
         aria-label={done ? `Marcar ${task.title} como não concluída` : `Marcar ${task.title} como concluída`}
         aria-pressed={done}
-        className="shrink-0 text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400"
+        className="shrink-0 text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400"
       >
         {done ? <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400" /> : <Circle size={20} />}
       </button>
@@ -31,10 +31,10 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
         className="min-w-0 flex-1 text-left"
         aria-label={`Editar tarefa ${task.title}`}
       >
-        <span className={`block truncate text-sm font-semibold ${done ? 'text-zinc-500 line-through' : ''}`}>
+        <span className={`block truncate text-sm font-semibold ${done ? 'text-zinc-600 line-through dark:text-zinc-400' : ''}`}>
           {task.title}
         </span>
-        <span className="mt-0.5 block truncate text-[11px] text-zinc-500 dark:text-zinc-400">
+        <span className="mt-0.5 block truncate text-[11px] text-zinc-600 dark:text-zinc-400">
           {projectName ? `${projectName} · ` : ''}
           {task.dueDate ? toDateOnly(task.dueDate) : 'Sem prazo'}
           {overdue ? ' · Atrasada' : ''}

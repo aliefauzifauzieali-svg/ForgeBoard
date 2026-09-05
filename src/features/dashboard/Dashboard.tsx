@@ -48,7 +48,7 @@ export function Dashboard(): React.JSX.Element {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight">Bem-vindo ao ForgeBoard</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Seu dashboard pessoal de projetos e tarefas — tudo salvo no navegador.
           </p>
         </div>
@@ -76,7 +76,7 @@ export function Dashboard(): React.JSX.Element {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Visão geral dos seus projetos e tarefas.
           </p>
         </div>
@@ -173,7 +173,7 @@ export function Dashboard(): React.JSX.Element {
             Tarefas recentes
           </h2>
           {recent.length === 0 ? (
-            <p className="mt-3 text-xs text-zinc-500">Nenhuma tarefa ainda.</p>
+            <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">Nenhuma tarefa ainda.</p>
           ) : (
             <ul className="mt-3 space-y-2">
               {recent.map((t) => (
@@ -196,12 +196,12 @@ export function Dashboard(): React.JSX.Element {
           <TaskFiltersBar />
         </div>
         {filteredTotal.length > 30 ? (
-          <p className="mb-2 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mb-2 text-xs text-zinc-600 dark:text-zinc-400">
             Mostrando as 30 primeiras de {filteredTotal.length}. Refine a busca ou os filtros.
           </p>
         ) : null}
         {filtered.length === 0 ? (
-          <p className="card p-6 text-center text-sm text-zinc-500">
+          <p className="card p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
             Nenhuma tarefa corresponde aos filtros. Ajuste a busca ou limpe os filtros.
           </p>
         ) : (

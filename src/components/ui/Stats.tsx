@@ -56,13 +56,13 @@ export function StatCard({
           {icon}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <p className="truncate text-xs font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
             {label}
           </p>
           <p className="text-2xl font-bold tabular-nums leading-tight">{value}</p>
         </div>
       </div>
-      {hint ? <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{hint}</p> : null}
+      {hint ? <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">{hint}</p> : null}
     </div>
   );
 }

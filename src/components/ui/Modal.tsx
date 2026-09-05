@@ -1,8 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 export function Modal({
   open,
@@ -43,31 +41,7 @@ export function Modal({
   }, [open ]);
 
   // Mantém o Tab circulando dentro do diálogo (focus trap).
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent): void => {
-      if (e.key !== 'Tab') return;
-      const panel = panelRef.current;
-      if (!panel) return;
-      const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
-      if (items.length === 0) {
-        e.preventDefault();
-        return;
-      }
-      const first = items[0]!;
-      const last = items[items.length - 1]!;
-      const active = document.activeElement as HTMLElement | null;
-      if (e.shiftKey && (active === first || !panel.contains(active))) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [open ]);
+  useFocusTrap(panelRef, open);
 
   if (!open) return null;
 
@@ -92,7 +66,7 @@ export function Modal({
           <div>
             <h2 className="text-base font-bold">{title}</h2>
             {description ? (
-              <p id={descriptionId} className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+              <p id={descriptionId} className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
                 {description}
               </p>
             ) : null}

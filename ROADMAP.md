@@ -1,9 +1,9 @@
 # ForgeBoard — Roadmap
 
 > Produto: workspace pessoal local-first para projetos, tarefas e planejamento.
-> Estado em 2026-09-05: v1.0.0 local funcional; `tsc`, `lint`, 47 testes unitários,
-> 9 testes E2E e `build` todos verdes. Sem backend, sem contas, sem sincronização
-> (decisão intencional — primeiro uma base local extremamente sólida).
+> Estado em 2026-09-05: Fase 2 concluída; `tsc`, `lint`, 72 testes unitários,
+> 18 testes E2E (incl. axe) e `build` todos verdes. Sem backend, sem contas,
+> sem sincronização (decisão intencional).
 
 ## Baseline atual (o que já existe)
 
@@ -64,20 +64,25 @@ restantes de uma vez.
 **Concluída quando:** DoD global + zero acessos a storage fora de `src/storage/` e
 `src/stores/` (verificável por grep) + CHANGELOG criado.
 
-## Fase 2 — UX e produto
+## Fase 2 — UX e produto ✅ concluída em 2026-09-05
 
 **Objetivo:** parecer e operar como produto real. Depende da Fase 1.
 
-- [ ] Command palette (`Ctrl/Cmd+K`): ir para projeto, criar tarefa/projeto, alternar tema.
-- [ ] Busca global unificada (tarefas + projetos) com ranking simples e `Enter` para abrir.
-- [ ] Undo de exclusão (tarefa/projeto restaurados por ~8s via toast com "Desfazer").
-- [ ] Toasts para ações principais (substituir onde hoje só há live-region invisível).
-- [ ] Diálogo de atalhos (`?`) listando todos os shortcuts.
-- [ ] Loading states onde houver espera real (importação de arquivo grande).
-- [ ] Revisão dos empty states com ações contextuais em todas as visões.
-- [ ] Acessibilidade: passe `axe` (via `@axe-core/playwright`) sem violações críticas.
+- [x] Command palette (`Ctrl/Cmd+K`): ir para projeto, criar tarefa/projeto, alternar tema.
+- [x] Busca global unificada (tarefas + projetos) com ranking simples e `Enter` para abrir.
+- [x] Undo de exclusão (tarefa/projeto restaurados por ~8s via toast com "Desfazer").
+- [x] Toasts para ações principais (substituir onde hoje só há live-region invisível).
+- [x] Diálogo de atalhos (`?`) listando todos os shortcuts.
+- [x] Loading states onde houver espera real (importação de arquivo grande).
+- [x] Revisão dos empty states com ações contextuais em todas as visões.
+- [x] Acessibilidade: passe `axe` (via `@axe-core/playwright`) sem violações críticas.
 
 **Concluída quando:** DoD + spec E2E da palette/busca/undo + relatório axe limpo anexado ao PR.
+
+Notas da execução: undo/refazer implementados com histórico de 30 instantâneos
+(também cobre edição, movimento e importação); empty states já tinham ações
+contextuais (sem mudança); loading real só existe na importação (app é síncrono
+local-first); contraste de texto secundário endurecido para AA.
 
 ## Fase 3 — Calendário
 

@@ -32,7 +32,7 @@ export function ProjectCard({ project }: { project: Project }): React.JSX.Elemen
           />
           <div className="min-w-0">
             <h3 className="truncate text-[15px] font-bold">{project.name}</h3>
-            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
               {mine.length} {mine.length === 1 ? 'tarefa' : 'tarefas'} · {open} em aberto
               {overdue > 0 ? ` · ${overdue} atrasada${overdue === 1 ? '' : 's'}` : ''}
             </p>
@@ -66,16 +66,16 @@ export function ProjectCard({ project }: { project: Project }): React.JSX.Elemen
       </div>
 
       {project.description ? (
-        <p className="mt-3 line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">{project.description}</p>
+        <p className="mt-3 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{project.description}</p>
       ) : null}
 
       <div className="mt-4">
         <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
-          <span className="text-zinc-500 dark:text-zinc-400">Progresso</span>
+          <span className="text-zinc-600 dark:text-zinc-400">Progresso</span>
           <span className="tabular-nums">{progress.percent}%</span>
         </div>
         <ProgressBar percent={progress.percent} color={project.color} label={`Progresso de ${project.name}: ${progress.percent}%`} />
-        <p className="mt-1.5 text-[11px] text-zinc-500">
+        <p className="mt-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
           {progress.done} de {progress.total} concluídas
         </p>
       </div>

@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { STORAGE_KEY } from '../src/utils/constants';
 
 /** Limpa o board e volta ao estado inicial. */
 export async function resetBoard(page: Page): Promise<void> {
@@ -35,4 +36,17 @@ export async function createTask(page: Page, title: string): Promise<void> {
     .getByRole('button', { name: 'Criar tarefa' })
     .click();
   await page.getByText(title).first().waitFor({ timeout: 5_000 });
+}
+
+/** Preenche o storage com um board válido e recarrega (cenários determinísticos). */
+export async function seedBoard(page: Page, data: unknown): Promise<void> {
+  await page.goto('/');
+  await page.evaluate(
+    ([key, raw]: [string, string]) => {
+      window.localStorage.clear();
+      window.localStorage.setItem(key, raw);
+    },
+    [STORAGE_KEY, JSON.stringify(data)] as [string, string],
+  );
+  await page.reload();
 }

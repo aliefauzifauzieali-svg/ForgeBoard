@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <AlertTriangle size={24} />
           </span>
           <h1 className="mt-4 text-lg font-extrabold">Algo deu errado</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             O ForgeBoard encontrou um erro inesperado. Seus dados continuam salvos no navegador —
             exporte um backup antes de recomeçar, se quiser.
           </p>

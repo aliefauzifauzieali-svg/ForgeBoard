@@ -88,7 +88,7 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
       </div>
 
       {task.description ? (
-        <p className="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">{task.description}</p>
+        <p className="mt-1 line-clamp-2 text-xs text-zinc-600 dark:text-zinc-400">{task.description}</p>
       ) : null}
 
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -96,7 +96,7 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
         <StatusBadge value={task.status} />
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-zinc-600 dark:text-zinc-400">
         <span
           className={`inline-flex items-center gap-1 ${overdue ? 'font-semibold text-red-600 dark:text-red-400' : ''}`}
         >
@@ -110,7 +110,7 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
       </div>
 
       <div className="mt-2 flex items-center justify-between border-t border-dashed border-zinc-200 pt-2 dark:border-zinc-800">
-        <span className="text-[11px] font-medium text-zinc-500">Mover:</span>
+        <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">Mover:</span>
         <span className="flex gap-1">
           <button
             type="button"

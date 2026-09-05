@@ -28,8 +28,29 @@ export function TaskModal(): React.JSX.Element {
   const [priority, setPriority] = useState<TaskPriority>(() => editing?.priority ?? 'medium');
   const [status, setStatus] = useState<TaskStatus>(() => editing?.status ?? taskModal.presetStatus ?? 'backlog');
   const [dueDate, setDueDate] = useState(() => editing?.dueDate ?? taskModal.presetDueDate ?? '');
-  const [tags, setTags] = useState(() => editing?.tags.join(', ') ?? '');
+  const [tagIds, setTagIds] = useState<string[]>(() => editing?.tagIds ?? []);
+  const [tagInput, setTagInput] = useState('');
+  const [tagOpen, setTagOpen] = useState(false);
+  const [tagActive, setTagActive] = useState(0);
   const [error, setError] = useState('');
+
+  const allTags = useBoardStore((s) => s.tags);
+  const ensureTags = useBoardStore((s) => s.ensureTags);
+  const tagById = useMemo(() => new Map(allTags.map((t) => [t.id, t] as const)), [allTags]);
+  const suggestions = useMemo(() => {
+    const q = tagInput.trim().toLowerCase();
+    return allTags
+      .filter((t) => !tagIds.includes(t.id) && (q === '' || t.name.includes(q)))
+      .slice(0, 6);
+  }, [allTags, tagInput, tagIds]);
+
+  const commitTagInput = (value: string): void => {
+    const ids = ensureTags(parseTags(value));
+    if (ids.length > 0) setTagIds((prev) => [...prev, ...ids.filter((id) => !prev.includes(id))].slice(0, 12));
+    setTagInput('');
+    setTagOpen(false);
+    setTagActive(0);
+  };
 
   const submit = (e: React.FormEvent): void => {
     e.preventDefault();
@@ -41,6 +62,9 @@ export function TaskModal(): React.JSX.Element {
       setError('Escolha um projeto. Crie um projeto primeiro.');
       return;
     }
+    // Texto restante vira etiqueta (suporta colar "a, b, c").
+    const extraIds = tagInput.trim() ? ensureTags(parseTags(tagInput)) : [];
+    const finalIds = [...tagIds, ...extraIds.filter((id) => !tagIds.includes(id))].slice(0, 12);
     try {
       if (editing) {
         updateTask(editing.id, {
@@ -49,7 +73,7 @@ export function TaskModal(): React.JSX.Element {
           priority,
           status,
           dueDate: dueDate || null,
-          tags: parseTags(tags),
+          tagIds: finalIds,
           projectId,
         });
       } else {
@@ -60,7 +84,7 @@ export function TaskModal(): React.JSX.Element {
           priority,
           status,
           dueDate: dueDate || null,
-          tags: parseTags(tags),
+          tagIds: finalIds,
         });
       }
       closeTaskModal();
@@ -187,15 +211,113 @@ export function TaskModal(): React.JSX.Element {
 
           <div>
             <label className="label" htmlFor="task-tags">
-              Tags <span className="font-normal normal-case">(separadas por vírgula)</span>
+              Etiquetas
             </label>
+            {tagIds.length > 0 ? (
+              <ul aria-label="Etiquetas selecionadas" className="mb-2 flex flex-wrap gap-1.5">
+                {tagIds.map((id) => {
+                  const tag = tagById.get(id);
+                  if (!tag) return null;
+                  return (
+                    <li
+                      key={id}
+                      className="inline-flex items-center gap-1 rounded-full bg-zinc-100 py-0.5 pl-2 pr-1 text-xs font-semibold dark:bg-zinc-800"
+                    >
+                      <span
+                        aria-hidden
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      {tag.name}
+                      <button
+                        type="button"
+                        aria-label={`Remover etiqueta ${tag.name}`}
+                        className="icon-btn !h-5 !w-5"
+                        onClick={() => setTagIds((prev) => prev.filter((x) => x !== id))}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
             <input
               id="task-tags"
               className="input"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="ex.: design, urgente, cliente-x"
+              role="combobox"
+              aria-expanded={tagOpen && suggestions.length > 0}
+              aria-controls="tag-suggestions"
+              aria-activedescendant={
+                tagOpen && suggestions[tagActive] ? `tag-option-${suggestions[tagActive]!.id}` : undefined
+              }
+              autoComplete="off"
+              value={tagInput}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v.includes(',')) {
+                  commitTagInput(v);
+                } else {
+                  setTagInput(v);
+                  setTagOpen(true);
+                  setTagActive(0);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown' && suggestions.length > 0) {
+                  e.preventDefault();
+                  setTagOpen(true);
+                  setTagActive((a) => (a + 1) % suggestions.length);
+                } else if (e.key === 'ArrowUp' && suggestions.length > 0) {
+                  e.preventDefault();
+                  setTagActive((a) => (a - 1 + suggestions.length) % suggestions.length);
+                } else if (e.key === 'Enter' && tagInput.trim()) {
+                  e.preventDefault();
+                  const picked = tagOpen ? suggestions[tagActive] : undefined;
+                  if (picked) {
+                    setTagIds((prev) => (prev.includes(picked.id) ? prev : [...prev, picked.id].slice(0, 12)));
+                    setTagInput('');
+                    setTagOpen(false);
+                    setTagActive(0);
+                  } else {
+                    commitTagInput(tagInput);
+                  }
+                } else if (e.key === 'Escape') {
+                  e.stopPropagation();
+                  setTagOpen(false);
+                } else if (e.key === 'Backspace' && tagInput === '' && tagIds.length > 0) {
+                  setTagIds((prev) => prev.slice(0, -1));
+                }
+              }}
+              onBlur={() => setTagOpen(false)}
+              placeholder="Digite e Enter para criar, ou escolha abaixo"
             />
+            {tagOpen && suggestions.length > 0 ? (
+              <ul id="tag-suggestions" role="listbox" aria-label="Sugestões de etiquetas" className="card mt-1 max-h-36 overflow-y-auto p-1">
+                {suggestions.map((s, i) => (
+                  <li key={s.id} role="option" id={`tag-option-${s.id}`} aria-selected={i === tagActive}>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setTagIds((prev) => (prev.includes(s.id) ? prev : [...prev, s.id].slice(0, 12)));
+                        setTagInput('');
+                        setTagOpen(false);
+                        setTagActive(0);
+                      }}
+                      onMouseEnter={() => setTagActive(i)}
+                      className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm ${
+                        i === tagActive ? 'bg-indigo-600/10' : ''
+                      }`}
+                    >
+                      <span aria-hidden className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                      {s.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
 
           {error ? (

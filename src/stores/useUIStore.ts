@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { SortDir, SortKey, TaskFilters, TaskPriority, TaskStatus } from '../types';
 import { DEFAULT_FILTERS } from '../services/taskQuery';
 import { generateId } from '../utils/core';
+import { usePrefsStore } from './usePrefsStore';
 
 export type View = { kind: 'dashboard' } | { kind: 'project'; projectId: string } | { kind: 'calendar' };
 
@@ -75,6 +76,9 @@ interface UIState {
   sidebarOpen: boolean;
   setSidebarOpen: (v: boolean) => void;
 
+  settingsOpen: boolean;
+  setSettingsOpen: (v: boolean) => void;
+
   /** Status de rede (observado por initPWA). */
   online: boolean;
   setOnline: (v: boolean) => void;
@@ -102,9 +106,30 @@ interface UIState {
 
 export const useUIStore = create<UIState>()((set) => ({
   view: { kind: 'dashboard' },
-  goDashboard: () => set({ view: { kind: 'dashboard' }, sidebarOpen: false }),
-  openProject: (projectId) => set({ view: { kind: 'project', projectId }, sidebarOpen: false }),
-  goCalendar: () => set({ view: { kind: 'calendar' }, sidebarOpen: false }),
+  goDashboard: () => {
+    set({ view: { kind: 'dashboard' }, sidebarOpen: false });
+    try {
+      usePrefsStore.getState().setLastView({ kind: 'dashboard' });
+    } catch {
+      /* ignore */
+    }
+  },
+  openProject: (projectId) => {
+    set({ view: { kind: 'project', projectId }, sidebarOpen: false });
+    try {
+      usePrefsStore.getState().setLastView({ kind: 'project', projectId });
+    } catch {
+      /* ignore */
+    }
+  },
+  goCalendar: () => {
+    set({ view: { kind: 'calendar' }, sidebarOpen: false });
+    try {
+      usePrefsStore.getState().setLastView({ kind: 'calendar' });
+    } catch {
+      /* ignore */
+    }
+  },
 
   announcement: { id: 0, message: '' },
   announce: (message) =>
@@ -147,6 +172,9 @@ export const useUIStore = create<UIState>()((set) => ({
 
   sidebarOpen: false,
   setSidebarOpen: (v) => set({ sidebarOpen: v }),
+
+  settingsOpen: false,
+  setSettingsOpen: (v) => set({ settingsOpen: v }),
 
   online: true,
   setOnline: (v) => set({ online: v }),

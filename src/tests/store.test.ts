@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { saveBoard } from '../storage/boardStorage';
-import { useBoardStore } from '../stores/useBoardStore';
-import { STORAGE_KEY } from '../utils/constants';
+import { dangerouslyDeleteDatabase, getKV, KV_BOARD } from '../storage/idb';
+import { flushBoardStore, useBoardStore } from '../stores/useBoardStore';
 import type { BoardData } from '../types';
 
-function reset(): void {
+async function reset(): Promise<void> {
   localStorage.clear();
-  useBoardStore.setState({ projects: [], tasks: [], saveError: null });
+  useBoardStore.setState({ projects: [], tasks: [], tags: [], saveError: null });
+  await dangerouslyDeleteDatabase();
 }
 
 describe('useBoardStore — tarefas', () => {
   beforeEach(reset);
 
-  it('cria tarefa com valores padrão e persiste no localStorage', () => {
+  it('cria tarefa com valores padrão e persiste no IndexedDB', async () => {
     const project = useBoardStore.getState().createProject({ name: 'Site' });
     const task = useBoardStore.getState().createTask({ projectId: project.id, title: '  Deploy  ' });
 
@@ -21,8 +21,9 @@ describe('useBoardStore — tarefas', () => {
     expect(task.priority).toBe('medium');
     expect(task.createdAt).toBeTruthy();
 
-    const raw = localStorage.getItem(STORAGE_KEY);
-    expect(raw).toContain('Deploy');
+    await flushBoardStore();
+    const stored = await getKV<BoardData>(KV_BOARD);
+    expect(stored?.tasks.map((t) => t.title)).toEqual(['Deploy']);
     expect(useBoardStore.getState().tasks).toHaveLength(1);
   });
 
@@ -61,7 +62,7 @@ describe('useBoardStore — tarefas', () => {
   it('substitui todos os dados (import) e recarrega do storage', () => {
     const project = useBoardStore.getState().createProject({ name: 'Antigo' });
     expect(useBoardStore.getState().projects).toHaveLength(1);
-    useBoardStore.getState().replaceAll({ version: 1, projects: [], tasks: [] });
+    useBoardStore.getState().replaceAll({ version: 2, projects: [], tasks: [], tags: [] });
     expect(useBoardStore.getState().projects).toHaveLength(0);
     expect(project.id).toBeTruthy();
   });
@@ -102,24 +103,22 @@ describe('useBoardStore — tarefas', () => {
     expect(useBoardStore.getState().tasks[0]?.previousStatus).toBe('in-progress');
   });
 
-  it('sinaliza saveError quando o storage falha e limpa ao recuperar', () => {
-    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new DOMException('Quota exceeded', 'QuotaExceededError');
-    });
+  it('sinaliza saveError quando o storage falha e limpa ao recuperar', async () => {
+    vi.stubGlobal('indexedDB', undefined);
     try {
       useBoardStore.getState().createProject({ name: 'Site' });
-      expect(useBoardStore.getState().saveError).toMatch(/backup/);
+      await vi.waitFor(() => expect(useBoardStore.getState().saveError).toMatch(/backup/));
     } finally {
-      spy.mockRestore();
+      vi.unstubAllGlobals();
     }
     const projectId = useBoardStore.getState().projects[0]?.id ?? '';
     useBoardStore.getState().createTask({ projectId, title: 'T' });
-    expect(useBoardStore.getState().saveError).toBeNull();
+    await vi.waitFor(() => expect(useBoardStore.getState().saveError).toBeNull());
   });
 
-  it('hydrate carrega dados do storage uma única vez', () => {
+  it('hydrate aplica dados e é idempotente', () => {
     const data: BoardData = {
-      version: 1,
+      version: 2,
       projects: [
         {
           id: 'p1',
@@ -131,12 +130,11 @@ describe('useBoardStore — tarefas', () => {
         },
       ],
       tasks: [],
+      tags: [],
     };
-    saveBoard(data);
-    useBoardStore.getState().hydrate();
+    useBoardStore.getState().hydrate(data, []);
     expect(useBoardStore.getState().projects).toHaveLength(1);
-    localStorage.clear();
-    useBoardStore.getState().hydrate();
-    expect(useBoardStore.getState().projects).toHaveLength(1);
+    useBoardStore.getState().hydrate({ version: 2, projects: [], tasks: [], tags: [] }, []);
+    expect(useBoardStore.getState().projects).toHaveLength(0);
   });
 });

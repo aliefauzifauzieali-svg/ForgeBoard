@@ -26,8 +26,9 @@ const T = (id: string, projectId: string, status: Task['status'], extra: Partial
   status,
   createdAt: `2026-01-0${id}T00:00:00.000Z`,
   updatedAt: `2026-01-0${id}T00:00:00.000Z`,
+  completedAt: null,
   dueDate: null,
-  tags: [],
+  tagIds: [],
   ...extra,
 });
 

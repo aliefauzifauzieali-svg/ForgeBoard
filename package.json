@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "date-fns": "^4.4.0",
+    "idb": "^8.0.3",
     "lucide-react": "^0.469.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -39,6 +40,7 @@
     "@vitejs/plugin-react": "^6.1.0",
     "@vitest/coverage-v8": "^4.1.11",
     "autoprefixer": "^10.4.20",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^26.0.0",
     "oxlint": "^1.79.0",
     "postcss": "^8.4.49",

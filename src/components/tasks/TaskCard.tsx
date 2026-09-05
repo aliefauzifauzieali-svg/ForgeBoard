@@ -13,6 +13,7 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
   const deleteTask = useBoardStore((s) => s.deleteTask);
   const duplicateTask = useBoardStore((s) => s.duplicateTask);
   const moveTask = useBoardStore((s) => s.moveTask);
+  const allTags = useBoardStore((s) => s.tags);
 
   const overdue = isOverdue(task.dueDate, task.status);
   const idx = ORDER.indexOf(task.status);
@@ -104,9 +105,11 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
           {task.dueDate ? toDateOnly(task.dueDate) : 'Sem prazo'}
           {overdue ? ' · Atrasada' : ''}
         </span>
-        {task.tags.slice(0, 3).map((t) => (
-          <TagChip key={t} label={t} />
-        ))}
+        {task.tagIds.slice(0, 3).map((id) => {
+          const tag = allTags.find((t) => t.id === id);
+          if (!tag) return null;
+          return <TagChip key={id} label={tag.name} color={tag.color} />;
+        })}
       </div>
 
       <div className="mt-2 flex items-center justify-between border-t border-dashed border-zinc-200 pt-2 dark:border-zinc-800">

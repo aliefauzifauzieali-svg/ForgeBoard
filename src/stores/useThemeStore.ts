@@ -2,6 +2,10 @@ import { useEffect } from 'react';
 import { create } from 'zustand';
 import type { ResolvedTheme, ThemePreference } from '../types';
 import { THEME_KEY } from '../utils/constants';
+import { schedulePrefsPersist } from '../storage/boardStorage';
+import { usePrefsStore } from './usePrefsStore';
+// Nota: usePrefsStore também lê este store (apenas via getState em tempo de
+// chamada, nunca na avaliação do módulo) — sem ciclo em tempo de import.
 
 function readPreference(): ThemePreference {
   try {
@@ -43,6 +47,12 @@ export const useThemeStore = create<ThemeState>()((set) => ({
       /* ignore */
     }
     set({ preference: p, resolved: resolve(p) });
+    try {
+      const { shortcutsEnabled, lastView } = usePrefsStore.getState();
+      schedulePrefsPersist({ theme: p, shortcutsEnabled, lastView });
+    } catch {
+      /* prefs ainda não hidratadas: boot cuida */
+    }
   },
 }));
 

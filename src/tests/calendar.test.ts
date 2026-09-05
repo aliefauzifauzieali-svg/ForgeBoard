@@ -25,8 +25,9 @@ const T = (id: string, dueDate: string | null, extra: Partial<Task> = {}): Task 
   status: 'backlog',
   createdAt: `2026-09-0${id}T10:00:00.000Z`,
   updatedAt: `2026-09-0${id}T10:00:00.000Z`,
+  completedAt: null,
   dueDate,
-  tags: [],
+  tagIds: [],
   ...extra,
 });
 

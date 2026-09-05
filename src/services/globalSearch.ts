@@ -52,10 +52,13 @@ export function searchBoard(
   tasks: Task[],
   query: string,
   limit = 8,
+  tagById: Map<string, string> = new Map(),
 ): GlobalSearchResults {
   const toks = tokensOf(query);
   if (toks.length === 0) return { projects: [], tasks: [] };
   const projectNameOf = new Map(projects.map((p) => [p.id, p.name] as const));
+  const tagNamesOf = (t: Task): string =>
+    t.tagIds.map((id) => tagById.get(id) ?? '').filter(Boolean).join(' ');
 
   const rankedProjects = projects
     .map((p) => ({
@@ -79,7 +82,7 @@ export function searchBoard(
       score: scoreFields(
         [
           { text: t.title, weight: 3 },
-          { text: t.tags.join(' '), weight: 2 },
+          { text: tagNamesOf(t), weight: 2 },
           { text: t.description, weight: 1 },
           { text: projectNameOf.get(t.projectId) ?? '', weight: 1 },
         ],

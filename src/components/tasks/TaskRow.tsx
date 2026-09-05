@@ -10,6 +10,10 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
   const moveTask = useBoardStore((s) => s.moveTask);
   const done = task.status === 'done';
   const overdue = isOverdue(task.dueDate, task.status);
+  const allTags = useBoardStore((s) => s.tags);
+  const tagNames = task.tagIds
+    .map((id) => allTags.find((t) => t.id === id)?.name)
+    .filter((n): n is string => Boolean(n));
 
   return (
     <li
@@ -38,7 +42,7 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
           {projectName ? `${projectName} · ` : ''}
           {task.dueDate ? toDateOnly(task.dueDate) : 'Sem prazo'}
           {overdue ? ' · Atrasada' : ''}
-          {task.tags.length > 0 ? ` · #${task.tags.slice(0, 2).join(' #')}` : ''}
+          {tagNames.length > 0 ? ` · #${tagNames.slice(0, 2).join(' #')}` : ''}
         </span>
       </button>
       <PriorityBadge value={task.priority} />

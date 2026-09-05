@@ -1,10 +1,18 @@
-import type { BoardData, Project, Task, TaskPriority, TaskStatus } from '../types';
-import { TASK_PRIORITIES, TASK_STATUSES } from '../types';
+import type {
+  BoardData,
+  LegacyBoardData,
+  Project,
+  Tag,
+  Task,
+  TaskPriority,
+  TaskStatus,
+} from '../types';
+import { FORMAT_VERSION, TASK_PRIORITIES, TASK_STATUSES } from '../types';
 
-export interface ValidationResult {
+export interface ValidationResult<T = BoardData> {
   ok: boolean;
   errors: string[];
-  data: BoardData | null;
+  data: T | null;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -23,6 +31,8 @@ function isDateOnly(v: unknown): boolean {
   if (v === '') return true;
   return /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T12:00:00`));
 }
+
+type LegacyTask = LegacyBoardData['tasks'][number];
 
 function validateProject(p: unknown, index: number, errors: string[]): Project | null {
   if (!isRecord(p)) {
@@ -48,62 +58,43 @@ function validateProject(p: unknown, index: number, errors: string[]): Project |
   };
 }
 
-function validateTask(t: unknown, index: number, projectIds: Set<string>, errors: string[]): Task | null {
-  if (!isRecord(t)) {
-    errors.push(`tasks[${index}]: objeto inválido`);
-    return null;
-  }
-  const { id, projectId, title, description, priority, status, previousStatus, createdAt, updatedAt, dueDate, tags } =
-    t;
-  if (typeof id !== 'string' || id.length === 0) errors.push(`tasks[${index}].id inválido`);
-  if (typeof projectId !== 'string' || !projectIds.has(projectId))
-    errors.push(`tasks[${index}].projectId referencia projeto inexistente`);
-  if (typeof title !== 'string' || title.trim().length === 0)
-    errors.push(`tasks[${index}].title é obrigatório`);
-  if (typeof title === 'string' && title.trim().length > 140)
-    errors.push(`tasks[${index}].title excede 140 caracteres`);
-  if (description !== undefined && typeof description !== 'string')
-    errors.push(`tasks[${index}].description inválida`);
-  if (!TASK_PRIORITIES.includes(priority as TaskPriority))
-    errors.push(`tasks[${index}].priority inválida`);
-  if (!TASK_STATUSES.includes(status as TaskStatus)) errors.push(`tasks[${index}].status inválido`);
-  if (previousStatus !== undefined && !TASK_STATUSES.includes(previousStatus as TaskStatus))
-    errors.push(`tasks[${index}].previousStatus inválido`);
-  if (!isIsoDate(createdAt)) errors.push(`tasks[${index}].createdAt inválido`);
-  if (!isIsoDate(updatedAt)) errors.push(`tasks[${index}].updatedAt inválido`);
-  if (dueDate !== null && dueDate !== undefined && !isDateOnly(dueDate))
-    errors.push(`tasks[${index}].dueDate inválida (use yyyy-mm-dd ou null)`);
-  if (!Array.isArray(tags) || tags.some((x) => typeof x !== 'string'))
-    errors.push(`tasks[${index}].tags inválidas`);
-
-  const hasError = errors.some((e) => e.startsWith(`tasks[${index}]`));
-  if (hasError) return null;
-  return {
-    id: id as string,
-    projectId: projectId as string,
-    title: (title as string).trim(),
-    description: typeof description === 'string' ? description.slice(0, 2000) : '',
-    priority: priority as TaskPriority,
-    status: status as TaskStatus,
-    ...(previousStatus !== undefined ? { previousStatus: previousStatus as TaskStatus } : {}),
-    createdAt: createdAt as string,
-    updatedAt: updatedAt as string,
-    dueDate: (dueDate as string | null) ?? null,
-    tags: (tags as string[]).slice(0, 12),
+function checkBaseTask(
+  t: Record<string, unknown>,
+  index: number,
+  errors: string[],
+): boolean {
+  const { id, projectId, title, description, priority, status, createdAt, updatedAt, dueDate } = t;
+  let valid = true;
+  const fail = (msg: string): void => {
+    errors.push(msg);
+    valid = false;
   };
+  if (typeof id !== 'string' || id.length === 0) fail(`tasks[${index}].id inválido`);
+  if (typeof projectId !== 'string' || projectId.length === 0)
+    fail(`tasks[${index}].projectId inválido`);
+  if (typeof title !== 'string' || title.trim().length === 0)
+    fail(`tasks[${index}].title é obrigatório`);
+  if (typeof title === 'string' && title.trim().length > 140)
+    fail(`tasks[${index}].title excede 140 caracteres`);
+  if (description !== undefined && typeof description !== 'string')
+    fail(`tasks[${index}].description inválida`);
+  if (!TASK_PRIORITIES.includes(priority as TaskPriority))
+    fail(`tasks[${index}].priority inválida`);
+  if (!TASK_STATUSES.includes(status as TaskStatus)) fail(`tasks[${index}].status inválido`);
+  if (!isIsoDate(createdAt)) fail(`tasks[${index}].createdAt inválido`);
+  if (!isIsoDate(updatedAt)) fail(`tasks[${index}].updatedAt inválido`);
+  if (dueDate !== null && dueDate !== undefined && !isDateOnly(dueDate))
+    fail(`tasks[${index}].dueDate inválida (use yyyy-mm-dd ou null)`);
+  return valid;
 }
 
-/**
- * Valida um payload arbitrário (arquivo importado ou dados do storage)
- * antes de ser aceito. Nunca lança: retorna { ok, errors, data }.
- * Itens com qualquer erro são descartados; se houver ao menos um erro,
- * o resultado é inválido como um todo.
- */
-export function validateBoardData(input: unknown): ValidationResult {
+/** Valida o formato legado v1 (tarefas com `tags: string[]`). */
+export function validateBoardData(input: unknown): ValidationResult<LegacyBoardData> {
   const errors: string[] = [];
   if (!isRecord(input)) return { ok: false, errors: ['Arquivo inválido: objeto raiz esperado'], data: null };
   const { projects, tasks, version } = input;
-  if (version !== undefined && version !== 1) errors.push('version não suportada (esperado 1)');
+  if (version !== undefined && version !== 1 && version !== FORMAT_VERSION)
+    errors.push('version não suportada (esperado 1)');
   if (!Array.isArray(projects)) errors.push('projects deve ser um array');
   if (!Array.isArray(tasks)) errors.push('tasks deve ser um array');
   if (errors.length > 0) return { ok: false, errors, data: null };
@@ -113,7 +104,7 @@ export function validateBoardData(input: unknown): ValidationResult {
   for (let i = 0; i < (projects as unknown[]).length; i++) {
     const before = errors.length;
     const p = validateProject((projects as unknown[])[i], i, errors);
-    if (!p || errors.length !== before) continue; // item com erro é descartado
+    if (!p || errors.length !== before) continue;
     if (projectIds.has(p.id)) {
       errors.push(`projects[${i}].id duplicado`);
       continue;
@@ -122,33 +113,177 @@ export function validateBoardData(input: unknown): ValidationResult {
     validProjects.push(p);
   }
 
-  const validTasks: Task[] = [];
+  const validTasks: LegacyTask[] = [];
   const taskIds = new Set<string>();
   for (let i = 0; i < (tasks as unknown[]).length; i++) {
+    const raw = (tasks as unknown[])[i];
+    if (!isRecord(raw)) {
+      errors.push(`tasks[${i}]: objeto inválido`);
+      continue;
+    }
     const before = errors.length;
-    const t = validateTask((tasks as unknown[])[i], i, projectIds, errors);
-    if (!t || errors.length !== before) continue; // item com erro é descartado
-    if (taskIds.has(t.id)) {
+    checkBaseTask(raw, i, errors);
+    const { tags, previousStatus, completedAt } = raw;
+    if (!Array.isArray(tags) || tags.some((x) => typeof x !== 'string'))
+      errors.push(`tasks[${i}].tags inválidas`);
+    if (previousStatus !== undefined && !TASK_STATUSES.includes(previousStatus as TaskStatus))
+      errors.push(`tasks[${i}].previousStatus inválido`);
+    if (completedAt !== null && completedAt !== undefined && !isIsoDate(completedAt))
+      errors.push(`tasks[${i}].completedAt inválido`);
+    if (typeof raw.projectId !== 'string' || !projectIds.has(raw.projectId)) {
+      errors.push(`tasks[${i}].projectId referencia projeto inexistente`);
+    }
+    if (errors.length !== before) continue;
+    if (taskIds.has(raw.id as string)) {
       errors.push(`tasks[${i}].id duplicado`);
       continue;
     }
-    taskIds.add(t.id);
-    validTasks.push(t);
+    taskIds.add(raw.id as string);
+    validTasks.push({
+      id: raw.id as string,
+      projectId: raw.projectId as string,
+      title: (raw.title as string).trim(),
+      description: typeof raw.description === 'string' ? (raw.description as string).slice(0, 2000) : '',
+      priority: raw.priority as TaskPriority,
+      status: raw.status as TaskStatus,
+      ...(previousStatus !== undefined ? { previousStatus: previousStatus as TaskStatus } : {}),
+      tags: (tags as string[]).slice(0, 12),
+      createdAt: raw.createdAt as string,
+      updatedAt: raw.updatedAt as string,
+      completedAt: (completedAt as string | null) ?? null,
+      dueDate: (raw.dueDate as string | null) ?? null,
+    });
   }
 
   if (errors.length > 0) return { ok: false, errors, data: null };
   return { ok: true, errors: [], data: { version: 1, projects: validProjects, tasks: validTasks } };
 }
 
-export function serializeBoard(data: BoardData): string {
-  return JSON.stringify({ version: 1, projects: data.projects, tasks: data.tasks }, null, 2);
+function validateTag(t: unknown, index: number, errors: string[]): Tag | null {
+  if (!isRecord(t)) {
+    errors.push(`tags[${index}]: objeto inválido`);
+    return null;
+  }
+  const { id, name, color, createdAt } = t;
+  if (typeof id !== 'string' || id.length === 0) errors.push(`tags[${index}].id inválido`);
+  if (typeof name !== 'string' || name.trim().length === 0) errors.push(`tags[${index}].name é obrigatório`);
+  if (typeof name === 'string' && name.trim().length > 40) errors.push(`tags[${index}].name excede 40 caracteres`);
+  if (typeof color !== 'string' || color.length === 0) errors.push(`tags[${index}].color inválida`);
+  if (!isIsoDate(createdAt)) errors.push(`tags[${index}].createdAt inválido`);
+  const hasError = errors.some((e) => e.startsWith(`tags[${index}]`));
+  if (hasError) return null;
+  return {
+    id: id as string,
+    name: (name as string).trim().toLowerCase(),
+    color: color as string,
+    createdAt: createdAt as string,
+  };
 }
 
-export function parseImport(raw: string): ValidationResult {
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return validateBoardData(parsed);
-  } catch {
-    return { ok: false, errors: ['Arquivo inválido: JSON malformado'], data: null };
+/** Valida o formato atual v2 (registro de tags + `tagIds`). */
+export function validateBoardV2(input: unknown): ValidationResult<BoardData> {
+  const errors: string[] = [];
+  if (!isRecord(input)) return { ok: false, errors: ['Arquivo inválido: objeto raiz esperado'], data: null };
+  const { projects, tasks, tags, version } = input;
+  if (version !== FORMAT_VERSION) errors.push(`version não suportada (esperado ${FORMAT_VERSION})`);
+  if (!Array.isArray(projects)) errors.push('projects deve ser um array');
+  if (!Array.isArray(tasks)) errors.push('tasks deve ser um array');
+  if (tags !== undefined && !Array.isArray(tags)) errors.push('tags deve ser um array');
+  if (errors.length > 0) return { ok: false, errors, data: null };
+
+  const validProjects: Project[] = [];
+  const projectIds = new Set<string>();
+  for (let i = 0; i < (projects as unknown[]).length; i++) {
+    const before = errors.length;
+    const p = validateProject((projects as unknown[])[i], i, errors);
+    if (!p || errors.length !== before) continue;
+    if (projectIds.has(p.id)) {
+      errors.push(`projects[${i}].id duplicado`);
+      continue;
+    }
+    projectIds.add(p.id);
+    validProjects.push(p);
   }
+
+  const validTags: Tag[] = [];
+  const tagIds = new Set<string>();
+  const tagNames = new Set<string>();
+  for (let i = 0; i < ((tags as unknown[] | undefined) ?? []).length; i++) {
+    const before = errors.length;
+    const t = validateTag(((tags as unknown[]) ?? [])[i], i, errors);
+    if (!t || errors.length !== before) continue;
+    if (tagIds.has(t.id)) {
+      errors.push(`tags[${i}].id duplicado`);
+      continue;
+    }
+    if (tagNames.has(t.name)) {
+      errors.push(`tags[${i}].name duplicado`);
+      continue;
+    }
+    tagIds.add(t.id);
+    tagNames.add(t.name);
+    validTags.push(t);
+  }
+
+  const validTasks: Task[] = [];
+  const seenTaskIds = new Set<string>();
+  for (let i = 0; i < (tasks as unknown[]).length; i++) {
+    const raw = (tasks as unknown[])[i];
+    if (!isRecord(raw)) {
+      errors.push(`tasks[${i}]: objeto inválido`);
+      continue;
+    }
+    const before = errors.length;
+    checkBaseTask(raw, i, errors);
+    const { tagIds: taskTagIds, previousStatus, completedAt } = raw;
+    if (!Array.isArray(taskTagIds) || taskTagIds.some((x) => typeof x !== 'string'))
+      errors.push(`tasks[${i}].tagIds inválidas`);
+    else if ((taskTagIds as string[]).some((id) => !tagIds.has(id)))
+      errors.push(`tasks[${i}].tagIds referencia tag inexistente`);
+    if (previousStatus !== undefined && !TASK_STATUSES.includes(previousStatus as TaskStatus))
+      errors.push(`tasks[${i}].previousStatus inválido`);
+    if (completedAt !== null && completedAt !== undefined && !isIsoDate(completedAt))
+      errors.push(`tasks[${i}].completedAt inválido`);
+    if (typeof raw.projectId !== 'string' || !projectIds.has(raw.projectId)) {
+      errors.push(`tasks[${i}].projectId referencia projeto inexistente`);
+    }
+    if (errors.length !== before) continue;
+    if (seenTaskIds.has(raw.id as string)) {
+      errors.push(`tasks[${i}].id duplicado`);
+      continue;
+    }
+    seenTaskIds.add(raw.id as string);
+    validTasks.push({
+      id: raw.id as string,
+      projectId: raw.projectId as string,
+      title: (raw.title as string).trim(),
+      description: typeof raw.description === 'string' ? (raw.description as string).slice(0, 2000) : '',
+      priority: raw.priority as TaskPriority,
+      status: raw.status as TaskStatus,
+      ...(previousStatus !== undefined ? { previousStatus: previousStatus as TaskStatus } : {}),
+      tagIds: (taskTagIds as string[]).slice(0, 12),
+      createdAt: raw.createdAt as string,
+      updatedAt: raw.updatedAt as string,
+      completedAt: (completedAt as string | null) ?? null,
+      dueDate: (raw.dueDate as string | null) ?? null,
+    });
+  }
+
+  if (errors.length > 0) return { ok: false, errors, data: null };
+  return { ok: true, errors: [], data: { version: FORMAT_VERSION, projects: validProjects, tasks: validTasks, tags: validTags } };
+}
+
+export interface ExportEnvelope extends BoardData {
+  app: 'forgeboard';
+  exportedAt: string;
+}
+
+/** Serializa o board atual (sempre no formato vigente) com metadados. */
+export function serializeBoard(data: BoardData): string {
+  const envelope: ExportEnvelope = {
+    app: 'forgeboard',
+    exportedAt: new Date().toISOString(),
+    ...data,
+  };
+  return JSON.stringify(envelope, null, 2);
 }

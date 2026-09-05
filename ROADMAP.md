@@ -1,9 +1,9 @@
 # ForgeBoard — Roadmap
 
 > Produto: workspace pessoal local-first para projetos, tarefas e planejamento.
-> Estado em 2026-09-05: Fase 4 concluída; `tsc`, `lint`, testes unitários,
-> testes E2E (incl. axe, calendário e PWA) e `build` todos verdes. Sem backend,
-> sem contas, sem sincronização (decisão intencional).
+> Estado em 2026-09-05: Fase 5 concluída; `tsc`, `lint`, testes unitários,
+> testes E2E (incl. axe, calendário, PWA e dados) e `build` todos verdes.
+> Sem backend, sem contas, sem sincronização (decisão intencional).
 
 ## Baseline atual (o que já existe)
 
@@ -128,24 +128,30 @@ Notas da execução: `vite-plugin-pwa@1` (`generateSW`, `registerType: prompt`,
 próprio + boas-vindas; `prompt` manual no Windows/Android pendente de dispositivo
 físico (E2E cobre manifest, registro, offline, splash e update). Sem push.
 
-## Fase 5 — Sistema de dados
+## Fase 5 — Sistema de dados ✅ concluída em 2026-09-05
 
 **Objetivo:** camada de dados robusta e substituível. Depende da Fase 1; alimenta 4 e 6.
 
-- [ ] Entidades: `Project`, `Task`, `Tag` (first-class, hoje é `string[]`), `Settings`,
+- [x] Entidades: `Project`, `Task`, `Tag` (first-class, hoje é `string[]`), `Settings`,
       `UserPreferences` — tipos + validação por entidade.
-- [ ] Migrar persistência para **IndexedDB** (biblioteca `idb` — pequena, madura, sem ORM
+- [x] Migrar persistência para **IndexedDB** (biblioteca `idb` — pequena, madura, sem ORM
       pesado) atrás da interface `StorageProvider` existente; `localStorage` vira fallback
       de boot/migração, não caminho principal.
-- [ ] Versionamento do formato + migrações (`v1 → v2…`), cada uma com teste.
-- [ ] Migração automática `localStorage → IndexedDB` na primeira execução pós-update.
-- [ ] Backup agendado (snapshot JSON com data) + restauração via UI (reaproveita validação
+- [x] Versionamento do formato + migrações (`v1 → v2…`), cada uma com teste.
+- [x] Migração automática `localStorage → IndexedDB` na primeira execução pós-update.
+- [x] Backup agendado (snapshot JSON com data) + restauração via UI (reaproveita validação
       + quarentena existentes).
-- [ ] Camadas respeitadas: UI → Store → Service → Storage Adapter → IndexedDB
+- [x] Camadas respeitadas: UI → Store → Service → Storage Adapter → IndexedDB
       (grep de verificação no CI futur;o hoje, checklist de PR).
 
 **Concluída quando:** DoD + testes de migração v1→v2 + E2E de backup/restauração +
 dado legado `localStorage` migrado sem perda (teste dedicado).
+
+Notas da execução: `idb` (1 KB) em vez de Dexie (KV simples, sem query API);
+store segue síncrono em memória (API da UI intacta) com persistência assíncrona +
+flush no `pagehide`; `Settings` ficou implícito nas preferências; gráficos da fase
+(conclusões/dia, rosca de prioridade, lead time) em SVG próprio; progresso de
+projeto ao longo do tempo exige log de eventos → Fase 6.
 
 ## Fase 6 — Dashboard
 

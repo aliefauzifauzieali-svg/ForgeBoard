@@ -14,6 +14,7 @@ import { isOverdue } from '../../utils/date';
 export function ProjectView({ projectId }: { projectId: string }): React.JSX.Element {
   const projects = useBoardStore((s) => s.projects);
   const tasks = useBoardStore((s) => s.tasks);
+  const tags = useBoardStore((s) => s.tags);
   const deleteProject = useBoardStore((s) => s.deleteProject);
   const goDashboard = useUIStore((s) => s.goDashboard);
   const openEditProject = useUIStore((s) => s.openEditProject);
@@ -27,13 +28,15 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
 
   const scoped = useMemo(() => {
     if (!project) return [];
+    const tagById = new Map(tags.map((t) => [t.id, t.name] as const));
     return queryTasks(
       tasks.filter((t) => t.projectId === project.id),
       { ...filters, projectId: 'all' },
       sortKey,
       sortDir,
+      tagById,
     );
-  }, [tasks, project, filters, sortKey, sortDir]);
+  }, [tasks, project, filters, sortKey, sortDir, tags]);
 
   const visibleStatuses = useMemo(() => {
     if (filters.statuses.length === 0) return TASK_STATUSES;

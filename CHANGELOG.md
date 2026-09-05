@@ -8,6 +8,20 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Persistência em IndexedDB (`idb`) com boot assíncrono, flush ao ocultar a aba
+  e espelho síncrono do tema (sem flash); `localStorage` só para tema/quarentena.
+- Etiquetas de primeira classe (id, nome, cor): CRUD em Configurações,
+  autocomplete no modal, chips coloridos e renomear/excluir com cascata.
+- Preferências separadas (tema, atalhos, última visão restaurada no boot).
+- Migrações versionadas (v1→v2 com fixture real) + quarentena com
+  restaurar-backup/recomeçar em caso de falha.
+- Backups automáticos (a cada 10 alterações + diário, retém 5) e manuais, com
+  restauração confirmada; exportação/importação JSON versionada (v1 migra).
+- Gráficos honestos no dashboard (SVG próprio, sem lib): conclusões/dia,
+  rosca por prioridade, lead time e taxa; `completedAt` registrado ao concluir.
+
+### Added
+
 - PWA instalável: manifest (`manifest.json`, standalone, pt-BR, categorias),
   ícones 192/512/maskable gerados do SVG (`scripts/generate-icons.mjs`).
 - Service worker via vite-plugin-pwa (`generateSW`, prompt): precache do shell,

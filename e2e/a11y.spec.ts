@@ -104,4 +104,11 @@ test.describe('acessibilidade (axe)', () => {
     await expect(page.getByTestId('calendar-view')).toBeVisible();
     await expectNoSeriousViolations(page);
   });
+
+  test('configurações sem violações críticas ou sérias', async ({ page }) => {
+    await seedBoard(page, SEED);
+    await page.getByRole('button', { name: 'Configurações' }).click();
+    await expect(page.getByRole('dialog', { name: 'Configurações' })).toBeVisible();
+    await expectNoSeriousViolations(page);
+  });
 });

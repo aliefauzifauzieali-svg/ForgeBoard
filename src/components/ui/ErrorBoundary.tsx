@@ -29,9 +29,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   private downloadBackup = (): void => {
-    const raw = readRawBoard();
-    if (!raw) return;
-    downloadJson(datedFilename('forgeboard-backup'), raw);
+    void readRawBoard().then((raw) => {
+      if (!raw) return;
+      downloadJson(datedFilename('forgeboard-backup'), raw);
+    });
   };
 
   private resetAll = (): void => {
@@ -39,8 +40,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       this.setState({ armed: true });
       return;
     }
-    clearAllLocalData();
-    window.location.reload();
+    void clearAllLocalData().finally(() => window.location.reload());
   };
 
   render(): ReactNode {

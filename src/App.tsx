@@ -3,6 +3,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { ProjectModal } from './components/projects/ProjectModal';
+import { SettingsModal } from './components/settings/SettingsModal';
 import { TaskModal } from './components/tasks/TaskModal';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { OfflineBanner } from './components/ui/OfflineBanner';
@@ -83,6 +84,7 @@ export default function App(): React.JSX.Element {
       />
       <CommandPalette key={paletteOpen ? 'palette-open' : 'palette-closed'} />
       <ShortcutsDialog />
+      <SettingsModal />
       <ConfirmDialog />
     </div>
   );

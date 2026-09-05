@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useBoardStore } from '../stores/useBoardStore';
+import { usePrefsStore } from '../stores/usePrefsStore';
 import { useUIStore } from '../stores/useUIStore';
 
 function isTypingTarget(el: EventTarget | null): boolean {
@@ -34,6 +35,7 @@ export function useKeyboardShortcuts(searchRef: React.RefObject<HTMLInputElement
         if (state.confirm.open) state.closeConfirm();
         else if (state.paletteOpen) state.setPaletteOpen(false);
         else if (state.shortcutsOpen) state.setShortcutsOpen(false);
+        else if (state.settingsOpen) state.setSettingsOpen(false);
         else if (state.taskModal.open) state.closeTaskModal();
         else if (state.projectModal.open) state.closeProjectModal();
         else if (state.sidebarOpen) state.setSidebarOpen(false);
@@ -48,7 +50,8 @@ export function useKeyboardShortcuts(searchRef: React.RefObject<HTMLInputElement
         state.taskModal.open ||
         state.projectModal.open ||
         state.paletteOpen ||
-        state.shortcutsOpen
+        state.shortcutsOpen ||
+        state.settingsOpen
       ) {
         return;
       }
@@ -68,17 +71,24 @@ export function useKeyboardShortcuts(searchRef: React.RefObject<HTMLInputElement
       }
       if (mod || e.altKey) return;
 
+      // Preferência permite desligar os atalhos de letra.
+      const lettersOn = usePrefsStore.getState().shortcutsEnabled;
+
       if (e.key === 'n' || e.key === 'N') {
+        if (!lettersOn) return;
         e.preventDefault();
         const view = state.view;
         state.openNewTask(view.kind === 'project' ? view.projectId : null, null);
       } else if (e.key === 'p' || e.key === 'P') {
+        if (!lettersOn) return;
         e.preventDefault();
         state.openNewProject();
       } else if (e.key === '/') {
+        if (!lettersOn) return;
         e.preventDefault();
         searchRef.current?.focus();
       } else if (e.key === '?') {
+        if (!lettersOn) return;
         e.preventDefault();
         state.setShortcutsOpen(true);
       }

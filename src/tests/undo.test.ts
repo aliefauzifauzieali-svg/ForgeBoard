@@ -3,7 +3,7 @@ import { useBoardStore } from '../stores/useBoardStore';
 
 function reset(): void {
   localStorage.clear();
-  useBoardStore.setState({ projects: [], tasks: [], saveError: null, undoStack: [], redoStack: [] });
+  useBoardStore.setState({ projects: [], tasks: [], tags: [], saveError: null, undoStack: [], redoStack: [] });
 }
 
 describe('useBoardStore — undo/redo', () => {
@@ -62,7 +62,7 @@ describe('useBoardStore — undo/redo', () => {
 
   it('desfaz importação (replaceAll)', () => {
     const project = useBoardStore.getState().createProject({ name: 'Antigo' });
-    useBoardStore.getState().replaceAll({ version: 1, projects: [], tasks: [] });
+    useBoardStore.getState().replaceAll({ version: 2, projects: [], tasks: [], tags: [] });
     expect(useBoardStore.getState().projects).toHaveLength(0);
     useBoardStore.getState().undo();
     expect(useBoardStore.getState().projects.map((p) => p.id)).toEqual([project.id]);

@@ -8,7 +8,7 @@ import { useUIStore } from '../stores/useUIStore';
 
 function reset(): void {
   localStorage.clear();
-  useBoardStore.setState({ projects: [], tasks: [], saveError: null, undoStack: [], redoStack: [] });
+  useBoardStore.setState({ projects: [], tasks: [], tags: [], saveError: null, undoStack: [], redoStack: [] });
   useUIStore.setState({
     toasts: [],
     confirm: { open: false, title: '', description: '', confirmLabel: 'Confirmar', action: null },

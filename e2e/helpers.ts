@@ -1,10 +1,21 @@
 import type { Page } from '@playwright/test';
 import { STORAGE_KEY } from '../src/utils/constants';
 
-/** Limpa o board e volta ao estado inicial. */
+/** Limpa o board (localStorage + IndexedDB) e volta ao estado inicial. */
 export async function resetBoard(page: Page): Promise<void> {
   await page.goto('/');
-  await page.evaluate(() => window.localStorage.clear());
+  await page.evaluate(async () => {
+    window.localStorage.clear();
+    // Fecha conexões via reload posterior: o delete pendente conclui e o
+    // próximo openDB (pós-reload) já encontra o banco vazio.
+    const req = window.indexedDB.deleteDatabase('forgeboard');
+    await new Promise<void>((resolve) => {
+      req.onsuccess = () => resolve();
+      req.onerror = () => resolve();
+      req.onblocked = () => resolve();
+      window.setTimeout(() => resolve(), 1000);
+    });
+  });
   await page.reload();
   await page.getByRole('heading', { name: 'Bem-vindo ao ForgeBoard' }).waitFor({ timeout: 10_000 });
 }
@@ -42,13 +53,88 @@ export async function createTask(page: Page, title: string): Promise<void> {
 export async function seedBoard(page: Page, data: unknown): Promise<void> {
   await page.goto('/');
   await page.evaluate(
-    ([key, raw]: [string, string]) => {
+    async ([key, raw]: [string, string]) => {
       window.localStorage.clear();
+      // Limpa o IndexedDB para o seed legado ser migrado no boot.
+      await new Promise<void>((resolve) => {
+        const req = window.indexedDB.deleteDatabase('forgeboard');
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        req.onblocked = () => resolve();
+        window.setTimeout(() => resolve(), 1000);
+      });
       window.localStorage.setItem(key, raw);
     },
     [STORAGE_KEY, JSON.stringify(data)] as [string, string],
   );
   await page.reload();
+  // Boot é assíncrono (IndexedDB): só prossegue com a UI renderizada.
+  await page.waitForFunction(() => (document.getElementById('root')?.childElementCount ?? 0) > 0);
+}
+
+/** Aguarda a tarefa existir no snapshot persistido (antes de recarregar). */
+export async function waitForTaskPersisted(page: Page, title: string): Promise<void> {
+  await page.waitForFunction(
+    async (t: string) => {
+      let db: IDBDatabase | null = null;
+      try {
+        db = await new Promise<IDBDatabase>((res, rej) => {
+          const r = indexedDB.open('forgeboard');
+          r.onsuccess = () => res(r.result as IDBDatabase);
+          r.onerror = () => rej(r.error);
+        });
+        const val: unknown = await new Promise((res, rej) => {
+          const q = db!.transaction('kv', 'readonly').objectStore('kv').get('board');
+          q.onsuccess = () => res(q.result);
+          q.onerror = () => rej(q.error);
+        });
+        const tasks = (val as { tasks?: Array<{ title?: string }> } | null)?.tasks ?? [];
+        return tasks.some((x) => x.title === t);
+      } catch {
+        return false;
+      } finally {
+        try {
+          db?.close();
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    title,
+    { timeout: 10000 },
+  );
+}
+
+/** Aguarda um valor nas preferências persistidas (antes de recarregar). */
+export async function waitForPrefsValue(page: Page, check: string): Promise<void> {
+  await page.waitForFunction(
+    async (expected: string) => {
+      let db: IDBDatabase | null = null;
+      try {
+        db = await new Promise<IDBDatabase>((res, rej) => {
+          const r = indexedDB.open('forgeboard');
+          r.onsuccess = () => res(r.result as IDBDatabase);
+          r.onerror = () => rej(r.error);
+        });
+        const val: unknown = await new Promise((res, rej) => {
+          const q = db!.transaction('kv', 'readonly').objectStore('kv').get('preferences');
+          q.onsuccess = () => res(q.result);
+          q.onerror = () => rej(q.error);
+        });
+        return (val as { theme?: string } | null)?.theme === expected;
+      } catch {
+        return false;
+      } finally {
+        try {
+          db?.close();
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    check,
+    { timeout: 10000 },
+  );
 }
 
 /** Arrasta um chip do calendário para um dia via eventos DnD sintéticos. */

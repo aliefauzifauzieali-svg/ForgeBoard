@@ -3,20 +3,25 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx'
-import { useBoardStore } from './stores/useBoardStore.ts'
-import { useThemeStore } from './stores/useThemeStore.ts'
+import { bootApp, flushOnHide } from './services/boot.ts'
 import { initPWA } from './services/pwa.ts'
 
-// Hidratação explícita: os stores partem vazios e carregam o storage aqui,
-// em vez de fazer I/O no momento do import (melhor para testes e SSR).
-useBoardStore.getState().hydrate()
-useThemeStore.getState().hydrate()
-initPWA()
+async function main(): Promise<void> {
+  initPWA();
+  try {
+    await bootApp();
+  } catch (error) {
+    // Boot nunca pode travar em tela de splash: o ErrorBoundary assume.
+    console.error('[ForgeBoard] falha no boot:', error);
+  }
+  flushOnHide();
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </StrictMode>,
+  )
+}
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
-)
+void main()

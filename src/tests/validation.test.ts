@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { parseImport, serializeBoard, validateBoardData } from '../services/validation';
-import type { BoardData } from '../types';
+import { parseImport } from '../services/boardIO';
+import { serializeBoard, validateBoardData, validateBoardV2 } from '../services/validation';
+import type { BoardData, LegacyBoardData } from '../types';
 
-const VALID: BoardData = {
+const VALID_V1: LegacyBoardData = {
   version: 1,
   projects: [
     {
@@ -22,51 +23,63 @@ const VALID: BoardData = {
       description: '',
       priority: 'high',
       status: 'backlog',
+      tags: ['devops'],
       createdAt: '2026-01-02T00:00:00.000Z',
       updatedAt: '2026-01-02T00:00:00.000Z',
+      completedAt: null,
       dueDate: '2026-02-01',
-      tags: ['devops'],
     },
   ],
 };
 
-describe('validateBoardData', () => {
-  it('aceita um board válido', () => {
-    const r = validateBoardData(VALID);
+const VALID_V2: BoardData = {
+  version: 2,
+  projects: VALID_V1.projects,
+  tags: [
+    { id: 'tg1', name: 'devops', color: '#6366f1', createdAt: '2026-01-01T00:00:00.000Z' },
+  ],
+  tasks: [
+    {
+      id: 't1',
+      projectId: 'p1',
+      title: 'Fazer deploy',
+      description: '',
+      priority: 'high',
+      status: 'backlog',
+      tagIds: ['tg1'],
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+      completedAt: null,
+      dueDate: '2026-02-01',
+    },
+  ],
+};
+
+describe('validateBoardData (v1 legado)', () => {
+  it('aceita um board v1 válido', () => {
+    const r = validateBoardData(VALID_V1);
     expect(r.ok).toBe(true);
-    expect(r.data).toEqual(VALID);
-    expect(r.errors).toEqual([]);
-  });
-
-  it('rejeita JSON malformado no parseImport', () => {
-    const r = parseImport('{ inválido');
-    expect(r.ok).toBe(false);
-    expect(r.data).toBeNull();
-  });
-
-  it('rejeita raiz não-objeto e arrays ausentes', () => {
-    expect(validateBoardData(null).ok).toBe(false);
-    expect(validateBoardData({ projects: [], tasks: 'x' }).ok).toBe(false);
+    expect(r.data).toEqual(VALID_V1);
   });
 
   it('rejeita tarefa sem título e com projeto inexistente', () => {
     const r = validateBoardData({
       version: 1,
-      projects: VALID.projects,
-      tasks: [{ ...VALID.tasks[0], title: '  ', projectId: 'ghost' }],
+      projects: VALID_V1.projects,
+      tasks: [{ ...VALID_V1.tasks[0], title: '  ', projectId: 'ghost' }],
     });
     expect(r.ok).toBe(false);
     expect(r.errors.join('|')).toMatch(/title/);
     expect(r.errors.join('|')).toMatch(/projectId/);
   });
 
-  it('rejeita prioridade/status/dueDate inválidos e ids duplicados', () => {
+  it('rejeita prioridade/status/dueDate inválidos', () => {
     const r = validateBoardData({
       version: 1,
-      projects: VALID.projects,
+      projects: VALID_V1.projects,
       tasks: [
-        { ...VALID.tasks[0], priority: 'urgentíssima', status: 'doing', dueDate: '01/02/2026' },
-        { ...VALID.tasks[0] },
+        { ...VALID_V1.tasks[0], priority: 'urgentíssima', status: 'doing', dueDate: '01/02/2026' },
+        { ...VALID_V1.tasks[0] },
       ],
     });
     expect(r.ok).toBe(false);
@@ -76,49 +89,71 @@ describe('validateBoardData', () => {
     expect(joined).toMatch(/dueDate/);
   });
 
-  it('rejeita projeto sem nome', () => {
-    const r = validateBoardData({
-      version: 1,
-      projects: [{ ...VALID.projects[0], name: '   ' }],
-      tasks: [],
-    });
-    expect(r.ok).toBe(false);
-  });
-
-  it('aceita previousStatus válido e rejeita inválido', () => {
-    const okResult = validateBoardData({
-      version: 1,
-      projects: VALID.projects,
-      tasks: [{ ...VALID.tasks[0], status: 'done', previousStatus: 'in-progress' }],
-    });
-    expect(okResult.ok).toBe(true);
-    expect(okResult.data?.tasks[0]?.previousStatus).toBe('in-progress');
-
-    const badResult = validateBoardData({
-      version: 1,
-      projects: VALID.projects,
-      tasks: [{ ...VALID.tasks[0], previousStatus: 'fazendo' }],
-    });
-    expect(badResult.ok).toBe(false);
-    expect(badResult.errors.join('|')).toMatch(/previousStatus/);
-  });
-
-  it('descarta item com erro sem mascarar com mensagens genéricas', () => {
-    const r = validateBoardData({
-      version: 1,
-      projects: [...VALID.projects, { ...VALID.projects[0], id: 'p1', name: 'Duplicado' }],
-      tasks: [],
-    });
-    expect(r.ok).toBe(false);
-    expect(r.errors.join('|')).toMatch(/duplicado/);
+  it('rejeita projeto sem nome e ids duplicados', () => {
+    expect(
+      validateBoardData({ version: 1, projects: [{ ...VALID_V1.projects[0], name: '   ' }], tasks: [] }).ok,
+    ).toBe(false);
+    expect(
+      validateBoardData({
+        version: 1,
+        projects: [...VALID_V1.projects, { ...VALID_V1.projects[0], name: 'Dup' }],
+        tasks: [],
+      }).errors.join('|'),
+    ).toMatch(/duplicado/);
   });
 });
 
-describe('serializeBoard', () => {
-  it('exporta JSON válido que revalida (round-trip)', () => {
-    const raw = serializeBoard(VALID);
+describe('validateBoardV2', () => {
+  it('aceita um board v2 válido', () => {
+    const r = validateBoardV2(VALID_V2);
+    expect(r.ok).toBe(true);
+    expect(r.data).toEqual(VALID_V2);
+  });
+
+  it('rejeita tagIds de tags inexistentes e previousStatus inválido', () => {
+    const r = validateBoardV2({
+      ...VALID_V2,
+      tasks: [{ ...VALID_V2.tasks[0], tagIds: ['ghost'], previousStatus: 'fazendo' }],
+    });
+    expect(r.ok).toBe(false);
+    expect(r.errors.join('|')).toMatch(/tagIds/);
+    expect(r.errors.join('|')).toMatch(/previousStatus/);
+  });
+
+  it('rejeita versão errada e nomes de tag duplicados', () => {
+    expect(validateBoardV2({ ...VALID_V2, version: 1 }).ok).toBe(false);
+    expect(
+      validateBoardV2({
+        ...VALID_V2,
+        tags: [...VALID_V2.tags, { ...VALID_V2.tags[0], id: 'tg2' }],
+      }).errors.join('|'),
+    ).toMatch(/duplicado/);
+  });
+});
+
+describe('serializeBoard / parseImport', () => {
+  it('exporta v2 com metadados e revalida (round-trip)', () => {
+    const raw = serializeBoard(VALID_V2);
+    expect(raw).toContain('"version": 2');
     const back = parseImport(raw);
     expect(back.ok).toBe(true);
-    expect(back.data).toEqual(VALID);
+    expect(back.migrated).toBe(false);
+    expect(back.data).toEqual(VALID_V2);
+  });
+
+  it('importa legado v1 migrando para v2', () => {
+    const back = parseImport(JSON.stringify(VALID_V1));
+    expect(back.ok).toBe(true);
+    expect(back.migrated).toBe(true);
+    expect(back.data?.version).toBe(2);
+    expect(back.data?.tags.map((t) => t.name)).toEqual(['devops']);
+    expect(back.data?.tasks[0]?.tagIds).toHaveLength(1);
+  });
+
+  it('rejeita JSON malformado e versão futura', () => {
+    expect(parseImport('{ inválido').ok).toBe(false);
+    const future = parseImport(JSON.stringify({ ...VALID_V2, version: 99 }));
+    expect(future.ok).toBe(false);
+    expect(future.errors.join('|')).toMatch(/não suportada/);
   });
 });

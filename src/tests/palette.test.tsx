@@ -8,7 +8,7 @@ import { useUIStore } from '../stores/useUIStore';
 
 function reset(): void {
   localStorage.clear();
-  useBoardStore.setState({ projects: [], tasks: [], saveError: null, undoStack: [], redoStack: [] });
+  useBoardStore.setState({ projects: [], tasks: [], tags: [], saveError: null, undoStack: [], redoStack: [] });
   useUIStore.setState({ paletteOpen: true, taskModal: { open: false, editingId: null, presetProjectId: null, presetStatus: null, presetDueDate: null }, view: { kind: 'dashboard' } });
 }
 

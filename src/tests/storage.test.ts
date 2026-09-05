@@ -1,17 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  clearBoard,
+  BACKUP_RETAIN,
   clearQuarantine,
-  loadBoard,
+  createBackup,
+  ensureDailyBackup,
+  flushPrefs,
+  loadInitialData,
+  persistSnapshot,
+  pruneBackups,
+  readBackup,
   readQuarantine,
-  saveBoard,
+  schedulePrefsPersist,
 } from '../storage/boardStorage';
-import { createMemoryProvider } from '../storage/localStorageProvider';
+import { dangerouslyDeleteDatabase, getKV, KV_BOARD, KV_PREFERENCES, setKV } from '../storage/idb';
 import { STORAGE_KEY } from '../utils/constants';
 import type { BoardData } from '../types';
 
-const SAMPLE: BoardData = {
-  version: 1,
+const BOARD: BoardData = {
+  version: 2,
   projects: [
     {
       id: 'p1',
@@ -23,73 +29,134 @@ const SAMPLE: BoardData = {
     },
   ],
   tasks: [],
+  tags: [],
 };
 
-describe('boardStorage', () => {
-  it('retorna board vazio quando nada foi salvo', () => {
-    const provider = createMemoryProvider();
-    expect(loadBoard(provider)).toEqual({ version: 1, projects: [], tasks: [] });
+async function reset(): Promise<void> {
+  localStorage.clear();
+  await dangerouslyDeleteDatabase();
+}
+
+describe('boardStorage (IndexedDB)', () => {
+  beforeEach(reset);
+
+  it('carrega vazio na primeira execução', async () => {
+    const initial = await loadInitialData();
+    expect(initial.board).toEqual({ version: 2, projects: [], tasks: [], tags: [] });
+    expect(initial.quarantined).toBe(false);
+    expect(initial.backups).toEqual([]);
   });
 
-  it('persiste e recarrega os dados (sobrevive a “reabrir”)', () => {
-    const provider = createMemoryProvider();
-    saveBoard(SAMPLE, provider);
-    expect(loadBoard(provider)).toEqual(SAMPLE);
-    // Simula fechar e reabrir: nova leitura do mesmo provider
-    expect(loadBoard(provider).projects[0]?.name).toBe('P1');
+  it('persiste e recarrega o snapshot (sobrevive a “reabrir”)', async () => {
+    await persistSnapshot(BOARD);
+    expect(await getKV(KV_BOARD)).toEqual(BOARD);
+    const initial = await loadInitialData();
+    expect(initial.board).toEqual(BOARD);
   });
 
-  it('limpa os dados', () => {
-    const provider = createMemoryProvider();
-    saveBoard(SAMPLE, provider);
-    clearBoard(provider);
-    expect(loadBoard(provider)).toEqual({ version: 1, projects: [], tasks: [] });
-  });
-
-  it('tolera JSON corrompido sem quebrar e preserva quarentena', () => {
-    const provider = createMemoryProvider({ [STORAGE_KEY]: '{{{quebrado' });
-    expect(loadBoard(provider)).toEqual({ version: 1, projects: [], tasks: [] });
-    expect(readQuarantine(provider)).toBe('{{{quebrado');
-    clearQuarantine(provider);
-    expect(readQuarantine(provider)).toBeNull();
-  });
-
-  it('rejeita payload com forma inválida e preserva quarentena', () => {
-    const raw = JSON.stringify({
-      version: 1,
-      projects: [{ id: 'p1', name: '', description: '', color: '#6366f1', createdAt: 'x', updatedAt: 'x' }],
-      tasks: [{ id: 't1', projectId: 'p1', title: '', tags: 'nao-e-array' }],
-    });
-    const provider = createMemoryProvider({ [STORAGE_KEY]: raw });
-    expect(loadBoard(provider)).toEqual({ version: 1, projects: [], tasks: [] });
-    expect(readQuarantine(provider)).toBe(raw);
-  });
-
-  it('carrega payload válido com campo opcional previousStatus', () => {
-    const provider = createMemoryProvider();
-    saveBoard(
-      {
-        ...SAMPLE,
+  it('migra legado v1 do localStorage e remove a chave antiga', async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        projects: BOARD.projects,
         tasks: [
           {
             id: 't1',
             projectId: 'p1',
-            title: 'T',
+            title: 'Antiga',
             description: '',
-            priority: 'low',
+            priority: 'high',
             status: 'done',
-            previousStatus: 'in-progress',
+            tags: ['Legado'],
             createdAt: '2026-01-02T00:00:00.000Z',
-            updatedAt: '2026-01-02T00:00:00.000Z',
+            updatedAt: '2026-01-03T00:00:00.000Z',
             dueDate: null,
-            tags: [],
           },
         ],
-      },
-      provider,
+      }),
     );
-    const loaded = loadBoard(provider);
-    expect(loaded.tasks[0]?.previousStatus).toBe('in-progress');
-    expect(readQuarantine(provider)).toBeNull();
+    const initial = await loadInitialData();
+    expect(initial.migrated).toBe(true);
+    expect(initial.board.version).toBe(2);
+    expect(initial.board.tags.map((t) => t.name)).toEqual(['legado']);
+    expect(initial.board.tasks[0]?.tagIds).toHaveLength(1);
+    expect(initial.board.tasks[0]?.completedAt).toBe('2026-01-03T00:00:00.000Z');
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(readQuarantine()).toBeNull();
+  });
+
+  it('quarentena dados inválidos sem quebrar o boot', async () => {
+    await setKV(KV_BOARD, { version: 2, projects: 'lixo', tasks: [], tags: [] });
+    const initial = await loadInitialData();
+    expect(initial.board).toEqual({ version: 2, projects: [], tasks: [], tags: [] });
+    expect(initial.quarantined).toBe(true);
+    expect(readQuarantine()).toContain('lixo');
+    clearQuarantine();
+    expect(readQuarantine()).toBeNull();
+  });
+
+  it('rejeita versão futura com quarentena', async () => {
+    await setKV(KV_BOARD, { version: 99, projects: [], tasks: [], tags: [] });
+    const initial = await loadInitialData();
+    expect(initial.quarantined).toBe(true);
+    expect(initial.board.projects).toEqual([]);
+  });
+});
+
+describe('backups', () => {
+  beforeEach(reset);
+
+  it('cria, lista, lê e restaura backup', async () => {
+    const meta = await createBackup(BOARD, 'manual');
+    expect(meta.reason).toBe('manual');
+    expect(meta.projects).toBe(1);
+
+    const initial = await loadInitialData();
+    expect(initial.backups).toHaveLength(1);
+
+    const restored = await readBackup(meta.id);
+    expect(restored).toEqual(BOARD);
+    expect(await readBackup('inexistente')).toBeNull();
+  });
+
+  it('retém no máximo 5 cópias', async () => {
+    for (let i = 0; i < 7; i++) {
+      await createBackup(BOARD, i % 2 === 0 ? 'auto' : 'manual');
+    }
+    const metas = await pruneBackups();
+    expect(metas.length).toBeLessThanOrEqual(BACKUP_RETAIN);
+    const initial = await loadInitialData();
+    expect(initial.backups).toHaveLength(BACKUP_RETAIN);
+  });
+
+  it('backup diário só quando o último tem +24h', async () => {
+    const fresh = await ensureDailyBackup(BOARD);
+    expect(fresh?.reason).toBe('auto');
+    const skipped = await ensureDailyBackup(BOARD);
+    expect(skipped).toBeNull();
+    expect(await ensureDailyBackup({ version: 2, projects: [], tasks: [], tags: [] })).toBeNull();
+  });
+});
+
+describe('preferências', () => {
+  beforeEach(reset);
+
+  it('salva e carrega com saneamento', async () => {
+    schedulePrefsPersist({ theme: 'dark', shortcutsEnabled: false, lastView: { kind: 'calendar' } });
+    await flushPrefs();
+    const initial = await loadInitialData();
+    expect(initial.preferences).toEqual({
+      theme: 'dark',
+      shortcutsEnabled: false,
+      lastView: { kind: 'calendar' },
+    });
+  });
+
+  it('cai para defaults com payload inválido', async () => {
+    await setKV(KV_PREFERENCES, { theme: 'neon', lastView: { kind: 'x' } });
+    const initial = await loadInitialData();
+    expect(initial.preferences.theme).toBe('system');
+    expect(initial.preferences.lastView).toEqual({ kind: 'dashboard' });
   });
 });

@@ -1,6 +1,6 @@
 # ForgeBoard
 
-Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, calendário mensal/semanal/diário com drag and drop, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON e persistência em `localStorage`.
+Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON versionada e persistência em IndexedDB (com migração do formato antigo).
 
 ## Screenshots (placeholder)
 
@@ -24,6 +24,7 @@ Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 
 | Estado | Zustand |
 | Ícones | Lucide React |
 | Datas | date-fns (cálculos + locale pt-BR) |
+| Dados | IndexedDB via `idb` (`fake-indexeddb` nos testes) |
 | Testes unitários | Vitest + Testing Library + jsdom |
 | Testes E2E | Playwright (Chromium) + axe-core |
 | PWA | vite-plugin-pwa (generateSW, manifest, offline) |
@@ -46,6 +47,8 @@ ForgeBoard/
 │   │   ├── layout/           # Sidebar, TopBar, BottomNav (mobile)
 │   │   ├── projects/         # ProjectCard, ProjectModal
 │   │   ├── tasks/            # TaskCard, TaskRow, TaskModal, TaskFiltersBar
+│   │   ├── settings/         # SettingsModal (tema, atalhos, etiquetas, backup)
+│   │   ├── charts/           # SVG próprios (barras, rosca — sem lib)
 │   │   └── ui/               # Modal, ConfirmDialog, Badges, Stats, EmptyState, Toasts, PWA
 │   ├── features/             # Seções com regra de negócio
 │   ├── features/             # Seções com regra de negócio
@@ -55,12 +58,12 @@ ForgeBoard/
 │   │   └── project/          # visão do projeto + Kanban filtrado
 │   ├── pages/                # wrappers finos sobre features
 │   ├── hooks/                # useKeyboardShortcuts (N/P///Esc)
-│   ├── stores/               # useBoardStore, useUIStore, useThemeStore (Zustand)
+│   ├── stores/               # board, UI, tema, prefs (Zustand, API síncrona)
 │   ├── types/                # Project, Task, BoardData, filtros…
 │   ├── services/             # lógica pura: boardStats, taskQuery, validation
-│   ├── storage/              # StorageProvider + localStorageProvider + boardStorage
+│   ├── storage/              # idb + boardStorage + migrations (IndexedDB)
 │   ├── utils/                # id, datas, constantes, cn()
-│   └── tests/                # testes unitários Vitest + setup
+│   └── tests/                # testes unitários Vitest + setup (+fixtures/)
 ├── playwright.config.ts
 ├── vite.config.ts            # + config do Vitest
 └── tailwind.config.js
@@ -123,20 +126,21 @@ Teclas simples ignoradas enquanto o foco está em `input`, `textarea`, `select` 
 
 ## Robustez dos dados
 
-- **Validação no boot**: `loadBoard` aplica as mesmas regras da importação. Payload ausente, malformado ou inválido resulta em board vazio — e o conteúdo bruto é preservado na **quarentena** (`forgeboard:quarantine`), com banner oferecendo baixar a cópia ou descartá-la.
+- **Validação no boot**: `loadInitialData` aplica migrações e as mesmas regras da importação. Payload ausente, malformado ou inválido resulta em board vazio — e o conteúdo bruto é preservado na **quarentena**, com banner oferecendo baixar a cópia, restaurar backup ou descartar.
 - **ErrorBoundary**: qualquer erro de render mostra tela de recuperação com exportação de backup antes de recomeçar.
-- **Falha de persistência**: se o `localStorage` falhar (cota excedida, modo privado), um banner avisa e oferece exportar backup — nada se perde em silêncio.
+- **Falha de persistência**: se o IndexedDB falhar (cota excedida, modo privado), um banner avisa e oferece exportar backup — nada se perde em silêncio.
 - **CI** (`.github/workflows/ci.yml`): typecheck → lint → testes → build → E2E a cada push/PR.
 
 ## Decisões arquiteturais importantes
 
-1. **Camada de armazenamento isolada** (`src/storage/`): a UI nunca toca `localStorage` diretamente. `StorageProvider` é uma interface chave-valor mínima; hoje há `localStorageProvider` e `createMemoryProvider` (testes). Um backend futuro implementa a mesma interface (ou um `BoardRepository` remoto) sem reescrever componentes — só o store passa a chamar o serviço remoto. Stores partem vazios e são hidratados explicitamente no boot (`main.tsx`), sem I/O no momento do import.
+1. **Camada de armazenamento isolada** (`src/storage/`): a UI nunca toca storage diretamente. Hoje há o IndexedDB (`idb.ts`: `kv` + `backups`) com migrações versionadas (`migrations.ts`); o `localStorage` serve só de espelho do tema e quarentena. Um backend futuro implementa o mesmo repositório (`loadInitialData`/`persistSnapshot`) sem reescrever componentes — só o store passa a chamar o serviço remoto. Stores partem vazios e são hidratados explicitamente no boot (`services/boot.ts`), sem I/O no momento do import.
 2. **Lógica pura fora dos componentes** (`src/services/`): estatísticas, filtros/ordenação e validação de import são funções puras, 100% testáveis sem React. Stores e componentes apenas orquestram.
 3. **Dois stores Zustand com papéis distintos**: `useBoardStore` (dados de domínio + persistência) e `useUIStore` (visão, filtros, modais). Tema em `useThemeStore` com preferência `light|dark|system` persistida e `matchMedia` para o modo sistema.
 4. **Drag-and-drop nativo (HTML5) em vez de biblioteca**: zero dependências, com alternativa por teclado (cada cartão tem botões “Mover para coluna anterior/próxima” operáveis por teclado e título focável que abre a edição — sem interativos aninhados). Playwright testa o movimento via esses botões.
 5. **Validação defensiva na importação**: `validateBoardData` nunca lança — retorna `{ ok, errors, data }`; nada é substituído sem passar na validação **e** sem confirmação explícita do usuário (`ConfirmDialog`).
 6. **Sem roteador**: navegação por estado (`view: dashboard | project`), suficiente para app local de página única e evita dependência extra; E2E não depende de URLs.
 7. **Tailwind v3 + `darkMode: 'class'`**: modo escuro robusto e testável, incluindo `color-scheme` no `<html>`.
+8. **Dados em camadas**: store síncrono em memória (a UI nunca espera I/O) + `IndexedDB` assíncrono (`idb`, 1 KB) com flush no `pagehide`; `localStorage` só espelha tema/quarentena. Migrações versionadas e idempotentes; backups automáticos + manuais com retenção de 5.
 
 ## Limitações atuais
 

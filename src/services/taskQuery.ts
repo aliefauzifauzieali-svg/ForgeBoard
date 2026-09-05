@@ -10,20 +10,25 @@ export const DEFAULT_FILTERS: TaskFilters = {
   showOverdueOnly: false,
 };
 
-function matchesSearch(t: Task, q: string): boolean {
+function matchesSearch(t: Task, q: string, tagNames: string[]): boolean {
   const query = q.trim().toLowerCase();
   if (!query) return true;
-  const hay = `${t.title}\n${t.description}\n${t.tags.join(' ')}`.toLowerCase();
+  const hay = `${t.title}\n${t.description}\n${tagNames.join(' ')}`.toLowerCase();
   return query.split(/\s+/).every((token) => hay.includes(token));
 }
 
-export function filterTasks(tasks: Task[], filters: TaskFilters): Task[] {
+export function filterTasks(
+  tasks: Task[],
+  filters: TaskFilters,
+  tagById: Map<string, string> = new Map(),
+): Task[] {
   return tasks.filter((t) => {
     if (filters.projectId !== 'all' && t.projectId !== filters.projectId) return false;
     if (filters.statuses.length > 0 && !filters.statuses.includes(t.status)) return false;
     if (filters.priorities.length > 0 && !filters.priorities.includes(t.priority)) return false;
     if (filters.showOverdueOnly && !isOverdue(t.dueDate, t.status)) return false;
-    if (!matchesSearch(t, filters.search)) return false;
+    const names = t.tagIds.map((id) => tagById.get(id) ?? '').filter(Boolean);
+    if (!matchesSearch(t, filters.search, names)) return false;
     return true;
   });
 }
@@ -55,6 +60,7 @@ export function queryTasks(
   filters: TaskFilters,
   sortKey: SortKey,
   sortDir: SortDir,
+  tagById: Map<string, string> = new Map(),
 ): Task[] {
-  return sortTasks(filterTasks(tasks, filters), sortKey, sortDir);
+  return sortTasks(filterTasks(tasks, filters, tagById), sortKey, sortDir);
 }

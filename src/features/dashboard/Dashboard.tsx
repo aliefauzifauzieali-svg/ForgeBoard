@@ -11,10 +11,13 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { boardStats, overdueTasks, recentTasks } from '../../services/boardStats';
+import { completionsPerDay, leadTimeStats, priorityDistribution } from '../../services/stats';
 import { queryTasks } from '../../services/taskQuery';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { ProjectCard } from '../../components/projects/ProjectCard';
+import { ActivityBars } from '../../components/charts/ActivityBars';
+import { PriorityDonut } from '../../components/charts/PriorityDonut';
 import { TaskFiltersBar } from '../../components/tasks/TaskFiltersBar';
 import { TaskRow } from '../../components/tasks/TaskRow';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -23,6 +26,7 @@ import { StatCard } from '../../components/ui/Stats';
 export function Dashboard(): React.JSX.Element {
   const projects = useBoardStore((s) => s.projects);
   const tasks = useBoardStore((s) => s.tasks);
+  const tags = useBoardStore((s) => s.tags);
   const seedSample = useBoardStore((s) => s.seedSample);
   const openNewProject = useUIStore((s) => s.openNewProject);
   const openNewTask = useUIStore((s) => s.openNewTask);
@@ -31,11 +35,15 @@ export function Dashboard(): React.JSX.Element {
   const sortDir = useUIStore((s) => s.sortDir);
 
   const stats = useMemo(() => boardStats(projects, tasks), [projects, tasks]);
+  const activity = useMemo(() => completionsPerDay(tasks, 14), [tasks]);
+  const dist = useMemo(() => priorityDistribution(tasks), [tasks]);
+  const lead = useMemo(() => leadTimeStats(tasks), [tasks]);
   const overdue = useMemo(() => overdueTasks(tasks).slice(0, 5), [tasks]);
   const recent = useMemo(() => recentTasks(tasks, 5), [tasks]);
+  const tagById = useMemo(() => new Map(tags.map((t) => [t.id, t.name] as const)), [tags]);
   const filteredTotal = useMemo(
-    () => queryTasks(tasks, filters, sortKey, sortDir),
-    [tasks, filters, sortKey, sortDir],
+    () => queryTasks(tasks, filters, sortKey, sortDir, tagById),
+    [tasks, filters, sortKey, sortDir, tagById],
   );
   const filtered = useMemo(() => filteredTotal.slice(0, 30), [filteredTotal]);
   const projectNameOf = useMemo(() => {
@@ -123,6 +131,36 @@ export function Dashboard(): React.JSX.Element {
           value={`${stats.completionRate}%`}
           accent="bg-violet-500/10 text-violet-600 dark:text-violet-400"
         />
+      </section>
+
+      <section aria-labelledby="activity-heading">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="activity-heading" className="text-base font-bold">
+            Atividade
+          </h2>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            Lead time médio:{' '}
+            <strong className="tabular-nums">{lead.averageDays === null ? '—' : `${lead.averageDays}d`}</strong>
+            {' · '}
+            Taxa de conclusão: <strong className="tabular-nums">{stats.completionRate}%</strong>
+          </p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-5">
+          <div className="card p-4 lg:col-span-3">
+            <h3 className="text-sm font-bold">Conclusões por dia</h3>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">Últimos 14 dias</p>
+            <div className="mt-2">
+              <ActivityBars data={activity} total={activity.reduce((a, b) => a + b.count, 0)} />
+            </div>
+          </div>
+          <div className="card p-4 lg:col-span-2">
+            <h3 className="text-sm font-bold">Por prioridade</h3>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">Distribuição atual</p>
+            <div className="mt-2">
+              <PriorityDonut items={dist} />
+            </div>
+          </div>
+        </div>
       </section>
 
       <section aria-labelledby="projects-heading">

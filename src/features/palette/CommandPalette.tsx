@@ -26,6 +26,7 @@ export function CommandPalette(): React.JSX.Element | null {
   const setOpen = useUIStore((s) => s.setPaletteOpen);
   const projects = useBoardStore((s) => s.projects);
   const tasks = useBoardStore((s) => s.tasks);
+  const tags = useBoardStore((s) => s.tags);
   const openEditTask = useUIStore((s) => s.openEditTask);
   const openProject = useUIStore((s) => s.openProject);
 
@@ -78,7 +79,7 @@ export function CommandPalette(): React.JSX.Element | null {
       disabled: c.disabled,
       run: close(c.run),
     }));
-    const res = searchBoard(projects, tasks, q, 5);
+    const res = searchBoard(projects, tasks, q, 5, new Map(tags.map((t) => [t.id, t.name] as const)));
     return [
       ...cmds,
       ...res.projects.map((p) => ({
@@ -97,7 +98,7 @@ export function CommandPalette(): React.JSX.Element | null {
         run: close(() => openEditTask(t.id)),
       })),
     ];
-  }, [query, projects, tasks, names, openEditTask, openProject, setOpen]);
+  }, [query, projects, tasks, tags, names, openEditTask, openProject, setOpen]);
 
   if (!open) return null;
 

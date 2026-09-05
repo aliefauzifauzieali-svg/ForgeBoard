@@ -1,6 +1,6 @@
-import { CalendarDays, Download, LayoutDashboard, Plus, Upload } from 'lucide-react';
+import { CalendarDays, Download, LayoutDashboard, Plus, Settings as SettingsIcon, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { parseImport } from '../../services/validation';
+import { parseImport } from '../../services/boardIO';
 import { exportBoardNow } from '../../services/boardIO';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -65,10 +65,13 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
         setError(`Arquivo inválido: ${result.errors.slice(0, 3).join(' · ')}`);
         return;
       }
-      const data = result.data;
-      askConfirm({
-        title: 'Substituir dados?',
-        description: `O arquivo contém ${data.projects.length} projetos e ${data.tasks.length} tarefas validadas. Os dados atuais serão substituídos.`,
+    const data = result.data;
+    askConfirm({
+      title: 'Substituir dados?',
+      description:
+        `O arquivo contém ${data.projects.length} projetos, ${data.tasks.length} tarefas e ` +
+        `${data.tags.length} etiquetas validadas. Os dados atuais serão substituídos.` +
+        (result.migrated ? ' O arquivo é de versão antiga e será atualizado.' : ''),
         confirmLabel: 'Substituir',
         action: () => {
           replaceAll(data);
@@ -134,6 +137,7 @@ export function Sidebar(): React.JSX.Element {
   const openNewTask = useUIStore((s) => s.openNewTask);
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+  const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
 
   return (
     <>
@@ -252,6 +256,13 @@ export function Sidebar(): React.JSX.Element {
           </button>
           <DataButtons />
           <ThemeToggle />
+          <button
+            type="button"
+            className="btn-ghost w-full !justify-start text-xs"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <SettingsIcon size={15} aria-hidden /> Configurações
+          </button>
           <p className="text-center text-[10px] text-zinc-600 dark:text-zinc-400">
             Atalhos: <kbd>N</kbd> tarefa · <kbd>P</kbd> projeto · <kbd>/</kbd> busca ·{' '}
             <kbd>Ctrl K</kbd> paleta · <kbd>?</kbd> ajuda · <kbd>Esc</kbd> fecha

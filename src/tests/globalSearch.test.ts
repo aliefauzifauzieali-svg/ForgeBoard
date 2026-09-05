@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { searchBoard } from '../services/globalSearch';
-import type { Project, Task } from '../types';
+import type { Project, Tag, Task } from '../types';
 
 const P = (id: string, name: string, description = ''): Project => ({
   id,
@@ -11,6 +11,12 @@ const P = (id: string, name: string, description = ''): Project => ({
   updatedAt: `2026-01-0${id}T00:00:00.000Z`,
 });
 
+const TAGS: Tag[] = [
+  { id: 'tg1', name: 'conteúdo', color: '#f59e0b', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'tg2', name: 'bug', color: '#ef4444', createdAt: '2026-01-01T00:00:00.000Z' },
+];
+const TAGMAP = new Map(TAGS.map((t) => [t.id, t.name] as const));
+
 const T = (id: string, projectId: string, extra: Partial<Task> = {}): Task => ({
   id,
   projectId,
@@ -20,15 +26,16 @@ const T = (id: string, projectId: string, extra: Partial<Task> = {}): Task => ({
   status: 'backlog',
   createdAt: `2026-01-0${id}T10:00:00.000Z`,
   updatedAt: `2026-01-0${id}T10:00:00.000Z`,
+  completedAt: null,
   dueDate: null,
-  tags: [],
+  tagIds: [],
   ...extra,
 });
 
 const projects = [P('1', 'Site pessoal', 'portfólio e blog'), P('2', 'ForgeBoard')];
 const tasks = [
-  T('1', '1', { title: 'Escrever página sobre', tags: ['conteúdo'] }),
-  T('2', '2', { title: 'Corrigir bug do login', description: 'falha urgente na autenticação', tags: ['bug'] }),
+  T('1', '1', { title: 'Escrever página sobre', tagIds: ['tg1'] }),
+  T('2', '2', { title: 'Corrigir bug do login', description: 'falha urgente na autenticação', tagIds: ['tg2'] }),
   T('3', '1', { title: 'Publicar primeiro post' }),
 ];
 
@@ -38,14 +45,14 @@ describe('searchBoard', () => {
   });
 
   it('ignora maiúsculas e acentos', () => {
-    expect(searchBoard(projects, tasks, 'CONTEUDO').tasks.map((t) => t.id)).toEqual(['1']);
-    expect(searchBoard(projects, tasks, 'pagina').tasks.map((t) => t.id)).toEqual(['1']);
+    expect(searchBoard(projects, tasks, 'CONTEUDO', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['1']);
+    expect(searchBoard(projects, tasks, 'pagina', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['1']);
   });
 
-  it('busca em tags, descrição e nome do projeto', () => {
-    expect(searchBoard(projects, tasks, 'bug').tasks.map((t) => t.id)).toEqual(['2']);
-    expect(searchBoard(projects, tasks, 'autenticação').tasks.map((t) => t.id)).toEqual(['2']);
-    expect(searchBoard(projects, tasks, 'forgeboard').tasks.map((t) => t.id)).toEqual(['2']);
+  it('busca em etiquetas, descrição e nome do projeto', () => {
+    expect(searchBoard(projects, tasks, 'bug', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['2']);
+    expect(searchBoard(projects, tasks, 'autenticação', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['2']);
+    expect(searchBoard(projects, tasks, 'forgeboard', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['2']);
   });
 
   it('busca projetos por nome e descrição', () => {
@@ -54,8 +61,8 @@ describe('searchBoard', () => {
   });
 
   it('exige todos os tokens (AND)', () => {
-    expect(searchBoard(projects, tasks, 'bug login').tasks.map((t) => t.id)).toEqual(['2']);
-    expect(searchBoard(projects, tasks, 'bug blog').tasks).toEqual([]);
+    expect(searchBoard(projects, tasks, 'bug login', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['2']);
+    expect(searchBoard(projects, tasks, 'bug blog', 8, TAGMAP).tasks).toEqual([]);
   });
 
   it('ranqueia título acima de descrição', () => {

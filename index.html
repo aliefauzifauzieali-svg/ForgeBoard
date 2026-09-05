@@ -8,6 +8,15 @@
     <meta name="description" content="ForgeBoard — dashboard pessoal de projetos e tarefas, local-first." />
     <meta name="theme-color" content="#4f46e5" />
     <title>ForgeBoard — Projetos & Tarefas</title>
+    <script>
+      // Tema pré-pintura (espelho síncrono de UserPreferences.theme): evita flash.
+      try {
+        var t = localStorage.getItem('forgeboard:theme');
+        var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      } catch (e) {}
+    </script>
     <style>
       #boot-splash {
         position: fixed;

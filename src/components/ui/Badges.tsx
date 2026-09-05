@@ -60,9 +60,12 @@ export function StatusBadge({ value }: { value: TaskStatus }): React.JSX.Element
   );
 }
 
-export function TagChip({ label }: { label: string }): React.JSX.Element {
+export function TagChip({ label, color }: { label: string; color?: string }): React.JSX.Element {
   return (
-    <span className="inline-flex items-center rounded-md bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+    <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+      {color ? (
+        <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+      ) : null}
       #{label}
     </span>
   );

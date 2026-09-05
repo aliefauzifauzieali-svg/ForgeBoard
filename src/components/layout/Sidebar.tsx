@@ -7,6 +7,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { MAX_IMPORT_BYTES } from '../../utils/constants';
 import { cn } from '../../utils/core';
+import { InstallButton } from '../ui/InstallButton';
 import { Spinner } from '../ui/Spinner';
 
 export function ThemeToggle({ compact }: { compact?: boolean }): React.JSX.Element {
@@ -242,6 +243,7 @@ export function Sidebar(): React.JSX.Element {
         </nav>
 
         <div className="space-y-3 border-t border-zinc-200 p-4 dark:border-zinc-800">
+          <InstallButton />
           <button type="button" className="btn-primary w-full" onClick={() => openNewTask(null, null)}>
             <Plus size={16} aria-hidden /> Nova tarefa
             <kbd aria-hidden className="ml-auto rounded bg-white/20 px-1.5 text-[10px]">

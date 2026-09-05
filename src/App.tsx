@@ -1,10 +1,11 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { BottomNav } from './components/layout/BottomNav';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { ProjectModal } from './components/projects/ProjectModal';
 import { TaskModal } from './components/tasks/TaskModal';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
+import { OfflineBanner } from './components/ui/OfflineBanner';
 import { ShortcutsDialog } from './components/ui/ShortcutsDialog';
 import { QuarantineBanner, StorageErrorBanner } from './components/ui/StorageBanners';
 import { ToastStack } from './components/ui/Toasts';
@@ -28,6 +29,10 @@ function LiveRegion(): React.JSX.Element {
 
 export default function App(): React.JSX.Element {
   useThemeEffect();
+  useEffect(() => {
+    // Splash inicial (index.html): remove após o primeiro paint do React.
+    document.getElementById('boot-splash')?.remove();
+  }, []);
   const searchRef = useRef<HTMLInputElement>(null);
   useKeyboardShortcuts(searchRef);
   const view = useUIStore((s) => s.view);
@@ -48,6 +53,7 @@ export default function App(): React.JSX.Element {
       <div className="lg:pl-72">
         <TopBar searchRef={searchRef} />
         <main id="main-content" className="mx-auto max-w-6xl px-4 pb-24 pt-6 lg:pb-12">
+          <OfflineBanner />
           <QuarantineBanner />
           <StorageErrorBanner />
           {view.kind === 'dashboard' ? (

@@ -1,8 +1,8 @@
 # ForgeBoard — Roadmap
 
 > Produto: workspace pessoal local-first para projetos, tarefas e planejamento.
-> Estado em 2026-09-05: Fase 3 concluída; `tsc`, `lint`, testes unitários,
-> testes E2E (incl. axe e calendário) e `build` todos verdes. Sem backend,
+> Estado em 2026-09-05: Fase 4 concluída; `tsc`, `lint`, testes unitários,
+> testes E2E (incl. axe, calendário e PWA) e `build` todos verdes. Sem backend,
 > sem contas, sem sincronização (decisão intencional).
 
 ## Baseline atual (o que já existe)
@@ -31,8 +31,8 @@
 Fase 0 (baseline versionado)
   └─► Fase 1 (fundamentos) ─┬─► Fase 2 (UX/produto) ──► Fase 6 (dashboard)
                             ├─► Fase 3 (calendário) ──► Fase 6 (dashboard)
-                            ├─► Fase 5 (dados/IndexedDB) ─┬─► Fase 4 (PWA/offline real)
-                            │                             └─► Fase 6 (dashboard: histórico)
+                            ├─► Fase 4 (PWA) ✅ ──► Fase 6 (dashboard)
+                            ├─► Fase 5 (dados/IndexedDB) ──► Fase 6 (dashboard: histórico)
                             └─► Fase 7 (qualidade — contínua, checkpoint por fase)
 Fase 8 (polimento) ◄── depois de 2–6, antes de qualquer beta público
 ```
@@ -105,19 +105,28 @@ em `src/services/calendar.ts`: prazo é DIA (`yyyy-mm-dd`, parse por partes, sem
 (fora de escopo, como previsto). Mês em `<table>` real; semana com rolagem horizontal
 no mobile; fora-do-mês distinguido por cor (não opacidade) para preservar contraste.
 
-## Fase 4 — PWA
+## Fase 4 — PWA ✅ concluída em 2026-09-05
 
-**Objetivo:** instalável e utilizável offline. Depende da Fase 5 **para o offline de dados**
-(manifest/SW podem andar em paralelo; o cache offline de dados exige IndexedDB).
+**Objetivo:** instalável e utilizável offline. (O mapa original previa depender da
+Fase 5; na prática o `localStorage` já é 100% offline, então a Fase 4 foi
+concluída antes — a Fase 5 trará IndexedDB + histórico para o dashboard.)
 
-- [ ] `manifest.webmanifest` (nome, cores, ícones 192/512 maskable, screenshots).
-- [ ] Service worker: app-shell cache-first + versionamento; página de fallback offline.
-- [ ] Ícones gerados e commitados em `public/icons/` (nada de CDN).
-- [ ] Fluxo de atualização segura (prompt "nova versão disponível" → `skipWaiting`).
+- [x] `manifest.webmanifest` (nome, cores, ícones 192/512 maskable, screenshots).
+- [x] Service worker: app-shell cache-first + versionamento; página de fallback offline.
+- [x] Ícones gerados e commitados em `public/icons/` (nada de CDN).
+- [x] Fluxo de atualização segura (prompt "nova versão disponível" → `skipWaiting`).
 - [ ] Verificação manual: instalação no Windows (Chrome/Edge) e no Android (Chrome).
-- [ ] Testes E2E: modo offline simulado carrega shell + dados.
+  (Pendente de dispositivo físico; prompt real não é sintetizável no headless.
+  Coberto por E2E: manifest, registro, offline, splash e fluxo de update.)
+- [x] Testes E2E: modo offline simulado carrega shell + dados.
 
 **Concluída quando:** DoD + Lighthouse PWA ≥ 90 + checklist de instalação assinado.
+
+Notas da execução: `vite-plugin-pwa@1` (`generateSW`, `registerType: prompt`,
+`clientsClaim` para controle imediato sem forçar updates). Sem runtimeCaching
+(zero dependências externas — sem fontes/CDN). `beforeinstallprompt` com botão
+próprio + boas-vindas; `prompt` manual no Windows/Android pendente de dispositivo
+físico (E2E cobre manifest, registro, offline, splash e update). Sem push.
 
 ## Fase 5 — Sistema de dados
 

@@ -75,6 +75,16 @@ interface UIState {
   sidebarOpen: boolean;
   setSidebarOpen: (v: boolean) => void;
 
+  /** Status de rede (observado por initPWA). */
+  online: boolean;
+  setOnline: (v: boolean) => void;
+
+  /** Prompt de instalação capturado e ainda não dispensado. */
+  installAvailable: boolean;
+  setInstallAvailable: (v: boolean) => void;
+  installDismissed: boolean;
+  dismissInstall: () => void;
+
   paletteOpen: boolean;
   setPaletteOpen: (v: boolean) => void;
   togglePalette: () => void;
@@ -137,6 +147,14 @@ export const useUIStore = create<UIState>()((set) => ({
 
   sidebarOpen: false,
   setSidebarOpen: (v) => set({ sidebarOpen: v }),
+
+  online: true,
+  setOnline: (v) => set({ online: v }),
+
+  installAvailable: false,
+  setInstallAvailable: (v) => set({ installAvailable: v }),
+  installDismissed: false,
+  dismissInstall: () => set({ installDismissed: true }),
 
   paletteOpen: false,
   setPaletteOpen: (v) => set({ paletteOpen: v }),

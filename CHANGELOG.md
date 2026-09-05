@@ -8,6 +8,16 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- PWA instalável: manifest (`manifest.json`, standalone, pt-BR, categorias),
+  ícones 192/512/maskable gerados do SVG (`scripts/generate-icons.mjs`).
+- Service worker via vite-plugin-pwa (`generateSW`, prompt): precache do shell,
+  atualização somente com confirmação (toast) e aviso de modo offline.
+- Indicador offline/online, botão de instalação (beforeinstallprompt) com
+  boas-vindas pós-instalação e splash inicial com `prefers-reduced-motion`.
+- Testes PWA (manifest, registro, offline, splash, fluxo de update com rebuild).
+
+### Added
+
 - Calendário global de prazos com visões mensal, semanal e diária, navegação
   entre períodos e botão Hoje.
 - Criação de tarefa a partir de qualquer dia (data pré-preenchida) e edição

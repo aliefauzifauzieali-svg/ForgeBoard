@@ -4,6 +4,23 @@ Todas as mudanças notáveis do ForgeBoard serão documentadas aqui.
 
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- `exportBoardNow` agora recebe dados por parâmetro (remove inversão
+  serviço→store); chamadas atualizadas na sidebar e na paleta.
+- Conexão IndexedDB fecha ao ceder upgrade para outra aba (`blocking`).
+- Boot avisa com toast em vez de subir vazio quando o storage falha.
+- Guarda `matchMedia` no efeito de tema (ambientes sem a API, ex.: jsdom/SSR).
+
+### Added
+
+- Testes: `utils/date`, `utils/core`, theme store, filtros do UI store, prefs,
+  `exportBoardNow`, boot resiliente, atalhos por teclado (integração com App),
+  E2E de import inválido, axe mobile/dark/atalhos/confirmação/estatísticas.
+- Helper `expectNoSeriousViolations` centralizado em `e2e/helpers.ts`.
+
 ## [1.0.0] - 2026-09-05
 
 Primeira release oficial — workspace pessoal local-first completo: projetos,

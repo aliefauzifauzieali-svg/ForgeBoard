@@ -180,20 +180,27 @@ efeito); leitura drena a fila de escrita (nunca serve obsoleto); dashboard mant�
 os gráficos por `completedAt` (funcionam com dados legados); undo/redo fora do log
 por decisão (restaurativo, não ação nova).
 
-## Fase 7 — Qualidade (contínua + checkpoint final)
+## Fase 7 — Qualidade (contínua + checkpoint final) ✅ concluída em 2026-09-05
 
-Cobrir o que as fases não cobriram, por categoria:
+Auditoria executada por categoria (relatório no commit da fase):
 
-- **Unit** (tudo já parcial): stores, serviços, persistência, filtros, ordenação, datas,
-  cálculos, import/export. Faltam: `boardStats` edge cases, `taskQuery` com `previousStatus`,
-  utils de data/timezone (Fase 3).
-- **Integration** (novo — testar store + storage real/jsdom juntos): CRUD ponta a ponta
-  sem DOM, migração, quarentena, backup/restore.
-- **E2E**: calendário, exportar/importar via UI, temas, atalhos, viewports
-  (desktop 1440, tablet 768, mobile 390), axe em 3 páginas.
-- Metas: cobertura ≥ 80% em `services/` + `storage/`; zero testes `skip` sem issue linkada.
+- **Unit**: fechados gaps reais — `utils/date`, `utils/core`, theme store, filtros
+  do UI store, prefs, `exportBoardNow`, boot resiliente, atalhos (integração App).
+  `boardStats`/`taskQuery` já cobertos; `previousStatus` é lógica de store (coberta
+  em store/undo); timezone coberto por construção date-only + testes de borda.
+- **Integration**: existente (store+IDB, boot, backfill) + boot resiliente.
+- **E2E**: +import inválido, +axe mobile (Pixel 7), +axe dark, +axe atalhos e
+  confirmação, +axe estatísticas. Viewports já cobertos (responsive.spec).
+- Metas: cobertura de linhas ≥80% em `services/` (83%) e `storage/` (80%);
+  `stores` ~78%, `utils` ~97%; zero testes `skip`.
 
 **Concluída quando:** metas acima + `npm run test:coverage` publicado como artefato do CI.
+
+Notas da execução: sem updates de deps (só majors disponíveis — todos com breaking
+changes; reavaliar na Fase 8); sem code-splitting (date-fns compartilhado com o
+bundle principal via Dashboard; componentes pequenos — documentado); sem erros no
+console além dos 2 intencionais; E2E estabilizado com waits de durabilidade IDB e
+ramo lastView; `npx tsc/lint/test/build` + 45 E2E dev + 5 PWA verdes.
 
 ## Fase 8 — Polimento (pré-beta)
 

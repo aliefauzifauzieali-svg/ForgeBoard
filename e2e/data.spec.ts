@@ -112,4 +112,12 @@ test.describe('dados: backup, exportação e preferências', () => {
     await page.reload();
     await expect(page.locator('html')).toHaveClass(/dark/);
   });
+
+  test('importar JSON inválido mostra erro sem tocar nos dados', async ({ page }) => {
+    await createProject(page, 'Projeto Intacto');
+    writeFileSync('test-results/invalid-e2e.json', '{json quebrado');
+    await page.getByLabel('Selecionar arquivo JSON para importar').setInputFiles('test-results/invalid-e2e.json');
+    await expect(page.getByRole('alert')).toContainText(/inválido/i);
+    await expect(page.getByText('Projeto Intacto').first()).toBeVisible();
+  });
 });

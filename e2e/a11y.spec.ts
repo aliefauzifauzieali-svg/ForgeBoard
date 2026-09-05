@@ -1,6 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
-import { openProject, seedBoard } from './helpers';
+import { expect, test } from '@playwright/test';
+import { expectNoSeriousViolations, openProject, seedBoard } from './helpers';
 
 const SEED = {
   version: 1,
@@ -54,25 +53,6 @@ const SEED = {
   ],
 };
 
-/** Falha se houver violações axe de impacto crítico ou sério. */
-async function expectNoSeriousViolations(page: Page): Promise<void> {
-  // Espera animações de entrada terminarem (opacidade 1): sem isso o axe
-  // mede contraste no meio do fade e gera falsos positivos.
-  await page.waitForFunction(() => {
-    const animated = Array.from(document.querySelectorAll('.animate-fade-up, .animate-fade-in'));
-    return animated.every((el) => getComputedStyle(el).opacity === '1');
-  });
-  const results = await new AxeBuilder({ page }).analyze();
-  const bad = results.violations
-    .filter((v) => v.impact === 'critical' || v.impact === 'serious')
-    .map((v) => ({
-      id: v.id,
-      impact: v.impact,
-      targets: v.nodes.map((n) => `${n.target.join(' ')} :: ${String(n.html).slice(0, 140)}`),
-    }));
-  expect(bad).toEqual([]);
-}
-
 test.describe('acessibilidade (axe)', () => {
   test('dashboard sem violações críticas ou sérias', async ({ page }) => {
     await seedBoard(page, SEED);
@@ -109,6 +89,33 @@ test.describe('acessibilidade (axe)', () => {
     await seedBoard(page, SEED);
     await page.getByRole('button', { name: 'Configurações' }).click();
     await expect(page.getByRole('dialog', { name: 'Configurações' })).toBeVisible();
+    await expectNoSeriousViolations(page);
+  });
+
+  test('atalhos e confirmação sem violações críticas ou sérias', async ({ page }) => {
+    await seedBoard(page, SEED);
+    // O listener de teclado monta num efeito após o boot: repete até abrir.
+    const shortcuts = page.getByRole('dialog', { name: 'Atalhos de teclado' });
+    for (let i = 0; i < 5 && (await shortcuts.count()) === 0; i++) {
+      await page.keyboard.press('?');
+      await page.waitForTimeout(300);
+    }
+    await expect(shortcuts).toBeVisible();
+    await expectNoSeriousViolations(page);
+    await page.keyboard.press('Escape');
+
+    await openProject(page, 'Site E2E');
+    await page.getByRole('button', { name: 'Excluir tarefa Tarefa atrasada' }).click();
+    await expect(page.getByRole('dialog', { name: 'Excluir tarefa' })).toBeVisible();
+    await expectNoSeriousViolations(page);
+  });
+
+  test('dashboard escuro sem violações críticas ou sérias', async ({ page }) => {
+    await seedBoard(page, SEED);
+    await page.evaluate(() => window.localStorage.setItem('forgeboard:theme', 'dark'));
+    await page.reload();
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await expect(page.getByText('Site E2E').first()).toBeVisible();
     await expectNoSeriousViolations(page);
   });
 

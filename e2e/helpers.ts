@@ -1,4 +1,5 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { STORAGE_KEY } from '../src/utils/constants';
 
 /** Limpa o board (localStorage + IndexedDB) e volta ao estado inicial. */
@@ -31,6 +32,7 @@ export async function createProject(page: Page, name: string, description = 'Pro
   await page.getByText(name).first().waitFor({ timeout: 5_000 });
 }
 
+/** Abre o projeto pelo card do dashboard (desktop; no mobile use o item da sidebar). */
 export async function openProject(page: Page, name: string): Promise<void> {
   // Fecha menu mobile/modais eventuais para não obstruir o botão.
   await page.keyboard.press('Escape');
@@ -135,6 +137,26 @@ export async function waitForPrefsValue(page: Page, check: string): Promise<void
     check,
     { timeout: 10000 },
   );
+}
+
+/** Falha se houver violações axe de impacto crítico ou sério. */
+export async function expectNoSeriousViolations(page: Page): Promise<void> {
+  // Espera animações de entrada terminarem (opacidade 1): sem isso o axe
+  // mede contraste no meio do fade e gera falsos positivos.
+  await page.waitForFunction(() => {
+    const animated = Array.from(document.querySelectorAll('.animate-fade-up, .animate-fade-in'));
+    return animated.every((el) => getComputedStyle(el).opacity === '1');
+  });
+  const results = await new AxeBuilder({ page }).analyze();
+  const bad = results.violations
+    .filter((v) => v.impact === 'critical' || v.impact === 'serious')
+    .map((v) => ({
+      id: v.id,
+      impact: v.impact,
+      targets: v.nodes.map((n) => `${n.target.join(' ')} :: ${String(n.html).slice(0, 140)}`),
+    }));
+  if (bad.length > 0) console.log(JSON.stringify(bad, null, 2));
+  expect(bad).toEqual([]);
 }
 
 /** Arrasta um chip do calendário para um dia via eventos DnD sintéticos. */

@@ -1,0 +1,38 @@
+import type { Page } from '@playwright/test';
+
+/** Limpa o board e volta ao estado inicial. */
+export async function resetBoard(page: Page): Promise<void> {
+  await page.goto('/');
+  await page.evaluate(() => window.localStorage.clear());
+  await page.reload();
+  await page.getByRole('heading', { name: 'Bem-vindo ao ForgeBoard' }).waitFor({ timeout: 10_000 });
+}
+
+export async function createProject(page: Page, name: string, description = 'Projeto de teste E2E'): Promise<void> {
+  await page.getByRole('button', { name: 'Novo projeto (P)' }).click();
+  await page.getByLabel('Nome *', { exact: true }).fill(name);
+  await page.getByLabel('Descrição', { exact: true }).fill(description);
+  await page
+    .getByRole('dialog', { name: 'Novo projeto' })
+    .getByRole('button', { name: 'Criar projeto' })
+    .click();
+  await page.getByText(name).first().waitFor({ timeout: 5_000 });
+}
+
+export async function openProject(page: Page, name: string): Promise<void> {
+  // Fecha menu mobile/modais eventuais para não obstruir o botão.
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: `Abrir projeto ${name}` }).click();
+  await page.getByRole('heading', { name: 'Quadro Kanban' }).waitFor({ timeout: 5_000 });
+}
+
+/** Cria tarefa via atalho N (também valida o shortcut). */
+export async function createTask(page: Page, title: string): Promise<void> {
+  await page.keyboard.press('n');
+  await page.getByLabel('Título *', { exact: true }).fill(title);
+  await page
+    .getByRole('dialog', { name: 'Nova tarefa' })
+    .getByRole('button', { name: 'Criar tarefa' })
+    .click();
+  await page.getByText(title).first().waitFor({ timeout: 5_000 });
+}

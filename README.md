@@ -1,0 +1,144 @@
+# ForgeBoard
+
+Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tema claro/escuro, atalhos de teclado, importação/exportação JSON e persistência em `localStorage`.
+
+## Screenshots (placeholder)
+
+> Substitua pelos prints reais em `docs/screenshots/`.
+
+| Dashboard | Quadro Kanban |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Kanban](docs/screenshots/kanban.png) |
+
+| Modo escuro | Mobile |
+|---|---|
+| ![Dark](docs/screenshots/dark.png) | ![Mobile](docs/screenshots/mobile.png) |
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| UI | React 19 + TypeScript |
+| Build | Vite 8 |
+| Estilo | Tailwind CSS 3 (modo escuro via classe) |
+| Estado | Zustand |
+| Ícones | Lucide React |
+| Testes unitários | Vitest + Testing Library + jsdom |
+| Testes E2E | Playwright (Chromium) |
+| Lint | oxlint |
+
+## Estrutura do projeto
+
+```
+ForgeBoard/
+├── e2e/                      # Testes E2E (Playwright)
+│   ├── helpers.ts            # resetBoard, createProject, createTask…
+│   ├── projects.spec.ts
+│   ├── tasks.spec.ts
+│   └── persistence.spec.ts
+├── src/
+│   ├── components/           # UI burra/reutilizável
+│   │   ├── kanban/           # KanbanBoard, KanbanColumn (drag-and-drop nativo)
+│   │   ├── layout/           # Sidebar, TopBar, BottomNav (mobile)
+│   │   ├── projects/         # ProjectCard, ProjectModal
+│   │   ├── tasks/            # TaskCard, TaskRow, TaskModal, TaskFiltersBar
+│   │   └── ui/               # Modal, ConfirmDialog, Badges, Stats, EmptyState
+│   ├── features/             # Seções com regra de negócio
+│   │   ├── dashboard/        # estatísticas, projetos, atrasadas, recentes
+│   │   └── project/          # visão do projeto + Kanban filtrado
+│   ├── pages/                # wrappers finos sobre features
+│   ├── hooks/                # useKeyboardShortcuts (N/P///Esc)
+│   ├── stores/               # useBoardStore, useUIStore, useThemeStore (Zustand)
+│   ├── types/                # Project, Task, BoardData, filtros…
+│   ├── services/             # lógica pura: boardStats, taskQuery, validation
+│   ├── storage/              # StorageProvider + localStorageProvider + boardStorage
+│   ├── utils/                # id, datas, constantes, cn()
+│   └── tests/                # testes unitários Vitest + setup
+├── playwright.config.ts
+├── vite.config.ts            # + config do Vitest
+└── tailwind.config.js
+```
+
+## Instalação
+
+Pré-requisitos: **Node.js 20+** e npm.
+
+```powershell
+cd ForgeBoard
+npm install
+npm run dev        # http://127.0.0.1:5173
+```
+
+Primeira execução para E2E (baixa o Chromium):
+
+```powershell
+npm run test:e2e:install
+```
+
+## Comandos disponíveis
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | servidor de desenvolvimento |
+| `npm run build` | `tsc -b` + build de produção (`dist/`) |
+| `npm run preview` | serve o build de produção |
+| `npm run typecheck` | apenas `tsc -b` |
+| `npm run lint` | oxlint |
+| `npm run test` | testes unitários (Vitest, run único) |
+| `npm run test:watch` | Vitest em modo watch |
+| `npm run test:e2e` | Playwright (sobe o `dev` sozinho via `webServer`) |
+
+## Como executar os testes
+
+```powershell
+npm run test          # testes unitários (Vitest)
+npm run test:e2e      # testes E2E no Chromium (desktop + mobile)
+```
+
+Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError` e ErrorBoundary/focus-trap. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, reload mantendo os dados, recuperação de quarentena e fluxos mobile.
+
+## Atalhos de teclado
+
+| Tecla | Ação |
+|---|---|
+| `N` | nova tarefa (herda o projeto aberto) |
+| `P` | novo projeto |
+| `/` | focar pesquisa |
+| `Esc` | fechar modal / confirmação / menu mobile |
+
+Ignorados enquanto o foco está em `input`, `textarea`, `select` ou conteúdo editável — e também quando qualquer modal/confirmação está aberto (só `Esc` age).
+
+## Robustez dos dados
+
+- **Validação no boot**: `loadBoard` aplica as mesmas regras da importação. Payload ausente, malformado ou inválido resulta em board vazio — e o conteúdo bruto é preservado na **quarentena** (`forgeboard:quarantine`), com banner oferecendo baixar a cópia ou descartá-la.
+- **ErrorBoundary**: qualquer erro de render mostra tela de recuperação com exportação de backup antes de recomeçar.
+- **Falha de persistência**: se o `localStorage` falhar (cota excedida, modo privado), um banner avisa e oferece exportar backup — nada se perde em silêncio.
+- **CI** (`.github/workflows/ci.yml`): typecheck → lint → testes → build → E2E a cada push/PR.
+
+## Decisões arquiteturais importantes
+
+1. **Camada de armazenamento isolada** (`src/storage/`): a UI nunca toca `localStorage` diretamente. `StorageProvider` é uma interface chave-valor mínima; hoje há `localStorageProvider` e `createMemoryProvider` (testes). Um backend futuro implementa a mesma interface (ou um `BoardRepository` remoto) sem reescrever componentes — só o store passa a chamar o serviço remoto. Stores partem vazios e são hidratados explicitamente no boot (`main.tsx`), sem I/O no momento do import.
+2. **Lógica pura fora dos componentes** (`src/services/`): estatísticas, filtros/ordenação e validação de import são funções puras, 100% testáveis sem React. Stores e componentes apenas orquestram.
+3. **Dois stores Zustand com papéis distintos**: `useBoardStore` (dados de domínio + persistência) e `useUIStore` (visão, filtros, modais). Tema em `useThemeStore` com preferência `light|dark|system` persistida e `matchMedia` para o modo sistema.
+4. **Drag-and-drop nativo (HTML5) em vez de biblioteca**: zero dependências, com alternativa por teclado (cada cartão tem botões “Mover para coluna anterior/próxima” operáveis por teclado e título focável que abre a edição — sem interativos aninhados). Playwright testa o movimento via esses botões.
+5. **Validação defensiva na importação**: `validateBoardData` nunca lança — retorna `{ ok, errors, data }`; nada é substituído sem passar na validação **e** sem confirmação explícita do usuário (`ConfirmDialog`).
+6. **Sem roteador**: navegação por estado (`view: dashboard | project`), suficiente para app local de página única e evita dependência extra; E2E não depende de URLs.
+7. **Tailwind v3 + `darkMode: 'class'`**: modo escuro robusto e testável, incluindo `color-scheme` no `<html>`.
+
+## Limitações atuais
+
+- Persistência limitada à cota do `localStorage` (~5 MB) e a um único navegador/dispositivo — sem sincronização.
+- Sem colaboração em tempo real, anexos ou contas de usuário (fora do escopo local-first).
+- Drag-and-drop usa HTML5 DnD (sem animações físicas de bibliotecas como dnd-kit); no toque (mobile) o movimento é feito pelos botões “Mover”.
+- Sem migração automática de schema além de `version: 1` (a validação rejeita versões desconhecidas em vez de migrar).
+
+## Possíveis melhorias futuras
+
+- [ ] Backend opcional (REST/Supabase/Firebase) implementando `StorageProvider` + sincronização e resolução de conflitos.
+- [ ] Migrações versionadas de schema (`v1 → v2…`).
+- [ ] Subtarefas, comentários e anexos (IndexedDB para binários).
+- [ ] Visões de calendário/linha do tempo e recorrência de tarefas.
+- [ ] Busca global com `⌘K` (paleta de comandos) e mais atalhos (ex.: `c` concluir, `?` ajuda).
+- [ ] Arrastar com `@dnd-kit` + suporte completo a toque.
+- [ ] PWA instalável + exportação CSV/Markdown.
+- [ ] Testes de acessibilidade automatizados (axe) no CI.

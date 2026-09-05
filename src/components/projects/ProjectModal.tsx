@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { PROJECT_COLORS } from '../../utils/constants';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -14,24 +14,14 @@ export function ProjectModal(): React.JSX.Element {
 
   const editing = projects.find((p) => p.id === projectModal.editingId) ?? null;
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [color, setColor] = useState<string>(PROJECT_COLORS[0]!);
+  // Estado inicializado no mount: o App remonta este componente (via `key`)
+  // a cada abertura, então não há sincronização via efeito.
+  const [name, setName] = useState(() => editing?.name ?? '');
+  const [description, setDescription] = useState(() => editing?.description ?? '');
+  const [color, setColor] = useState<string>(
+    () => editing?.color ?? PROJECT_COLORS[Math.floor(Math.random() * PROJECT_COLORS.length)]!,
+  );
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!projectModal.open) return;
-    setError('');
-    if (editing) {
-      setName(editing.name);
-      setDescription(editing.description);
-      setColor(editing.color);
-    } else {
-      setName('');
-      setDescription('');
-      setColor(PROJECT_COLORS[Math.floor(Math.random() * PROJECT_COLORS.length)]!);
-    }
-  }, [projectModal.open, editing]);
 
   const submit = (e: React.FormEvent): void => {
     e.preventDefault();

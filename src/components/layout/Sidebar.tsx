@@ -1,6 +1,7 @@
 import { Download, LayoutDashboard, Plus, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { parseImport, serializeBoard } from '../../services/validation';
+import { datedFilename, downloadJson } from '../../services/download';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -44,15 +45,7 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
   const [error, setError] = useState('');
 
   const doExport = (): void => {
-    const blob = new Blob([serializeBoard({ version: 1, projects, tasks })], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `forgeboard-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJson(datedFilename('forgeboard'), serializeBoard({ version: 1, projects, tasks }));
     announce('Dados exportados em JSON');
     onDone?.();
   };

@@ -47,6 +47,21 @@ export function saveBoard(data: BoardData, provider: StorageProvider = localStor
   provider.writeKey(STORAGE_KEY, JSON.stringify(data));
 }
 
+/** Conteúdo bruto do board (para backup de emergência, sem validar). */
+export function readRawBoard(provider: StorageProvider = localStorageProvider): string | null {
+  try {
+    return provider.readKey(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Apaga board + quarentena (recomeço limpo após falha grave). */
+export function clearAllLocalData(provider: StorageProvider = localStorageProvider): void {
+  clearBoard(provider);
+  clearQuarantine(provider);
+}
+
 export function clearBoard(provider: StorageProvider = localStorageProvider): void {
   try {
     provider.removeKey(STORAGE_KEY);

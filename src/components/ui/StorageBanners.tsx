@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, Database, Download, X } from 'lucide-react';
 import { clearQuarantine, readQuarantine } from '../../storage/boardStorage';
+import { datedFilename, downloadJson } from '../../services/download';
 import { serializeBoard } from '../../services/validation';
 import { useBoardStore } from '../../stores/useBoardStore';
 
@@ -13,13 +14,7 @@ export function QuarantineBanner(): React.JSX.Element | null {
   if (!raw) return null;
 
   const download = (): void => {
-    const blob = new Blob([raw], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `forgeboard-recuperacao-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJson(datedFilename('forgeboard-recuperacao'), raw);
   };
 
   const discard = (): void => {
@@ -59,15 +54,7 @@ export function StorageErrorBanner(): React.JSX.Element | null {
   if (!saveError) return null;
 
   const download = (): void => {
-    const blob = new Blob([serializeBoard({ version: 1, projects, tasks })], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `forgeboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJson(datedFilename('forgeboard-backup'), serializeBoard({ version: 1, projects, tasks }));
   };
 
   return (

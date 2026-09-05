@@ -27,6 +27,8 @@ export default function App(): React.JSX.Element {
   const searchRef = useRef<HTMLInputElement>(null);
   useKeyboardShortcuts(searchRef);
   const view = useUIStore((s) => s.view);
+  const projectModal = useUIStore((s) => s.projectModal);
+  const taskModal = useUIStore((s) => s.taskModal);
 
   return (
     <div className="min-h-dvh">
@@ -54,8 +56,17 @@ export default function App(): React.JSX.Element {
         </main>
       </div>
       <BottomNav />
-      <ProjectModal />
-      <TaskModal />
+      {/* `key` força remount a cada abertura: os formulários inicializam no mount. */}
+      <ProjectModal
+        key={projectModal.open ? `project-${projectModal.editingId ?? 'new'}` : 'project-closed'}
+      />
+      <TaskModal
+        key={
+          taskModal.open
+            ? `task-${taskModal.editingId ?? taskModal.presetProjectId ?? 'new'}-${taskModal.presetStatus ?? ''}`
+            : 'task-closed'
+        }
+      />
       <ConfirmDialog />
     </div>
   );

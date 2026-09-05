@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { STORAGE_KEY } from '../../utils/constants';
+import { downloadJson, datedFilename } from '../../services/download';
+import { clearAllLocalData, readRawBoard } from '../../storage/boardStorage';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -28,20 +29,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   private downloadBackup = (): void => {
-    let raw: string | null = null;
-    try {
-      raw = localStorage.getItem(STORAGE_KEY);
-    } catch {
-      raw = null;
-    }
+    const raw = readRawBoard();
     if (!raw) return;
-    const blob = new Blob([raw], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `forgeboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJson(datedFilename('forgeboard-backup'), raw);
   };
 
   private resetAll = (): void => {
@@ -49,11 +39,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       this.setState({ armed: true });
       return;
     }
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
-    }
+    clearAllLocalData();
     window.location.reload();
   };
 

@@ -42,24 +42,24 @@ restantes de uma vez.
 
 ---
 
-## Fase 0 — Baseline versionado ✅ (concluir antes de qualquer código novo)
+## Fase 0 — Baseline versionado ✅ concluída em 2026-09-05
 
-- [ ] `git add` revisado por partes (NUNCA `git add .` sem revisar) + commit inicial.
-- [ ] Criar repositório GitHub, `git remote add origin`, `git push -u origin main`.
-- [ ] Confirmar que o CI fica verde no remoto.
+- [x] `git add` revisado por partes (NUNCA `git add .` sem revisar) + commit inicial.
+- [x] Criar repositório GitHub, `git remote add origin`, `git push -u origin main`.
+- [x] Confirmar que o CI fica verde no remoto.
 
-## Fase 1 — Fundamentos (base: ~80% pronta)
+## Fase 1 — Fundamentos ✅ concluída em 2026-09-05
 
 **Objetivo:** eliminar os débitos estruturais conhecidos, sem mudar comportamento.
 
-- [ ] Extrair helper `downloadJson(filename, data)` em `src/services/` e usar nos 4 pontos
+- [x] Extrair helper `downloadJson(filename, data)` em `src/services/` e usar nos 4 pontos
       que hoje duplicam blob-download (Sidebar, StorageBanners ×2, ErrorBoundary).
-- [ ] Remover o acesso direto a `localStorage` no `ErrorBoundary` (usar `storage/` + serviço).
-- [ ] Resolver os 2 warnings do lint (init de form nos modais) ou documentar como aceitos.
-- [ ] Auditar `console.*`: permitido só com prefixo `[ForgeBoard]` em caminhos de erro.
-- [ ] Checklist manual: reload preserva tudo; quarentena aparece com dado inválido;
+- [x] Remover o acesso direto a `localStorage` no `ErrorBoundary` (usar `storage/` + serviço).
+- [x] Resolver os 2 warnings do lint (init de form nos modais) ou documentar como aceitos.
+- [x] Auditar `console.*`: permitido só com prefixo `[ForgeBoard]` em caminhos de erro.
+- [x] Checklist manual: reload preserva tudo; quarentena aparece com dado inválido;
       `dist/` servido via `preview` funciona offline de rede (sem SW ainda).
-- [ ] Criar `CHANGELOG.md` (formato Keep a Changelog) e registrar a v1.0.0.
+- [x] Criar `CHANGELOG.md` (formato Keep a Changelog) e registrar a v1.0.0.
 
 **Concluída quando:** DoD global + zero acessos a storage fora de `src/storage/` e
 `src/stores/` (verificável por grep) + CHANGELOG criado.

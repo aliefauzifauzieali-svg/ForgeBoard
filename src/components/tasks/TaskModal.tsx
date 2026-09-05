@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { TASK_PRIORITIES, TASK_STATUSES, type TaskPriority, type TaskStatus } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -20,36 +20,16 @@ export function TaskModal(): React.JSX.Element {
     [tasks, taskModal.editingId],
   );
 
-  const [projectId, setProjectId] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<TaskPriority>('medium');
-  const [status, setStatus] = useState<TaskStatus>('backlog');
-  const [dueDate, setDueDate] = useState('');
-  const [tags, setTags] = useState('');
+  // Estado inicializado no mount: o App remonta este componente (via `key`)
+  // a cada abertura, então não há sincronização via efeito.
+  const [projectId, setProjectId] = useState(() => editing?.projectId ?? taskModal.presetProjectId ?? projects[0]?.id ?? '');
+  const [title, setTitle] = useState(() => editing?.title ?? '');
+  const [description, setDescription] = useState(() => editing?.description ?? '');
+  const [priority, setPriority] = useState<TaskPriority>(() => editing?.priority ?? 'medium');
+  const [status, setStatus] = useState<TaskStatus>(() => editing?.status ?? taskModal.presetStatus ?? 'backlog');
+  const [dueDate, setDueDate] = useState(() => editing?.dueDate ?? '');
+  const [tags, setTags] = useState(() => editing?.tags.join(', ') ?? '');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!taskModal.open) return;
-    setError('');
-    if (editing) {
-      setProjectId(editing.projectId);
-      setTitle(editing.title);
-      setDescription(editing.description);
-      setPriority(editing.priority);
-      setStatus(editing.status);
-      setDueDate(editing.dueDate ?? '');
-      setTags(editing.tags.join(', '));
-    } else {
-      setProjectId(taskModal.presetProjectId ?? projects[0]?.id ?? '');
-      setTitle('');
-      setDescription('');
-      setPriority('medium');
-      setStatus(taskModal.presetStatus ?? 'backlog');
-      setDueDate('');
-      setTags('');
-    }
-  }, [taskModal.open, editing, taskModal.presetProjectId, taskModal.presetStatus, projects]);
 
   const submit = (e: React.FormEvent): void => {
     e.preventDefault();

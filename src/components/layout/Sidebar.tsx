@@ -2,6 +2,7 @@ import { BarChart3, CalendarDays, Download, LayoutDashboard, Plus, Settings as S
 import { useRef, useState } from 'react';
 import { parseImport } from '../../services/boardIO';
 import { exportBoardNow } from '../../services/boardIO';
+import { FORMAT_VERSION } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -45,7 +46,8 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
   const [busy, setBusy] = useState(false);
 
   const doExport = (): void => {
-    exportBoardNow();
+    const { projects, tasks, tags } = useBoardStore.getState();
+    exportBoardNow({ version: FORMAT_VERSION, projects, tasks, tags });
     onDone?.();
   };
 

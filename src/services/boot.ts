@@ -65,7 +65,23 @@ export async function bootApp(): Promise<void> {
   if (booted) return;
   booted = true;
 
-  const initial = await loadInitialData();
+  let initial;
+  try {
+    initial = await loadInitialData();
+  } catch (error) {
+    // Storage totalmente indisponível: sobe vazio mas avisa (nunca tela morta).
+    console.error('[ForgeBoard] falha ao carregar dados no boot:', error);
+    initial = null;
+  }
+
+  if (!initial) {
+    useBoardStore.getState().hydrate({ version: 2, projects: [], tasks: [], tags: [] }, []);
+    useUIStore.getState().pushToast({
+      kind: 'error',
+      message: 'Armazenamento indisponível — os dados podem não carregar',
+    });
+    return;
+  }
 
   useBoardStore.getState().hydrate(initial.board, initial.backups);
   usePrefsStore.getState().hydrate(initial.preferences);

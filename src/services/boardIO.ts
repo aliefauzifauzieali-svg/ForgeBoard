@@ -1,4 +1,3 @@
-import { useBoardStore } from '../stores/useBoardStore';
 import { useUIStore } from '../stores/useUIStore';
 import { migrateToCurrent, MigrationError } from '../storage/migrations';
 import type { BoardData } from '../types';
@@ -7,14 +6,14 @@ import { datedFilename, downloadJson } from './download';
 import { serializeBoard } from './validation';
 
 /**
- * Exporta o board atual em JSON com toast de confirmação.
+ * Exporta o board em JSON com toast de confirmação.
+ * Recebe os dados por parâmetro (sem ler stores: inversão removida).
  * Usado pela sidebar e pela paleta de comandos.
  */
-export function exportBoardNow(): void {
-  const { projects, tasks, tags } = useBoardStore.getState();
+export function exportBoardNow(board: BoardData): void {
   downloadJson(
     datedFilename('forgeboard'),
-    serializeBoard({ version: FORMAT_VERSION, projects, tasks, tags }),
+    serializeBoard({ version: FORMAT_VERSION, projects: board.projects, tasks: board.tasks, tags: board.tags }),
   );
   try {
     useUIStore.getState().pushToast({ kind: 'success', message: 'Dados exportados em JSON' });

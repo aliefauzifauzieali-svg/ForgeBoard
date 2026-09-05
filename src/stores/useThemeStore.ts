@@ -68,7 +68,7 @@ export function useThemeEffect(): void {
   }, [resolved]);
 
   useEffect(() => {
-    if (preference !== 'system') return;
+    if (preference !== 'system' || typeof window.matchMedia !== 'function') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = (e: MediaQueryListEvent): void => {
       useThemeStore.setState({ resolved: e.matches ? 'dark' : 'light' });

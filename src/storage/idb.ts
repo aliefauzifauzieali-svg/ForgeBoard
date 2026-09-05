@@ -32,7 +32,7 @@ let dbPromise: Promise<IDBPDatabase<ForgeBoardDB>> | null = null;
 export function getDB(): Promise<IDBPDatabase<ForgeBoardDB>> {
   if (!dbPromise) {
     dbPromise = openDB<ForgeBoardDB>(DB_NAME, DB_VERSION, {
-      upgrade(db, _oldVersion) {
+      upgrade(db) {
         if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
         if (!db.objectStoreNames.contains('backups')) db.createObjectStore('backups');
         if (!db.objectStoreNames.contains('activity')) {
@@ -42,6 +42,11 @@ export function getDB(): Promise<IDBPDatabase<ForgeBoardDB>> {
           store.createIndex('by-type', 'type');
           store.createIndex('by-entity', 'entityId');
         }
+      },
+      // Outra aba instalou versão nova: fecha para não travar o upgrade dela.
+      blocking() {
+        dbPromise?.then((db) => db.close()).catch(() => {});
+        dbPromise = null;
       },
     });
   }

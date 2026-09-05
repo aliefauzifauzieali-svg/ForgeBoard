@@ -16,6 +16,7 @@ import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { exportBoardNow } from '../../services/boardIO';
+import { FORMAT_VERSION } from '../../types';
 
 export interface PaletteCommand {
   id: string;
@@ -114,7 +115,10 @@ export function buildCommands(): PaletteCommand[] {
       label: 'Exportar dados (JSON)',
       icon: Download,
       keywords: 'exportar backup json salvar',
-      run: () => exportBoardNow(),
+      run: () => {
+        const { projects, tasks, tags } = useBoardStore.getState();
+        exportBoardNow({ version: FORMAT_VERSION, projects, tasks, tags });
+      },
     },
     {
       id: 'shortcuts',

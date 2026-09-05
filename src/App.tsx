@@ -14,6 +14,7 @@ import { CommandPalette } from './features/palette/CommandPalette';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProjectPage } from './pages/ProjectPage';
 import { CalendarPage } from './pages/CalendarPage';
+import { StatsPage } from './pages/StatsPage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useThemeEffect } from './stores/useThemeStore';
 import { useUIStore } from './stores/useUIStore';
@@ -61,8 +62,10 @@ export default function App(): React.JSX.Element {
             <DashboardPage />
           ) : view.kind === 'project' ? (
             <ProjectPage key={view.projectId} projectId={view.projectId} />
-          ) : (
+          ) : view.kind === 'calendar' ? (
             <CalendarPage />
+          ) : (
+            <StatsPage />
           )}
           <footer className="mt-10 border-t border-zinc-200 pt-4 text-center text-[11px] text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
             ForgeBoard · seus dados ficam no navegador (localStorage) · exporte JSON para backup

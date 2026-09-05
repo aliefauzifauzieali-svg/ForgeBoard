@@ -4,7 +4,7 @@ import { DEFAULT_FILTERS } from '../services/taskQuery';
 import { generateId } from '../utils/core';
 import { usePrefsStore } from './usePrefsStore';
 
-export type View = { kind: 'dashboard' } | { kind: 'project'; projectId: string } | { kind: 'calendar' };
+export type View = { kind: 'dashboard' } | { kind: 'project'; projectId: string } | { kind: 'calendar' } | { kind: 'stats' };
 
 export type ToastKind = 'success' | 'error' | 'info';
 
@@ -25,6 +25,7 @@ interface UIState {
   goDashboard: () => void;
   openProject: (projectId: string) => void;
   goCalendar: () => void;
+  goStats: () => void;
 
   /** Último anúncio para leitores de tela (região aria-live). */
   announcement: { id: number; message: string };
@@ -126,6 +127,14 @@ export const useUIStore = create<UIState>()((set) => ({
     set({ view: { kind: 'calendar' }, sidebarOpen: false });
     try {
       usePrefsStore.getState().setLastView({ kind: 'calendar' });
+    } catch {
+      /* ignore */
+    }
+  },
+  goStats: () => {
+    set({ view: { kind: 'stats' }, sidebarOpen: false });
+    try {
+      usePrefsStore.getState().setLastView({ kind: 'stats' });
     } catch {
       /* ignore */
     }

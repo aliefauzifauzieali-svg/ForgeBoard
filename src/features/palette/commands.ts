@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   CalendarDays,
   Download,
   FolderKanban,
@@ -70,6 +71,13 @@ export function buildCommands(): PaletteCommand[] {
       icon: CalendarDays,
       keywords: 'calendario agenda prazos datas mês semana dia',
       run: () => ui.goCalendar(),
+    },
+    {
+      id: 'go-stats',
+      label: 'Abrir estatísticas',
+      icon: BarChart3,
+      keywords: 'estatisticas metricas graficos atividade relatorio',
+      run: () => ui.goStats(),
     },
     ...board.projects.slice(0, 8).map((p) => ({
       id: `open-${p.id}`,

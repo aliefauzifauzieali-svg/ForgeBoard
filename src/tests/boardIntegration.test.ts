@@ -117,4 +117,23 @@ describe('integração store + IndexedDB', () => {
     await bootApp();
     expect(useUIStore.getState().view).toEqual({ kind: 'dashboard' });
   });
+
+  it('backfill cria eventos de conclusão legadas uma única vez', async () => {
+    const { bootApp, resetBootForTests } = await import('../services/boot');
+    const { queryEvents } = await import('../storage/activity');
+    const project = useBoardStore.getState().createProject({ name: 'Site' });
+    const task = useBoardStore.getState().createTask({ projectId: project.id, title: 'Velha' });
+    useBoardStore.getState().moveTask(task.id, 'done');
+    await flushBoardStore();
+
+    resetBootForTests();
+    await bootApp();
+    const completed = await queryEvents({ types: ['task.completed'] });
+    expect(completed.map((e) => e.entityId)).toContain(task.id);
+
+    const before = await queryEvents({ types: ['task.completed'] });
+    resetBootForTests();
+    await bootApp();
+    expect(await queryEvents({ types: ['task.completed'] })).toHaveLength(before.length);
+  });
 });

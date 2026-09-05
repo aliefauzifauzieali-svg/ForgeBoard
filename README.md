@@ -1,6 +1,6 @@
 # ForgeBoard
 
-Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON versionada e persistência em IndexedDB (com migração do formato antigo).
+Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON versionada e persistência em IndexedDB (com migração do formato antigo) e página de Estatísticas com log de atividades e métricas históricas.
 
 ## Screenshots (placeholder)
 
@@ -35,10 +35,16 @@ Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 
 ```
 ForgeBoard/
 ├── e2e/                      # Testes E2E (Playwright)
-│   ├── helpers.ts            # resetBoard, createProject, createTask…
+│   ├── helpers.ts            # resetBoard, seedBoard, createProject…
 │   ├── projects.spec.ts
 │   ├── tasks.spec.ts
 │   ├── palette.spec.ts
+│   ├── calendar.spec.ts
+│   ├── tags.spec.ts
+│   ├── data.spec.ts
+│   ├── stats.spec.ts
+│   ├── pwa.spec.ts
+│   ├── responsive.spec.ts
 │   ├── a11y.spec.ts
 │   └── persistence.spec.ts
 ├── src/
@@ -48,20 +54,20 @@ ForgeBoard/
 │   │   ├── projects/         # ProjectCard, ProjectModal
 │   │   ├── tasks/            # TaskCard, TaskRow, TaskModal, TaskFiltersBar
 │   │   ├── settings/         # SettingsModal (tema, atalhos, etiquetas, backup)
-│   │   ├── charts/           # SVG próprios (barras, rosca — sem lib)
-│   │   └── ui/               # Modal, ConfirmDialog, Badges, Stats, EmptyState, Toasts, PWA
-│   ├── features/             # Seções com regra de negócio
+│   │   ├── charts/           # SVG próprios (barras, rosca, linhas — sem lib)
+│   │   └── ui/               # Modal, ConfirmDialog, Toasts, banners, PWA…
 │   ├── features/             # Seções com regra de negócio
 │   │   ├── dashboard/        # estatísticas, projetos, atrasadas, recentes
 │   │   ├── palette/          # paleta de comandos + busca global
 │   │   ├── calendar/         # mês/semana/dia + DnD de prazos (date-fns)
+│   │   ├── stats/            # página de Estatísticas + métricas
 │   │   └── project/          # visão do projeto + Kanban filtrado
 │   ├── pages/                # wrappers finos sobre features
-│   ├── hooks/                # useKeyboardShortcuts (N/P///Esc)
+│   ├── hooks/                # atalhos, focus trap
 │   ├── stores/               # board, UI, tema, prefs (Zustand, API síncrona)
-│   ├── types/                # Project, Task, BoardData, filtros…
-│   ├── services/             # lógica pura: boardStats, taskQuery, validation
-│   ├── storage/              # idb + boardStorage + migrations (IndexedDB)
+│   ├── types/                # Project, Task, Tag, BoardData, filtros…
+│   ├── services/             # pura: stats, calendar, query, validation, boot…
+│   ├── storage/              # idb + boardStorage + migrations + activity
 │   ├── utils/                # id, datas, constantes, cn()
 │   └── tests/                # testes unitários Vitest + setup (+fixtures/)
 ├── playwright.config.ts
@@ -107,7 +113,7 @@ npm run test:e2e      # testes E2E no Chromium (dev + mobile)
 npm run test:e2e:pwa   # E2E do PWA contra o build (SW, offline, update)
 ```
 
-Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, busca global, undo/redo, calendário (grades, agrupamento, datas), PWA (banner offline, instalação), toasts, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError` e ErrorBoundary/focus-trap. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, paleta de comandos, undo via toast e atalho, calendário (criar/arrastar/sincronia/navegação), PWA (manifest, SW, offline, splash, update com rebuild), diálogo de atalhos, axe (dashboard/Kanban/modal/paleta/calendário), reload mantendo os dados, recuperação de quarentena e fluxos mobile.
+Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, busca global, undo/redo, calendário (grades, agrupamento, datas), PWA (banner offline, instalação), toasts, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError`, ErrorBoundary/focus-trap, log de atividades (CRUD/consulta/retenção/upgrade), métricas (throughput, lead time, evolução) e etiquetas. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, paleta de comandos, undo via toast e atalho, calendário (criar/arrastar/sincronia/navegação), PWA (manifest, SW, offline, splash, update com rebuild), estatísticas (resumo, filtros, interatividade), etiquetas e backup/restore, diálogo de atalhos, axe (dashboard/Kanban/modal/paleta/calendário/configurações/estatísticas), reload mantendo os dados, recuperação de quarentena e fluxos mobile.
 
 ## Atalhos de teclado
 
@@ -141,21 +147,24 @@ Teclas simples ignoradas enquanto o foco está em `input`, `textarea`, `select` 
 6. **Sem roteador**: navegação por estado (`view: dashboard | project`), suficiente para app local de página única e evita dependência extra; E2E não depende de URLs.
 7. **Tailwind v3 + `darkMode: 'class'`**: modo escuro robusto e testável, incluindo `color-scheme` no `<html>`.
 8. **Dados em camadas**: store síncrono em memória (a UI nunca espera I/O) + `IndexedDB` assíncrono (`idb`, 1 KB) com flush no `pagehide`; `localStorage` só espelha tema/quarentena. Migrações versionadas e idempotentes; backups automáticos + manuais com retenção de 5.
+9. **Log de atividades append-only** (`activity` no mesmo banco, com índices): eventos de domínio com metadados mínimos (títulos para entidades excluídas, sem snapshots); bulk (import/undo/seed usa lote próprio) não polui métricas; retenção de 90 dias com poda no boot; leitura via `use()` + Suspense com cache invalidado na escrita.
 
 ## Limitações atuais
 
-- Persistência limitada à cota do `localStorage` (~5 MB) e a um único navegador/dispositivo — sem sincronização.
+- Persistência limitada à cota do IndexedDB do navegador e a um único dispositivo — sem sincronização.
 - Sem colaboração em tempo real, anexos ou contas de usuário (fora do escopo local-first).
 - Drag-and-drop usa HTML5 DnD (sem animações físicas de bibliotecas como dnd-kit); no toque (mobile) o movimento é feito pelos botões “Mover”.
-- Sem migração automática de schema além de `version: 1` (a validação rejeita versões desconhecidas em vez de migrar).
+- Sem migração automática além de `v1 → v2` (versões futuras desconhecidas vão para quarentena em vez de migrar).
 
 ## Possíveis melhorias futuras
 
-- [ ] Backend opcional (REST/Supabase/Firebase) implementando `StorageProvider` + sincronização e resolução de conflitos.
-- [ ] Migrações versionadas de schema (`v1 → v2…`).
+- [ ] Backend opcional (REST/Supabase/Firebase) implementando o repositório de dados + sincronização e resolução de conflitos.
+- [x] Migrações versionadas de schema (`v1 → v2`).
 - [ ] Subtarefas, comentários e anexos (IndexedDB para binários).
-- [ ] Visões de calendário/linha do tempo e recorrência de tarefas.
-- [ ] Busca global com `⌘K` (paleta de comandos) e mais atalhos (ex.: `c` concluir, `?` ajuda).
+- [x] Visões de calendário (mês/semana/dia) com drag and drop de prazos.
+- [ ] Recorrência de tarefas.
+- [x] Busca global com paleta de comandos (`Ctrl/⌘+K`) e atalhos (`?` lista todos).
 - [ ] Arrastar com `@dnd-kit` + suporte completo a toque.
-- [ ] PWA instalável + exportação CSV/Markdown.
+- [x] PWA instalável.
+- [ ] Exportação CSV/Markdown.
 - [x] Testes de acessibilidade automatizados (axe) no CI.

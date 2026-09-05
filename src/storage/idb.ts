@@ -1,8 +1,9 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { BoardData } from '../types';
+import type { ActivityEvent } from './activity';
 
 export const DB_NAME = 'forgeboard';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 /** Chaves do object store `kv`. */
 export const KV_BOARD = 'board';
@@ -18,6 +19,11 @@ export interface StoredBackup {
 interface ForgeBoardDB extends DBSchema {
   kv: { key: string; value: unknown };
   backups: { key: string; value: StoredBackup };
+  activity: {
+    key: string;
+    value: ActivityEvent;
+    indexes: { 'by-at': string; 'by-project': string; 'by-type': string; 'by-entity': string };
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ForgeBoardDB>> | null = null;
@@ -26,9 +32,16 @@ let dbPromise: Promise<IDBPDatabase<ForgeBoardDB>> | null = null;
 export function getDB(): Promise<IDBPDatabase<ForgeBoardDB>> {
   if (!dbPromise) {
     dbPromise = openDB<ForgeBoardDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db, _oldVersion) {
         if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
         if (!db.objectStoreNames.contains('backups')) db.createObjectStore('backups');
+        if (!db.objectStoreNames.contains('activity')) {
+          const store = db.createObjectStore('activity');
+          store.createIndex('by-at', 'at');
+          store.createIndex('by-project', 'projectId');
+          store.createIndex('by-type', 'type');
+          store.createIndex('by-entity', 'entityId');
+        }
       },
     });
   }
@@ -86,9 +99,10 @@ export async function deleteBackup(id: string): Promise<void> {
 
 export async function clearAllData(): Promise<void> {
   const db = await getDB();
-  const tx = db.transaction(['kv', 'backups'], 'readwrite');
+  const tx = db.transaction(['kv', 'backups', 'activity'], 'readwrite');
   await tx.objectStore('kv').clear();
   await tx.objectStore('backups').clear();
+  await tx.objectStore('activity').clear();
   await tx.done;
 }
 

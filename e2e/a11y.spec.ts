@@ -111,4 +111,11 @@ test.describe('acessibilidade (axe)', () => {
     await expect(page.getByRole('dialog', { name: 'Configurações' })).toBeVisible();
     await expectNoSeriousViolations(page);
   });
+
+  test('estatísticas sem violações críticas ou sérias', async ({ page }) => {
+    await seedBoard(page, SEED);
+    await page.getByRole('button', { name: 'Estatísticas' }).click();
+    await expect(page.getByRole('heading', { name: 'Estatísticas' })).toBeVisible();
+    await expectNoSeriousViolations(page);
+  });
 });

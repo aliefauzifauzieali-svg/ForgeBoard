@@ -1,9 +1,10 @@
 # ForgeBoard — Roadmap
 
 > Produto: workspace pessoal local-first para projetos, tarefas e planejamento.
-> Estado em 2026-09-05: Fase 5 concluída; `tsc`, `lint`, testes unitários,
-> testes E2E (incl. axe, calendário, PWA e dados) e `build` todos verdes.
-> Sem backend, sem contas, sem sincronização (decisão intencional).
+> Estado em 2026-09-05: Fase 6 concluída (última do roadmap) — ForgeBoard
+> funcionalmente completo no escopo local. `tsc`, `lint`, testes unitários,
+> testes E2E (incl. axe, calendário, PWA, dados e estatísticas) e `build`
+> todos verdes. Sem backend, sem contas, sem sincronização.
 
 ## Baseline atual (o que já existe)
 
@@ -153,17 +154,31 @@ flush no `pagehide`; `Settings` ficou implícito nas preferências; gráficos da
 (conclusões/dia, rosca de prioridade, lead time) em SVG próprio; progresso de
 projeto ao longo do tempo exige log de eventos → Fase 6.
 
-## Fase 6 — Dashboard
+## Fase 6 — Logs, métricas e Estatísticas ✅ concluída em 2026-09-05
 
-**Objetivo:** métricas úteis para uso diário, não enfeite. Depende de 2, 3 e 5.
+**Objetivo:** histórico confiável e página de Estatísticas. Depende de 2, 3 e 5.
 
-- [ ] Concluídas/pendentes/atrasadas, progresso por projeto, tarefas por prioridade,
-      projetos ativos, atividade recente (event log local — novo, pequeno).
-- [ ] Produtividade ao longo do tempo (conclusões por dia/semana; exige histórico da Fase 5).
-- [ ] Gráficos em SVG/CSS próprios; lib de charts só com ADR justificando peso.
-- [ ] Cada métrica responde "que decisão ela ajuda a tomar" (documentado no PR).
+- [x] Log de eventos append-only no IndexedDB (`activity`, com índices por tempo,
+      projeto, tipo e entidade): tarefa criada/editada/excluída/movida/concluída/
+      reaberta; projeto criado/editado/excluído; etiqueta criada/editada/excluída.
+      Bulk (import/seed/restore/undo) não emite — métricas sem fantasmas.
+- [x] Retenção de 90 dias (`ACTIVITY_RETENTION_DAYS`, poda no boot) + teto de consulta.
+- [x] Backfill único de conclusões legadas (com flag idempotente).
+- [x] Métricas puras: criadas×concluídas por dia/semana/mês, throughput, evolução
+      acumulada por projeto, lead time por eventos, taxa por período.
+- [x] Página de Estatísticas: resumo, filtros (projeto/etiqueta/período 7-30-90-outro),
+      throughput clicável filtrando a tabela, evolução, atividade recente (10).
+- [x] Gráficos SVG próprios (barras reutilizadas, rosca, multilinha) com
+      `role=img`/legendas; sem lib externa.
+- [x] Testes: unit (storage, métricas), integração (ações→eventos, boot, backfill),
+      E2E (página, filtros, interatividade) e axe.
 
-**Concluída quando:** DoD + nenhuma métrica sem justificativa de uso documentada.
+**Concluída quando:** DoD + E2E de estatísticas verdes + axe sem críticas/sérias.
+
+Notas da execução: `use()` + Suspense com consulta cacheada (sem `setState` em
+efeito); leitura drena a fila de escrita (nunca serve obsoleto); dashboard mantém
+os gráficos por `completedAt` (funcionam com dados legados); undo/redo fora do log
+por decisão (restaurativo, não ação nova).
 
 ## Fase 7 — Qualidade (contínua + checkpoint final)
 

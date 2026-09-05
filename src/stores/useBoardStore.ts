@@ -15,6 +15,7 @@ import {
   persistSnapshot,
   readBackup,
 } from '../storage/boardStorage';
+import { logEvent, logEventsBulk, statusTransitionEvents } from '../storage/activity';
 import { PROJECT_COLORS } from '../utils/constants';
 import { generateId, nowIso } from '../utils/core';
 import { STATUS_META } from '../utils/constants';
@@ -263,11 +264,13 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     set((s) => ({ projects: [project, ...s.projects] }));
     persist(get);
     announce(`Projeto “${project.name}” criado`);
+    logEvent({ type: 'project.created', entity: 'project', entityId: project.id, projectId: project.id, meta: { name: project.name } });
     return project;
   },
 
   updateProject: (id, patch) => {
     const name = patch.name !== undefined && patch.name.trim() ? patch.name.trim().slice(0, 80) : undefined;
+    const before = get().projects.find((p) => p.id === id);
     pushHistory(get, 'editar projeto');
     set((s) => ({
       projects: s.projects.map((p) =>
@@ -286,10 +289,14 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     }));
     persist(get);
     announce('Projeto atualizado');
+    if (before) {
+      logEvent({ type: 'project.updated', entity: 'project', entityId: id, projectId: id, meta: { name: name ?? before.name } });
+    }
   },
 
   deleteProject: (id) => {
     const gone = get().projects.find((p) => p.id === id);
+    const taskCount = get().tasks.filter((t) => t.projectId === id).length;
     pushHistory(get, 'excluir projeto');
     set((s) => ({
       projects: s.projects.filter((p) => p.id !== id),
@@ -301,6 +308,9 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
       message: gone ? `Projeto “${gone.name}” excluído` : 'Projeto excluído',
       action: { label: 'Desfazer', run: () => useBoardStore.getState().undo() },
     });
+    if (gone) {
+      logEvent({ type: 'project.deleted', entity: 'project', entityId: id, projectId: id, meta: { name: gone.name, tasks: taskCount } });
+    }
   },
 
   createTask: (input) => {
@@ -325,12 +335,14 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     set((s) => ({ tasks: [task, ...s.tasks] }));
     persist(get);
     announce(`Tarefa “${task.title}” criada`);
+    logEvent({ type: 'task.created', entity: 'task', entityId: task.id, projectId: task.projectId, meta: { title: task.title, status: task.status, tagIds: task.tagIds } });
     return task;
   },
 
   updateTask: (id, patch) => {
     const title =
       patch.title !== undefined && patch.title.trim() ? patch.title.trim().slice(0, 140) : undefined;
+    const before = get().tasks.find((t) => t.id === id);
     pushHistory(get, 'editar tarefa');
     set((s) => ({
       tasks: s.tasks.map((t) => {
@@ -356,6 +368,20 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     }));
     persist(get);
     announce('Tarefa atualizada');
+    if (before) {
+      logEvent({
+        type: 'task.updated',
+        entity: 'task',
+        entityId: id,
+        projectId: before.projectId,
+        meta: { title: title ?? before.title, fields: Object.keys(patch), tagIds: before.tagIds },
+      });
+      if (patch.status !== undefined && patch.status !== before.status) {
+        logEventsBulk(
+          statusTransitionEvents(id, before.projectId, title ?? before.title, before.status, patch.status, before.tagIds),
+        );
+      }
+    }
   },
 
   moveTask: (id, status) => {
@@ -380,6 +406,7 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     }));
     persist(get);
     announce(`Tarefa “${found.title}” movida para ${STATUS_META[status].label}`);
+    logEventsBulk(statusTransitionEvents(id, found.projectId, found.title, found.status, status, found.tagIds));
   },
 
   deleteTask: (id) => {
@@ -392,6 +419,9 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
       message: gone ? `Tarefa “${gone.title}” excluída` : 'Tarefa excluída',
       action: { label: 'Desfazer', run: () => useBoardStore.getState().undo() },
     });
+    if (gone) {
+      logEvent({ type: 'task.deleted', entity: 'task', entityId: id, projectId: gone.projectId, meta: { title: gone.title, tagIds: gone.tagIds } });
+    }
   },
 
   duplicateTask: (id) => {
@@ -410,6 +440,7 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     set((s) => ({ tasks: [copy, ...s.tasks] }));
     persist(get);
     announce(`Tarefa duplicada como “${copy.title}”`);
+    logEvent({ type: 'task.created', entity: 'task', entityId: copy.id, projectId: copy.projectId, meta: { title: copy.title, status: copy.status, tagIds: copy.tagIds, duplicateOf: id } });
     return copy;
   },
 
@@ -437,6 +468,9 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     }
     if (created.length > 0) {
       set((s) => ({ tags: [...created, ...s.tags] }));
+      logEventsBulk(
+        created.map((t) => ({ type: 'tag.created' as const, entity: 'tag' as const, entityId: t.id, meta: { name: t.name } })),
+      );
     }
     return ids.slice(0, 12);
   },
@@ -456,12 +490,14 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     set((s) => ({ tags: [tag, ...s.tags] }));
     persist(get);
     announce(`Etiqueta “${tag.name}” criada`);
+    logEvent({ type: 'tag.created', entity: 'tag', entityId: tag.id, meta: { name: tag.name } });
     return tag;
   },
 
   updateTag: (id, patch) => {
     const name =
       patch.name !== undefined && normalizeTagName(patch.name) ? normalizeTagName(patch.name) : undefined;
+    const before = get().tags.find((t) => t.id === id);
     if (name !== undefined) {
       const clash = get().tags.find((t) => t.name === name && t.id !== id);
       if (clash) throw new Error(`Já existe a etiqueta “${name}”`);
@@ -480,6 +516,9 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     }));
     persist(get);
     announce('Etiqueta atualizada');
+    if (before) {
+      logEvent({ type: 'tag.updated', entity: 'tag', entityId: id, meta: { name: name ?? before.name } });
+    }
   },
 
   deleteTag: (id) => {
@@ -497,6 +536,9 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
       message: gone ? `Etiqueta “${gone.name}” excluída` : 'Etiqueta excluída',
       action: { label: 'Desfazer', run: () => useBoardStore.getState().undo() },
     });
+    if (gone) {
+      logEvent({ type: 'tag.deleted', entity: 'tag', entityId: id, meta: { name: gone.name } });
+    }
   },
 
   replaceAll: (data) => {
@@ -589,5 +631,41 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     });
     persist(get);
     announce('Dados de exemplo carregados');
+    // Histórico inicial com os timestamps das entidades (não "agora").
+    logEventsBulk([
+      ...[p1, p2].map((p) => ({
+        type: 'project.created' as const,
+        entity: 'project' as const,
+        entityId: p.id,
+        projectId: p.id,
+        at: t,
+        meta: { name: p.name },
+      })),
+      ...tags.map((tag) => ({
+        type: 'tag.created' as const,
+        entity: 'tag' as const,
+        entityId: tag.id,
+        at: t,
+        meta: { name: tag.name },
+      })),
+      ...get().tasks.map((task) => ({
+        type: 'task.created' as const,
+        entity: 'task' as const,
+        entityId: task.id,
+        projectId: task.projectId,
+        at: t,
+        meta: { title: task.title, status: task.status, tagIds: task.tagIds },
+      })),
+      ...get()
+        .tasks.filter((task) => task.status === 'done')
+        .map((task) => ({
+          type: 'task.completed' as const,
+          entity: 'task' as const,
+          entityId: task.id,
+          projectId: task.projectId,
+          at: task.completedAt ?? t,
+          meta: { title: task.title, tagIds: task.tagIds },
+        })),
+    ]);
   },
 }));

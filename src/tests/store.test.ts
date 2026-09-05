@@ -3,6 +3,26 @@ import { dangerouslyDeleteDatabase, getKV, KV_BOARD } from '../storage/idb';
 import { flushBoardStore, useBoardStore } from '../stores/useBoardStore';
 import type { BoardData } from '../types';
 
+// Falha programável nas escritas (saveError) sem tocar no IDB real.
+vi.mock('../storage/idb', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../storage/idb')>();
+  let failing = false;
+  return {
+    ...actual,
+    __failBoardWrites: (v: boolean) => {
+      failing = v;
+    },
+    setKV: async (key: string, value: unknown) => {
+      if (failing) throw new Error('IDB indisponível');
+      return actual.setKV(key, value);
+    },
+  };
+});
+
+type IdbTestHooks = typeof import('../storage/idb') & {
+  __failBoardWrites: (v: boolean) => void;
+};
+
 async function reset(): Promise<void> {
   localStorage.clear();
   useBoardStore.setState({ projects: [], tasks: [], tags: [], saveError: null });
@@ -104,12 +124,13 @@ describe('useBoardStore — tarefas', () => {
   });
 
   it('sinaliza saveError quando o storage falha e limpa ao recuperar', async () => {
-    vi.stubGlobal('indexedDB', undefined);
+    const idbMock = (await import('../storage/idb')) as IdbTestHooks;
+    idbMock.__failBoardWrites(true);
     try {
       useBoardStore.getState().createProject({ name: 'Site' });
       await vi.waitFor(() => expect(useBoardStore.getState().saveError).toMatch(/backup/));
     } finally {
-      vi.unstubAllGlobals();
+      idbMock.__failBoardWrites(false);
     }
     const projectId = useBoardStore.getState().projects[0]?.id ?? '';
     useBoardStore.getState().createTask({ projectId, title: 'T' });

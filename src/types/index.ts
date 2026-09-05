@@ -65,7 +65,11 @@ export interface UserPreferences {
   /** Atalhos de letra (N/P///?) ligados. Ctrl+K e Esc funcionam sempre. */
   shortcutsEnabled: boolean;
   /** Última visão aberta (restaurada no boot). */
-  lastView: { kind: 'dashboard' } | { kind: 'project'; projectId: string } | { kind: 'calendar' };
+  lastView:
+    | { kind: 'dashboard' }
+    | { kind: 'project'; projectId: string }
+    | { kind: 'calendar' }
+    | { kind: 'stats' };
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {

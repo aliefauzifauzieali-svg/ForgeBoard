@@ -1,7 +1,20 @@
 import type { DayCount } from '../../services/stats';
 
-/** Barras de conclusões por dia (SVG próprio, sem lib de gráficos). */
-export function ActivityBars({ data, total }: { data: DayCount[]; total: number }): React.JSX.Element {
+/**
+ * Barras de conclusões por dia (SVG próprio, sem lib de gráficos).
+ * Com `onSelect`, cada barra vira botão (mouse + teclado) para filtrar.
+ */
+export function ActivityBars({
+  data,
+  total,
+  selectedIso,
+  onSelect,
+}: {
+  data: DayCount[];
+  total: number;
+  selectedIso?: string | null;
+  onSelect?: (iso: string) => void;
+}): React.JSX.Element {
   const max = Math.max(1, ...data.map((d) => d.count));
   const W = 560;
   const H = 120;
@@ -11,10 +24,11 @@ export function ActivityBars({ data, total }: { data: DayCount[]; total: number 
 
   return (
     <figure>
+      <figcaption className="sr-only">
+        {`Conclusões por dia nos últimos ${data.length} dias. Total: ${total}. Pico de ${max} em um dia.`}
+      </figcaption>
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        role="img"
-        aria-label={`Conclusões por dia nos últimos ${data.length} dias. Total: ${total}. Pico de ${max} em um dia.`}
         className="h-28 w-full sm:h-32"
       >
         <title>{`Total de ${total} conclusões`}</title>
@@ -22,8 +36,9 @@ export function ActivityBars({ data, total }: { data: DayCount[]; total: number 
           const h = d.count === 0 ? 3 : Math.max(8, ((H - PAD * 2 - 14) * d.count) / max);
           const x = PAD + step * i + (step - barW) / 2;
           const y = H - PAD - h;
-          return (
-            <g key={d.iso}>
+          const selected = selectedIso === d.iso;
+          const bar = (
+            <>
               <rect
                 x={x}
                 y={y}
@@ -31,7 +46,9 @@ export function ActivityBars({ data, total }: { data: DayCount[]; total: number 
                 height={h}
                 rx={3}
                 fill={d.count === 0 ? '#d4d4d8' : '#6366f1'}
-                opacity={d.count === 0 ? 0.6 : 1}
+                opacity={selected ? 1 : d.count === 0 ? 0.6 : 0.85}
+                stroke={selected ? '#312e81' : 'none'}
+                strokeWidth={selected ? 2 : 0}
               >
                 <title>{`${d.label}: ${d.count}`}</title>
               </rect>
@@ -40,6 +57,26 @@ export function ActivityBars({ data, total }: { data: DayCount[]; total: number 
                   {d.label}
                 </text>
               ) : null}
+            </>
+          );
+          if (!onSelect) return <g key={d.iso}>{bar}</g>;
+          return (
+            <g
+              key={d.iso}
+              role="button"
+              tabIndex={0}
+              aria-label={`Filtrar por ${d.label}: ${d.count} conclusões`}
+              aria-pressed={selected}
+              className="cursor-pointer"
+              onClick={() => onSelect(d.iso)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(d.iso);
+                }
+              }}
+            >
+              {bar}
             </g>
           );
         })}

@@ -4,85 +4,69 @@ Todas as mudanças notáveis do ForgeBoard serão documentadas aqui.
 
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
-## [Unreleased]
+## [1.0.0] - 2026-09-05
+
+Primeira release oficial — workspace pessoal local-first completo: projetos,
+Kanban, calendário, estatísticas, PWA instalável e dados versionados.
 
 ### Added
 
-- Persistência em IndexedDB (`idb`) com boot assíncrono, flush ao ocultar a aba
-  e espelho síncrono do tema (sem flash); `localStorage` só para tema/quarentena.
+**Projetos, tarefas e Kanban**
+- Dashboard com estatísticas, projetos, tarefas atrasadas/recentes e lista com
+  pesquisa, filtros (status, prioridade, só atrasadas) e ordenação.
+- Projetos (criar, editar, excluir em cascata; nome, descrição, cor) com quadro
+  Kanban (Backlog / Em andamento / Concluído, drag-and-drop + botões de mover).
+- Tarefas (título, descrição, prioridade, status, prazo opcional, etiquetas,
+  `previousStatus`, `completedAt`); criar, editar, excluir e duplicar.
+
+**Calendário**
+- Visões mensal, semanal e diária com navegação entre períodos e botão Hoje.
+- Criação a partir de qualquer dia (data pré-preenchida) e edição pelo cartão.
+- Drag and drop entre dias para remarcar o prazo (alternativa por teclado no modal).
+- Sincronização automática com o Kanban (mesmo store, dois sentidos).
+- Disciplina date-only (`yyyy-mm-dd`, semana seg–dom, locale pt-BR) via date-fns:
+  sem horas em lugar nenhum, à prova de timezone e DST.
+
+**Estatísticas e atividade**
+- Log de atividades append-only no IndexedDB (12 tipos de evento, índices por
+  tempo/projeto/tipo/entidade, retenção de 90 dias, backfill de conclusões legadas).
+- Página de Estatísticas: resumo numérico, filtros (projeto, etiqueta, período
+  7/30/90/personalizado), throughput com barras clicáveis, evolução acumulada por
+  projeto e tabela de atividades recentes.
+- Dashboard com conclusões por dia, rosca por prioridade, lead time médio e taxa
+  de conclusão (gráficos SVG próprios, sem biblioteca).
+
+**Etiquetas, preferências e dados**
 - Etiquetas de primeira classe (id, nome, cor): CRUD em Configurações,
-  autocomplete no modal, chips coloridos e renomear/excluir com cascata.
+  autocomplete no modal, chips coloridos, renomear/excluir com cascata.
 - Preferências separadas (tema, atalhos, última visão restaurada no boot).
-- Migrações versionadas (v1→v2 com fixture real) + quarentena com
-  restaurar-backup/recomeçar em caso de falha.
+- Persistência em IndexedDB (`idb`) com boot assíncrono, flush ao ocultar a aba
+  e espelho síncrono do tema (sem flash).
+- Migrações versionadas (`v1 → v2`, idempotentes, com fixture real) e quarentena
+  com baixar cópia, restaurar backup ou recomeçar.
 - Backups automáticos (a cada 10 alterações + diário, retém 5) e manuais, com
   restauração confirmada; exportação/importação JSON versionada (v1 migra).
-- Gráficos honestos no dashboard (SVG próprio, sem lib): conclusões/dia,
-  rosca por prioridade, lead time e taxa; `completedAt` registrado ao concluir.
 
-### Added
-
+**PWA e experiência**
 - PWA instalável: manifest (`manifest.json`, standalone, pt-BR, categorias),
   ícones 192/512/maskable gerados do SVG (`scripts/generate-icons.mjs`).
 - Service worker via vite-plugin-pwa (`generateSW`, prompt): precache do shell,
   atualização somente com confirmação (toast) e aviso de modo offline.
-- Indicador offline/online, botão de instalação (beforeinstallprompt) com
+- Indicador offline/online, botão de instalação (`beforeinstallprompt`) com
   boas-vindas pós-instalação e splash inicial com `prefers-reduced-motion`.
-- Testes PWA (manifest, registro, offline, splash, fluxo de update com rebuild).
+- Paleta de comandos (`Ctrl/⌘+K`) com busca global (projetos, tarefas,
+  descrições, etiquetas; insensível a acentos) e ações principais.
+- Desfazer/refazer (`Ctrl/⌘+Z`, `Ctrl/⌘+Shift+Z`, `Ctrl+Y`, 30 níveis) com botão
+  Desfazer nos toasts; sistema de toasts; diálogo de atalhos (`?`); loading na
+  importação; tema claro/escuro/sistema; responsivo completo; acessibilidade
+  (focus trap, live regions, sem depender só de cor, axe limpo).
 
-### Added
-
-- Calendário global de prazos com visões mensal, semanal e diária, navegação
-  entre períodos e botão Hoje.
-- Criação de tarefa a partir de qualquer dia (data pré-preenchida) e edição
-  clicando no cartão.
-- Drag and drop entre dias para remarcar o prazo (com alternativa por teclado
-  via modal de edição); sincronização automática com o Kanban (mesmo store).
-- Tarefas sem prazo ficam de fora do calendário, com contador e atalho de volta.
-- Disciplina date-only (`yyyy-mm-dd`, semana seg–dom, locale pt-BR) via date-fns:
-  sem horas em lugar nenhum, à prova de timezone e DST.
-
-### Added
-
-- Paleta de comandos (`Ctrl/⌘+K`) com busca global em projetos, tarefas,
-  descrições e tags (insensível a acentos), navegação por teclado e ações
-  principais (criar, navegar, tema, exportar, desfazer/refazer, atalhos).
-- Desfazer/refazer (`Ctrl/⌘+Z`, `Ctrl/⌘+Shift+Z`, `Ctrl+Y`) com histórico de
-  30 instantâneos por sessão e botão Desfazer nos toasts de exclusão/importação.
-- Sistema de toasts (sucesso/erro/info, auto-dispensa, com ação).
-- Diálogo de atalhos de teclado (tecla `?`).
-- Estado de carregamento na importação (botão desabilitado + spinner + `aria-busy`).
-- Testes axe (crítico/sério) no dashboard, Kanban, modal e paleta.
+**Qualidade e docs**
+- 121 testes Vitest + 40 E2E Playwright (+5 PWA com rebuild); `tsc`, lint e build
+  verdes; CI no GitHub Actions (typecheck → lint → testes → build → E2E).
+- Documentação: README, ROADMAP (fases 0–6) e este CHANGELOG.
 
 ### Changed
 
 - Texto secundário escurecido (`zinc-500` → `zinc-600` no modo claro) para
   contraste AA; scans axe aguardam o fim das animações de entrada.
-
-### Changed (Fase 1)
-
-- Downloads JSON (exportação, backups, quarentena) centralizados em
-  `src/services/download.ts` (`downloadJson` + `datedFilename`).
-- Modais de projeto/tarefa inicializam o formulário no mount (remount por `key`
-  no `App`), eliminando sincronização via efeito.
-- `ErrorBoundary` não acessa mais `localStorage` diretamente: usa `readRawBoard` e
-  `clearAllLocalData` da camada `storage/`.
-
-## [1.0.0] - 2026-09-05
-
-### Added
-
-- Dashboard com estatísticas, projetos, tarefas atrasadas/recentes e lista filtrável.
-- Projetos (criar, editar, excluir em cascata) com Kanban
-  (Backlog / Em andamento / Concluído, drag-and-drop + botões de mover).
-- Tarefas com título, descrição, prioridade, status, prazo opcional, tags e
-  `previousStatus` (desmarcar conclusão restaura o fluxo anterior).
-- Pesquisa, filtros (status, prioridade, só atrasadas) e ordenação.
-- Persistência em `localStorage` com validação no boot, quarentena de dados
-  inválidos, `ErrorBoundary` e aviso de falha de salvamento.
-- Importação/exportação JSON com validação e confirmação antes de substituir.
-- Tema claro/escuro/sistema persistido; atalhos `N`/`P`/`/`/`Esc`; região
-  `aria-live`; modais com focus trap; `prefers-reduced-motion`.
-- Responsivo: sidebar fixa no desktop, navegação inferior no mobile.
-- Testes: 47 unitários (Vitest) + 9 E2E (Playwright); CI no GitHub Actions.
-- Documentação: README, ROADMAP e este CHANGELOG.

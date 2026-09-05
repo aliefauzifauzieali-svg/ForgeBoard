@@ -1,9 +1,9 @@
 # ForgeBoard — Roadmap
 
 > Produto: workspace pessoal local-first para projetos, tarefas e planejamento.
-> Estado em 2026-09-05: Fase 2 concluída; `tsc`, `lint`, 72 testes unitários,
-> 18 testes E2E (incl. axe) e `build` todos verdes. Sem backend, sem contas,
-> sem sincronização (decisão intencional).
+> Estado em 2026-09-05: Fase 3 concluída; `tsc`, `lint`, testes unitários,
+> testes E2E (incl. axe e calendário) e `build` todos verdes. Sem backend,
+> sem contas, sem sincronização (decisão intencional).
 
 ## Baseline atual (o que já existe)
 
@@ -84,19 +84,26 @@ Notas da execução: undo/refazer implementados com histórico de 30 instantâne
 contextuais (sem mudança); loading real só existe na importação (app é síncrono
 local-first); contraste de texto secundário endurecido para AA.
 
-## Fase 3 — Calendário
+## Fase 3 — Calendário ✅ concluída em 2026-09-05
 
 **Objetivo:** planejar por data, sincronizado com o Kanban. Depende das Fases 1–2.
 
-- [ ] Visões mensal, semanal e diária (componentes próprios, sem lib de calendário pesada
+- [x] Visões mensal, semanal e diária (componentes próprios, sem lib de calendário pesada
       salvo se justificado em ADR).
-- [ ] Tarefas com prazo aparecem nos dias; tarefas sem prazo em faixa "sem data".
-- [ ] Criar/editar tarefa a partir de um dia; arrastar tarefa entre dias altera `dueDate`.
-- [ ] Mudança no calendário reflete no Kanban e vice-versa (mesmo store, sem sync manual).
-- [ ] Datas em UTC date-only (`yyyy-mm-dd`) + render local; testes cobrindo virada de fuso.
-- [ ] Testes E2E: definir prazo pelo calendário, arrastar entre dias, reload preserva.
+- [x] Tarefas com prazo aparecem nos dias; tarefas sem prazo em faixa "sem data".
+- [x] Criar/editar tarefa a partir de um dia; arrastar tarefa entre dias altera `dueDate`.
+- [x] Mudança no calendário reflete no Kanban e vice-versa (mesmo store, sem sync manual).
+- [x] Datas em UTC date-only (`yyyy-mm-dd`) + render local; testes cobrindo virada de fuso.
+- [x] Testes E2E: definir prazo pelo calendário, arrastar entre dias, reload preserva.
 
 **Concluída quando:** DoD + E2E de calendário verdes + ADR da decisão de datas/timezone.
+
+Notas da execução: biblioteca **date-fns v4** (imutável, tree-shakable, TS first-class,
+locale pt-BR; dayjs descartado por API mutável e plugins). ADR de datas documentada
+em `src/services/calendar.ts`: prazo é DIA (`yyyy-mm-dd`, parse por partes, sem horas
+→ imune a timezone/DST); semana começa segunda. Sem notificações/lembretes/recorrência
+(fora de escopo, como previsto). Mês em `<table>` real; semana com rolagem horizontal
+no mobile; fora-do-mês distinguido por cor (não opacidade) para preservar contraste.
 
 ## Fase 4 — PWA
 

@@ -50,3 +50,32 @@ export async function seedBoard(page: Page, data: unknown): Promise<void> {
   );
   await page.reload();
 }
+
+/** Arrasta um chip do calendário para um dia via eventos DnD sintéticos. */
+export async function dragChipToDay(page: Page, chipTestId: string, dayISO: string): Promise<void> {
+  await page.evaluate(
+    ([chipId, day]: [string, string]) => {
+      const chip = document.querySelector(`[data-testid="${chipId}"]`);
+      const cell = document.querySelector(`[data-testid="cal-day-${day}"]`);
+      if (!chip || !cell) throw new Error('chip ou dia não encontrado');
+      const taskId = (chip as HTMLElement).dataset.taskId ?? '';
+      const dataTransfer = {
+        getData: () => taskId,
+        setData: () => {},
+        effectAllowed: 'move',
+        dropEffect: 'move',
+      };
+      const start = new Event('dragstart', { bubbles: true, cancelable: true });
+      Object.defineProperty(start, 'dataTransfer', { value: { setData: () => {} } });
+      chip.dispatchEvent(start);
+      const over = new Event('dragover', { bubbles: true, cancelable: true });
+      Object.defineProperty(over, 'dataTransfer', { value: dataTransfer });
+      cell.dispatchEvent(over);
+      const drop = new Event('drop', { bubbles: true, cancelable: true });
+      Object.defineProperty(drop, 'dataTransfer', { value: dataTransfer });
+      cell.dispatchEvent(drop);
+      chip.dispatchEvent(new Event('dragend', { bubbles: true, cancelable: true }));
+    },
+    [chipTestId, dayISO] as [string, string],
+  );
+}

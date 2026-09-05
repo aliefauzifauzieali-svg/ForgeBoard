@@ -97,4 +97,11 @@ test.describe('acessibilidade (axe)', () => {
     await expect(page.getByTestId('command-palette')).toBeVisible();
     await expectNoSeriousViolations(page);
   });
+
+  test('calendário sem violações críticas ou sérias', async ({ page }) => {
+    await seedBoard(page, SEED);
+    await page.getByRole('button', { name: 'Calendário' }).click();
+    await expect(page.getByTestId('calendar-view')).toBeVisible();
+    await expectNoSeriousViolations(page);
+  });
 });

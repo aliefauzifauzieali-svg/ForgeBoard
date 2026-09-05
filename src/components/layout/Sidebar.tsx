@@ -1,4 +1,4 @@
-import { Download, LayoutDashboard, Plus, Upload } from 'lucide-react';
+import { CalendarDays, Download, LayoutDashboard, Plus, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { parseImport } from '../../services/validation';
 import { exportBoardNow } from '../../services/boardIO';
@@ -127,6 +127,7 @@ export function Sidebar(): React.JSX.Element {
   const projects = useBoardStore((s) => s.projects);
   const view = useUIStore((s) => s.view);
   const goDashboard = useUIStore((s) => s.goDashboard);
+  const goCalendar = useUIStore((s) => s.goCalendar);
   const openProject = useUIStore((s) => s.openProject);
   const openNewProject = useUIStore((s) => s.openNewProject);
   const openNewTask = useUIStore((s) => s.openNewTask);
@@ -180,6 +181,20 @@ export function Sidebar(): React.JSX.Element {
           >
             <LayoutDashboard size={17} aria-hidden />
             Dashboard
+          </button>
+          <button
+            type="button"
+            onClick={goCalendar}
+            aria-current={view.kind === 'calendar' ? 'page' : undefined}
+            className={cn(
+              'flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
+              view.kind === 'calendar'
+                ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300'
+                : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
+            )}
+          >
+            <CalendarDays size={17} aria-hidden />
+            Calendário
           </button>
 
           <div className="flex items-center justify-between px-3 pb-1 pt-4">

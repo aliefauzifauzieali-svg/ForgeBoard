@@ -1,4 +1,5 @@
 import {
+  CalendarDays,
   Download,
   FolderKanban,
   Home,
@@ -62,6 +63,13 @@ export function buildCommands(): PaletteCommand[] {
       icon: Home,
       keywords: 'inicio dashboard home visão geral',
       run: () => ui.goDashboard(),
+    },
+    {
+      id: 'go-calendar',
+      label: 'Abrir calendário',
+      icon: CalendarDays,
+      keywords: 'calendario agenda prazos datas mês semana dia',
+      run: () => ui.goCalendar(),
     },
     ...board.projects.slice(0, 8).map((p) => ({
       id: `open-${p.id}`,

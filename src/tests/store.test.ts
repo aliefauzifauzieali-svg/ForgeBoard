@@ -84,6 +84,16 @@ describe('useBoardStore — tarefas', () => {
     expect(useBoardStore.getState().tasks[0]?.updatedAt).toBe(before);
   });
 
+  it('atualiza o prazo da tarefa (usado pelo calendário)', () => {
+    const project = useBoardStore.getState().createProject({ name: 'Site' });
+    const task = useBoardStore.getState().createTask({ projectId: project.id, title: 'Com prazo' });
+    expect(task.dueDate).toBeNull();
+    useBoardStore.getState().updateTask(task.id, { dueDate: '2026-09-10' });
+    expect(useBoardStore.getState().tasks[0]?.dueDate).toBe('2026-09-10');
+    useBoardStore.getState().updateTask(task.id, { dueDate: null });
+    expect(useBoardStore.getState().tasks[0]?.dueDate).toBeNull();
+  });
+
   it('registra previousStatus ao concluir', () => {
     const project = useBoardStore.getState().createProject({ name: 'Site' });
     const task = useBoardStore.getState().createTask({ projectId: project.id, title: 'Bug' });

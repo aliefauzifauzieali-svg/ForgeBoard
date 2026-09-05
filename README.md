@@ -1,6 +1,6 @@
 # ForgeBoard
 
-Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON e persistência em `localStorage`.
+Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, calendário mensal/semanal/diário com drag and drop, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON e persistência em `localStorage`.
 
 ## Screenshots (placeholder)
 
@@ -23,6 +23,7 @@ Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 
 | Estilo | Tailwind CSS 3 (modo escuro via classe) |
 | Estado | Zustand |
 | Ícones | Lucide React |
+| Datas | date-fns (cálculos + locale pt-BR) |
 | Testes unitários | Vitest + Testing Library + jsdom |
 | Testes E2E | Playwright (Chromium) |
 | Lint | oxlint |
@@ -48,6 +49,7 @@ ForgeBoard/
 │   ├── features/             # Seções com regra de negócio
 │   │   ├── dashboard/        # estatísticas, projetos, atrasadas, recentes
 │   │   ├── palette/          # paleta de comandos + busca global
+│   │   ├── calendar/         # mês/semana/dia + DnD de prazos (date-fns)
 │   │   └── project/          # visão do projeto + Kanban filtrado
 │   ├── pages/                # wrappers finos sobre features
 │   ├── hooks/                # useKeyboardShortcuts (N/P///Esc)
@@ -98,7 +100,7 @@ npm run test          # testes unitários (Vitest)
 npm run test:e2e      # testes E2E no Chromium (desktop + mobile)
 ```
 
-Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, busca global, undo/redo, toasts, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError` e ErrorBoundary/focus-trap. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, paleta de comandos, undo via toast e atalho, diálogo de atalhos, axe (dashboard/Kanban/modal/paleta), reload mantendo os dados, recuperação de quarentena e fluxos mobile.
+Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, busca global, undo/redo, calendário (grades, agrupamento, datas), toasts, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError` e ErrorBoundary/focus-trap. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, paleta de comandos, undo via toast e atalho, calendário (criar/arrastar/sincronia/navegação), diálogo de atalhos, axe (dashboard/Kanban/modal/paleta/calendário), reload mantendo os dados, recuperação de quarentena e fluxos mobile.
 
 ## Atalhos de teclado
 

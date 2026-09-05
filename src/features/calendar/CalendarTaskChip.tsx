@@ -1,0 +1,68 @@
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import type { Task } from '../../types';
+import { useUIStore } from '../../stores/useUIStore';
+import { STATUS_META } from '../../utils/constants';
+import { isOverdue } from '../../utils/date';
+import { cn } from '../../utils/core';
+
+/**
+ * Cartão compacto de tarefa no calendário. Arrastar entre dias remarca o
+ * prazo; Enter/clique abre a edição (caminho por teclado para remarcar).
+ */
+export function CalendarTaskChip({
+  task,
+  projectColor,
+  projectName,
+  detailed,
+}: {
+  task: Task;
+  projectColor?: string;
+  projectName?: string;
+  detailed?: boolean;
+}): React.JSX.Element {
+  const openEditTask = useUIStore((s) => s.openEditTask);
+  const overdue = isOverdue(task.dueDate, task.status);
+  const done = task.status === 'done';
+
+  const onDragStart = (e: React.DragEvent): void => {
+    e.dataTransfer.setData('text/task-id', task.id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  return (
+    <button
+      type="button"
+      draggable
+      onDragStart={onDragStart}
+      data-testid={`cal-chip-${task.id}`}
+      data-task-id={task.id}
+      onClick={() => openEditTask(task.id)}
+      title={`${task.title}${projectName ? ` · ${projectName}` : ''}`}
+      aria-label={`${task.title}. Status ${STATUS_META[task.status].label}. Ativar para editar; arraste para outro dia para remarcar.${overdue ? ' Atrasada.' : ''}`}
+      className={cn(
+        'flex w-full items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-xs font-medium transition hover:shadow-card',
+        overdue
+          ? 'border-red-300 bg-red-50 text-red-900 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200'
+          : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200',
+        done && !overdue && 'opacity-75',
+      )}
+    >
+      {projectColor ? (
+        <span
+          aria-hidden
+          className="h-2 w-2 shrink-0 rounded-full"
+          style={{ backgroundColor: projectColor }}
+        />
+      ) : null}
+      <span className={cn('min-w-0 flex-1 truncate', done && 'line-through')}>
+        {task.title}
+        {detailed && projectName ? <span className="block truncate text-[11px] font-normal opacity-70">{projectName}</span> : null}
+      </span>
+      {overdue ? (
+        <AlertTriangle size={13} aria-hidden className="shrink-0" />
+      ) : done ? (
+        <CheckCircle2 size={13} aria-hidden className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+      ) : null}
+    </button>
+  );
+}

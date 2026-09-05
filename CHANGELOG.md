@@ -8,6 +8,18 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Calendário global de prazos com visões mensal, semanal e diária, navegação
+  entre períodos e botão Hoje.
+- Criação de tarefa a partir de qualquer dia (data pré-preenchida) e edição
+  clicando no cartão.
+- Drag and drop entre dias para remarcar o prazo (com alternativa por teclado
+  via modal de edição); sincronização automática com o Kanban (mesmo store).
+- Tarefas sem prazo ficam de fora do calendário, com contador e atalho de volta.
+- Disciplina date-only (`yyyy-mm-dd`, semana seg–dom, locale pt-BR) via date-fns:
+  sem horas em lugar nenhum, à prova de timezone e DST.
+
+### Added
+
 - Paleta de comandos (`Ctrl/⌘+K`) com busca global em projetos, tarefas,
   descrições e tags (insensível a acentos), navegação por teclado e ações
   principais (criar, navegar, tema, exportar, desfazer/refazer, atalhos).

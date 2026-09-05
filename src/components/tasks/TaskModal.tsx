@@ -27,7 +27,7 @@ export function TaskModal(): React.JSX.Element {
   const [description, setDescription] = useState(() => editing?.description ?? '');
   const [priority, setPriority] = useState<TaskPriority>(() => editing?.priority ?? 'medium');
   const [status, setStatus] = useState<TaskStatus>(() => editing?.status ?? taskModal.presetStatus ?? 'backlog');
-  const [dueDate, setDueDate] = useState(() => editing?.dueDate ?? '');
+  const [dueDate, setDueDate] = useState(() => editing?.dueDate ?? taskModal.presetDueDate ?? '');
   const [tags, setTags] = useState(() => editing?.tags.join(', ') ?? '');
   const [error, setError] = useState('');
 

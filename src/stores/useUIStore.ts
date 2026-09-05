@@ -3,7 +3,7 @@ import type { SortDir, SortKey, TaskFilters, TaskPriority, TaskStatus } from '..
 import { DEFAULT_FILTERS } from '../services/taskQuery';
 import { generateId } from '../utils/core';
 
-export type View = { kind: 'dashboard' } | { kind: 'project'; projectId: string };
+export type View = { kind: 'dashboard' } | { kind: 'project'; projectId: string } | { kind: 'calendar' };
 
 export type ToastKind = 'success' | 'error' | 'info';
 
@@ -23,6 +23,7 @@ interface UIState {
   view: View;
   goDashboard: () => void;
   openProject: (projectId: string) => void;
+  goCalendar: () => void;
 
   /** Último anúncio para leitores de tela (região aria-live). */
   announcement: { id: number; message: string };
@@ -46,8 +47,13 @@ interface UIState {
     editingId: string | null;
     presetProjectId: string | null;
     presetStatus: TaskStatus | null;
+    presetDueDate: string | null;
   };
-  openNewTask: (presetProjectId?: string | null, presetStatus?: TaskStatus | null) => void;
+  openNewTask: (
+    presetProjectId?: string | null,
+    presetStatus?: TaskStatus | null,
+    presetDueDate?: string | null,
+  ) => void;
   openEditTask: (id: string) => void;
   closeTaskModal: () => void;
 
@@ -88,6 +94,7 @@ export const useUIStore = create<UIState>()((set) => ({
   view: { kind: 'dashboard' },
   goDashboard: () => set({ view: { kind: 'dashboard' }, sidebarOpen: false }),
   openProject: (projectId) => set({ view: { kind: 'project', projectId }, sidebarOpen: false }),
+  goCalendar: () => set({ view: { kind: 'calendar' }, sidebarOpen: false }),
 
   announcement: { id: 0, message: '' },
   announce: (message) =>
@@ -106,13 +113,13 @@ export const useUIStore = create<UIState>()((set) => ({
   openEditProject: (id) => set({ projectModal: { open: true, editingId: id } }),
   closeProjectModal: () => set({ projectModal: { open: false, editingId: null } }),
 
-  taskModal: { open: false, editingId: null, presetProjectId: null, presetStatus: null },
-  openNewTask: (presetProjectId = null, presetStatus = null) =>
-    set({ taskModal: { open: true, editingId: null, presetProjectId, presetStatus } }),
+  taskModal: { open: false, editingId: null, presetProjectId: null, presetStatus: null, presetDueDate: null },
+  openNewTask: (presetProjectId = null, presetStatus = null, presetDueDate = null) =>
+    set({ taskModal: { open: true, editingId: null, presetProjectId, presetStatus, presetDueDate } }),
   openEditTask: (id) =>
-    set({ taskModal: { open: true, editingId: id, presetProjectId: null, presetStatus: null } }),
+    set({ taskModal: { open: true, editingId: id, presetProjectId: null, presetStatus: null, presetDueDate: null } }),
   closeTaskModal: () =>
-    set({ taskModal: { open: false, editingId: null, presetProjectId: null, presetStatus: null } }),
+    set({ taskModal: { open: false, editingId: null, presetProjectId: null, presetStatus: null, presetDueDate: null } }),
 
   confirm: { open: false, title: '', description: '', confirmLabel: 'Confirmar', action: null },
   askConfirm: (opts) =>

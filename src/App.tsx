@@ -16,6 +16,7 @@ import { ProjectPage } from './pages/ProjectPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { StatsPage } from './pages/StatsPage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useDueNotifications } from './hooks/useDueNotifications';
 import { useThemeEffect } from './stores/useThemeStore';
 import { useUIStore } from './stores/useUIStore';
 
@@ -37,6 +38,7 @@ export default function App(): React.JSX.Element {
   }, []);
   const searchRef = useRef<HTMLInputElement>(null);
   useKeyboardShortcuts(searchRef);
+  useDueNotifications();
   const view = useUIStore((s) => s.view);
 
   return (

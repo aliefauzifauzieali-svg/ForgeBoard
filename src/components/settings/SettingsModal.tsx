@@ -3,6 +3,7 @@ import { Download, Pencil, Plus, Settings2, Trash2, Upload } from 'lucide-react'
 import { PROJECT_COLORS } from '../../utils/constants';
 import { toDateTime } from '../../utils/date';
 import { cn } from '../../utils/core';
+import { getNotificationPermission, requestNotificationPermission, type NotifyPermission } from '../../services/notifications';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { usePrefsStore } from '../../stores/usePrefsStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -226,7 +227,78 @@ function BackupSection(): React.JSX.Element {
   );
 }
 
-/** Configurações: aparência, atalhos, etiquetas e backups. */
+function NotificationsSection(): React.JSX.Element {
+  const enabled = usePrefsStore((s) => s.notificationsEnabled);
+  const setEnabled = usePrefsStore((s) => s.setNotificationsEnabled);
+  const days = usePrefsStore((s) => s.notifyDaysBefore);
+  const setDays = usePrefsStore((s) => s.setNotifyDaysBefore);
+  const [permission, setPermission] = useState<NotifyPermission>(() => getNotificationPermission());
+  const [note, setNote] = useState('');
+
+  const toggle = async (v: boolean): Promise<void> => {
+    if (!v) {
+      setEnabled(false);
+      setNote('');
+      return;
+    }
+    const p = await requestNotificationPermission();
+    setPermission(p);
+    if (p === 'granted') {
+      setEnabled(true);
+      setNote('');
+    } else if (p === 'denied') {
+      setEnabled(false);
+      setNote('Permissão negada no navegador. Libere nas configurações do site para ativar.');
+    } else {
+      setEnabled(true);
+      setNote('API indisponível neste navegador: avisos aparecem como toast no app.');
+    }
+  };
+
+  return (
+    <div>
+      <label className="flex cursor-pointer items-center justify-between gap-3 text-sm">
+        <span>
+          Avisar sobre prazos próximos
+          <span className="block text-xs font-normal text-zinc-500">
+            Toast no app + notificação do sistema (se permitido).
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => void toggle(e.target.checked)}
+          className="h-5 w-5 accent-indigo-600"
+        />
+      </label>
+      {enabled ? (
+        <div className="mt-2 flex items-center gap-2 text-sm">
+          <label htmlFor="notify-days">Avisar com</label>
+          <select
+            id="notify-days"
+            className="input !w-auto !py-1.5 text-sm"
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+          >
+            {[1, 2, 3, 7].map((d) => (
+              <option key={d} value={d}>
+                {d} {d === 1 ? 'dia' : 'dias'}
+              </option>
+            ))}
+          </select>
+          <span className="text-zinc-600 dark:text-zinc-400">de antecedência</span>
+        </div>
+      ) : null}
+      {permission === 'denied' || note ? (
+        <p role={permission === 'denied' ? 'alert' : 'status'} className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+          {note || 'Notificações do sistema bloqueadas neste navegador.'}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Configurações: aparência, atalhos, notificações, etiquetas e backups. */
 export function SettingsModal(): React.JSX.Element {
   const open = useUIStore((s) => s.settingsOpen);
   const setOpen = useUIStore((s) => s.setSettingsOpen);
@@ -286,6 +358,10 @@ export function SettingsModal(): React.JSX.Element {
           >
             Ver todos os atalhos
           </button>
+        </Section>
+
+        <Section title="Notificações">
+          <NotificationsSection />
         </Section>
 
         <Section title="Etiquetas">

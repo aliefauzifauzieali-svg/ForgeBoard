@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { TASK_PRIORITIES, TASK_STATUSES, type RecurrenceKind, type TaskPriority, type TaskStatus } from '../../types';
+import { TASK_PRIORITIES, TASK_STATUSES, type RecurrenceKind, type Subtask, type TaskPriority, type TaskStatus } from '../../types';
 import { RECURRENCE_META } from '../../services/recurrence';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { PRIORITY_META, STATUS_META } from '../../utils/constants';
 import { parseTags } from '../../utils/core';
 import { Modal } from '../ui/Modal';
+import { SubtaskEditor } from './SubtaskEditor';
 
 export function TaskModal(): React.JSX.Element {
   const taskModal = useUIStore((s) => s.taskModal);
@@ -56,7 +57,7 @@ function TaskForm(): React.JSX.Element {
   const [recKind, setRecKind] = useState<'none' | RecurrenceKind>(() => editing?.recurrence?.kind ?? 'none');
   const [recInterval, setRecInterval] = useState(() => editing?.recurrence?.intervalDays ?? 2);
   const [tagIds, setTagIds] = useState<string[]>(() => editing?.tagIds ?? []);
-  const [tagInput, setTagInput] = useState('');
+  const [subs, setSubs] = useState<Subtask[]>(() => editing?.subtasks ?? []);  const [tagInput, setTagInput] = useState('');
   const [tagOpen, setTagOpen] = useState(false);
   const [tagActive, setTagActive] = useState(0);
   const [error, setError] = useState('');
@@ -107,6 +108,7 @@ function TaskForm(): React.JSX.Element {
           tagIds: finalIds,
           projectId,
           recurrence,
+          subtasks: subs,
         });
       } else {
         createTask({
@@ -118,6 +120,7 @@ function TaskForm(): React.JSX.Element {
           dueDate: dueDate || null,
           tagIds: finalIds,
           recurrence,
+          subtasks: subs,
         });
       }
       closeTaskModal();
@@ -390,6 +393,8 @@ function TaskForm(): React.JSX.Element {
               </ul>
             ) : null}
           </div>
+
+          <SubtaskEditor value={subs} onChange={setSubs} />
 
           {error ? (
             <p role="alert" className="rounded-xl bg-red-500/10 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300">

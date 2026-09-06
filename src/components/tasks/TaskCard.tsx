@@ -1,4 +1,4 @@
-import { AlertCircle, CalendarDays, ChevronLeft, ChevronRight, Copy, Pencil, Repeat, Trash2 } from 'lucide-react';
+import { AlertCircle, CalendarDays, ChevronLeft, ChevronRight, Copy, ListChecks, Pencil, Repeat, Trash2 } from 'lucide-react';
 import type { Task } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -110,6 +110,15 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
             <Repeat size={12} aria-hidden />
             <span className="sr-only">Tarefa recorrente</span>
             Recorrente
+          </span>
+        ) : null}
+        {task.subtasks.length > 0 ? (
+          <span
+            className="inline-flex items-center gap-1 tabular-nums"
+            title={`${task.subtasks.filter((s) => s.done).length} de ${task.subtasks.length} subtarefas concluídas`}
+          >
+            <ListChecks size={12} aria-hidden />
+            {task.subtasks.filter((s) => s.done).length}/{task.subtasks.length}
           </span>
         ) : null}
         {task.tagIds.slice(0, 3).map((id) => {

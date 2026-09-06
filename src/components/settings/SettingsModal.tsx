@@ -5,6 +5,7 @@ import { toDateTime } from '../../utils/date';
 import { cn } from '../../utils/core';
 import { getNotificationPermission, requestNotificationPermission, type NotifyPermission } from '../../services/notifications';
 import { checkDesktopUpdate, installDesktopUpdate } from '../../services/desktopUpdater';
+import { checkAndroidUpdate, installAndroidUpdate, isNativeAndroid } from '../../services/androidUpdater';
 import { isTauri } from '../../utils/platform';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { usePrefsStore } from '../../stores/usePrefsStore';
@@ -402,6 +403,104 @@ function UpdatesSection(): React.JSX.Element {
 // Guarda de sessão: a verificação automática roda uma vez.
 let autoChecked = false;
 
+/** Atualizações OTA do app Android (só renderizado no nativo). */
+function AndroidUpdatesSection(): React.JSX.Element | null {
+  const pushToast = useUIStore((s) => s.pushToast);
+  const [native, setNative] = useState<boolean | null>(null);
+  const [state, setState] = useState<'idle' | 'checking' | 'available' | 'ready' | 'installing' | 'error' | 'unconfigured'>('idle');
+  const [version, setVersion] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    void isNativeAndroid().then(setNative);
+  }, []);
+
+  if (native !== true) return null;
+
+  const installing = state === 'installing';
+
+  const check = async (): Promise<void> => {
+    setState('checking');
+    setError('');
+    try {
+      const info = await checkAndroidUpdate();
+      if (info.available) {
+        setState('available');
+        setVersion(info.version);
+      } else if (!info.available && info.reason === 'unconfigured') {
+        setState('unconfigured');
+      } else {
+        setState('ready');
+      }
+    } catch (err) {
+      setState('error');
+      setError(err instanceof Error ? err.message : 'Falha ao verificar.');
+    }
+  };
+
+  const install = async (): Promise<void> => {
+    if (state !== 'available' || !version) return;
+    const info = await checkAndroidUpdate();
+    if (!info.available) {
+      setState('ready');
+      return;
+    }
+    setState('installing');
+    setError('');
+    try {
+      await installAndroidUpdate(info.version, info.url);
+      pushToast({ kind: 'success', message: 'Atualização baixada — reinicie o app para aplicar.' });
+      setState('ready');
+    } catch (err) {
+      setState('error');
+      setError(err instanceof Error ? err.message : 'Falha ao instalar.');
+    }
+  };
+
+  return (
+    <Section title="Atualizações do Android">
+      <div>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+          {state === 'available' && version
+            ? `Versão ${version} disponível.`
+            : state === 'ready'
+              ? 'Você está na versão mais recente.'
+              : state === 'unconfigured'
+                ? 'Servidor de atualização não configurado (ver README).'
+                : 'Busca atualizações do app Android.'}
+        </p>
+      {error ? (
+        <p role="alert" className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      ) : null}
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          className="btn-ghost text-xs"
+          disabled={state === 'checking' || state === 'installing'}
+          onClick={() => void check()}
+        >
+          <RefreshCw size={14} aria-hidden />
+          {state === 'checking' ? 'Verificando…' : 'Verificar atualização'}
+        </button>
+        {state === 'available' || installing ? (
+          <button
+            type="button"
+            className="btn-primary text-xs"
+            disabled={installing}
+            onClick={() => void install()}
+          >
+            <Download size={14} aria-hidden />
+            {installing ? 'Baixando…' : 'Baixar e aplicar'}
+          </button>
+        ) : null}
+      </div>
+    </div>
+    </Section>
+  );
+}
+
 /** Configurações: aparência, atalhos, notificações, etiquetas e backups. */
 export function SettingsModal(): React.JSX.Element {
   const open = useUIStore((s) => s.settingsOpen);
@@ -473,7 +572,7 @@ export function SettingsModal(): React.JSX.Element {
             <UpdatesSection />
           </Section>
         ) : null}
-
+        <AndroidUpdatesSection />
         <Section title="Etiquetas">
           <TagsManager />
         </Section>

@@ -21,6 +21,7 @@ import { logEvent, logEventsBulk, statusTransitionEvents } from '../storage/acti
 import { PROJECT_COLORS } from '../utils/constants';
 import { generateId, nowIso } from '../utils/core';
 import { makeFollowUp, sanitizeRecurrence, sanitizeSubtasks } from '../services/recurrence';
+import type { CsvTaskRow } from '../services/csv';
 import { STATUS_META } from '../utils/constants';
 import { useUIStore } from './useUIStore';
 
@@ -74,6 +75,7 @@ interface BoardState extends BoardData {
   moveTask: (id: string, status: TaskStatus) => void;
   deleteTask: (id: string) => void;
   duplicateTask: (id: string) => Task | null;
+  importTasks: (projectId: string, rows: CsvTaskRow[]) => number;
   ensureTags: (names: string[]) => string[];
   createTag: (name: string, color?: string) => Tag;
   updateTag: (id: string, patch: Partial<Pick<Tag, 'name' | 'color'>>) => void;
@@ -471,6 +473,51 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     announce(`Tarefa duplicada como “${copy.title}”`);
     logEvent({ type: 'task.created', entity: 'task', entityId: copy.id, projectId: copy.projectId, meta: { title: copy.title, status: copy.status, tagIds: copy.tagIds, duplicateOf: id } });
     return copy;
+  },
+
+  importTasks: (projectId, rows) => {
+    const target = get().projects.find((p) => p.id === projectId);
+    if (!target) throw new Error('Projeto de destino não encontrado');
+    if (rows.length === 0) return 0;
+    pushHistory(get, 'importar CSV');
+    const byName = new Map(get().projects.map((p) => [p.name.toLowerCase(), p.id] as const));
+    const allTags = [...new Set(rows.flatMap((r) => r.tags))];
+    const tagIds = new Map<string, string>();
+    if (allTags.length > 0) {
+      const ids = get().ensureTags(allTags);
+      allTags.forEach((name, i) => tagIds.set(name, ids[i]!));
+    }
+    const now = nowIso();
+    const created: Task[] = rows.map((r) => {
+      const pid = (r.projectName && byName.get(r.projectName.toLowerCase())) || target.id;
+      return {
+        id: generateId(),
+        projectId: pid,
+        title: r.title,
+        description: r.description,
+        priority: r.priority,
+        status: r.status,
+        tagIds: r.tags.map((n) => tagIds.get(n)).filter((id): id is string => Boolean(id)).slice(0, 12),
+        createdAt: now,
+        updatedAt: now,
+        completedAt: r.status === 'done' ? now : null,
+        dueDate: r.dueDate,
+        recurrence: null,
+        subtasks: [],
+      };
+    });
+    set((s) => ({ tasks: [...created, ...s.tasks] }));
+    persist(get);
+    announce(`${created.length} ${created.length === 1 ? 'tarefa importada' : 'tarefas importadas'} do CSV`);
+    logEventsBulk(
+      created.map((t) => ({ type: 'task.created' as const, entity: 'task' as const, entityId: t.id, projectId: t.projectId, meta: { title: t.title, status: t.status, tagIds: t.tagIds, csv: true } })),
+    );
+    pushToast({
+      kind: 'success',
+      message: `${created.length} ${created.length === 1 ? 'tarefa importada' : 'tarefas importadas'} em “${target.name}”`,
+      action: { label: 'Desfazer', run: () => useBoardStore.getState().undo() },
+    });
+    return created.length;
   },
 
   ensureTags: (names) => {

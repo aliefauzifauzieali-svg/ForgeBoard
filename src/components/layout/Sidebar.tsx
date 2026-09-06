@@ -2,6 +2,7 @@ import { BarChart3, CalendarDays, Download, LayoutDashboard, Plus, Settings as S
 import { useRef, useState } from 'react';
 import { parseImport } from '../../services/boardIO';
 import { exportBoardNow, type ExportFormat } from '../../services/boardIO';
+import { parseCsvTasks } from '../../services/csv';
 import { FORMAT_VERSION } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -40,11 +41,19 @@ function label(p: string): string {
 
 export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Element {
   const replaceAll = useBoardStore((s) => s.replaceAll);
+  const importTasks = useBoardStore((s) => s.importTasks);
+  const projects = useBoardStore((s) => s.projects);
+  const view = useUIStore((s) => s.view);
   const askConfirm = useUIStore((s) => s.askConfirm);
   const fileRef = useRef<HTMLInputElement>(null);
+  const csvFileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [format, setFormat] = useState<ExportFormat>('json');
+  // Projeto alvo do CSV: o aberto, ou o primeiro.
+  const defaultTarget = view.kind === 'project' ? view.projectId : (projects[0]?.id ?? '');
+  const [targetId, setTargetId] = useState('');
+  const target = targetId || defaultTarget;
 
   const doExport = (): void => {
     const { projects, tasks, tags } = useBoardStore.getState();
@@ -81,6 +90,42 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
           onDone?.();
         },
       });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onFileCsv = async (file: File): Promise<void> => {
+    setError('');
+    if (file.size > MAX_IMPORT_BYTES) {
+      setError(
+        `Arquivo muito grande (máximo ${Math.round(MAX_IMPORT_BYTES / 1024 / 1024)} MB).`,
+      );
+      return;
+    }
+    if (!target || !projects.some((p) => p.id === target)) {
+      setError('Escolha o projeto de destino antes de importar o CSV.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const raw = await file.text();
+      const parsed = parseCsvTasks(raw);
+      let imported = 0;
+      try {
+        imported = importTasks(target, parsed.rows);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Não foi possível importar.');
+        return;
+      }
+      if (parsed.errors.length > 0) {
+        setError(
+          `${imported} ${imported === 1 ? 'tarefa importada' : 'tarefas importadas'}; ` +
+            `${parsed.errors.length} ${parsed.errors.length === 1 ? 'linha ignorada' : 'linhas ignoradas'}: ` +
+            parsed.errors.slice(0, 3).join(' · '),
+        );
+      }
+      if (imported > 0) onDone?.();
     } finally {
       setBusy(false);
     }
@@ -135,6 +180,55 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
           }}
         />
       </div>
+      <div className="flex gap-2">
+        <label htmlFor="csv-target" className="sr-only">
+          Projeto de destino do CSV
+        </label>
+        <select
+          id="csv-target"
+          className="input min-w-0 flex-1 !px-2 !py-2 text-xs"
+          value={target}
+          onChange={(e) => setTargetId(e.target.value)}
+          aria-label="Projeto de destino do CSV"
+        >
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          className="btn-ghost flex-1 text-xs"
+          disabled={busy || projects.length === 0}
+          onClick={() => csvFileRef.current?.click()}
+        >
+          {busy ? (
+            <>
+              <Spinner label="Importando CSV" /> Importando…
+            </>
+          ) : (
+            <>
+              <Upload size={14} aria-hidden /> Importar CSV
+            </>
+          )}
+        </button>
+        <input
+          ref={csvFileRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="sr-only"
+          aria-label="Selecionar arquivo CSV para importar tarefas"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void onFileCsv(f);
+            e.target.value = '';
+          }}
+        />
+      </div>
+      <p className="text-[11px] text-zinc-500">
+        CSV com colunas título, descrição, status, prioridade, prazo (aaaa-mm-dd), tags e projeto (opcional).
+      </p>
       {error ? (
         <p role="alert" className="text-xs font-medium text-red-600 dark:text-red-400">
           {error}

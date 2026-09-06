@@ -20,9 +20,15 @@
     "test:e2e:pwa": "playwright test --config=playwright.pwa.config.ts",
     "test:e2e:install": "playwright install chromium",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "android:sync": "cap sync android",
+    "android:open": "cap open android",
+    "android:build": "cap sync android && cd android && gradlew assembleDebug"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
     "date-fns": "^4.4.0",
     "idb": "^8.0.3",
     "lucide-react": "^0.469.0",

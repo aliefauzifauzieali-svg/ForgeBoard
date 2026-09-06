@@ -10,6 +10,13 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# Capacitor: web assets copiados e saídas de build (regenerados por `cap sync`/Gradle)
+android/app/src/main/assets/
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/captures/
 *.local
 .env
 .env.*

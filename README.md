@@ -165,6 +165,22 @@ IndexedDB/localStorage persistem entre reinicializações. Nota: na WebView o
 service worker pode não registrar (esquema próprio do Capacitor) — irrelevante
 aqui, pois nada é buscado da rede; o `pwa.ts` trata a falha em silêncio.
 
+## Nova versão (release automática)
+
+O workflow `.github/workflows/release.yml` gera instaladores Windows/Linux/macOS
+(Tauri) + APK Android (Capacitor) a cada tag `v*`:
+
+```powershell
+#1. Sincronize a versão do app com a tag (package.json + src-tauri/tauri.conf.json)
+#2. Commit, tag e push — o resto é automático:
+git tag v1.3.0
+git push origin main v1.3.0
+#3. Acompanhe em Actions > Release; os artefatos vão para a release do GitHub.
+```
+
+Também dá para disparar manualmente em Actions > Release > Run workflow
+(`workflow_dispatch`). iOS fora de escopo.
+
 ## Como executar os testes
 
 ```powershell

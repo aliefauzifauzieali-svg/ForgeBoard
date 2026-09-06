@@ -45,11 +45,6 @@ export function toDateOnlyString(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
 
-/** Hoje como `yyyy-mm-dd` local. */
-export function todayString(): string {
-  return toDateOnlyString(new Date());
-}
-
 /** 42 células (6 semanas) cobrindo o mês do cursor, começando na segunda. */
 export function getMonthCells(cursor: Date): Date[] {
   const start = startOfWeek(startOfMonth(cursor), WEEK_OPTS);

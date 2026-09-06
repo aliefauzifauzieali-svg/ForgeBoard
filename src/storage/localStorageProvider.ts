@@ -29,17 +29,3 @@ export const localStorageProvider: StorageProvider = {
     }
   },
 };
-
-/** Provider em memória — usado em testes e como fallback SSR. */
-export function createMemoryProvider(initial: Record<string, string> = {}): StorageProvider {
-  const store = new Map<string, string>(Object.entries(initial));
-  return {
-    readKey: (key: string) => store.get(key) ?? null,
-    writeKey: (key: string, value: string) => {
-      store.set(key, value);
-    },
-    removeKey: (key: string) => {
-      store.delete(key);
-    },
-  };
-}

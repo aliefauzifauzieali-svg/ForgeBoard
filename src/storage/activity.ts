@@ -38,6 +38,7 @@ export interface ActivityEvent {
     tagIds?: string[];
     tasks?: number;
     duplicateOf?: string;
+    recurring?: boolean;
   };
 }
 

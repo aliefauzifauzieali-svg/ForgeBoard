@@ -82,7 +82,7 @@ describe('useBoardStore — tarefas', () => {
   it('substitui todos os dados (import) e recarrega do storage', () => {
     const project = useBoardStore.getState().createProject({ name: 'Antigo' });
     expect(useBoardStore.getState().projects).toHaveLength(1);
-    useBoardStore.getState().replaceAll({ version: 2, projects: [], tasks: [], tags: [] });
+    useBoardStore.getState().replaceAll({ version: 3, projects: [], tasks: [], tags: [] });
     expect(useBoardStore.getState().projects).toHaveLength(0);
     expect(project.id).toBeTruthy();
   });
@@ -139,7 +139,7 @@ describe('useBoardStore — tarefas', () => {
 
   it('hydrate aplica dados e é idempotente', () => {
     const data: BoardData = {
-      version: 2,
+      version: 3,
       projects: [
         {
           id: 'p1',
@@ -155,7 +155,7 @@ describe('useBoardStore — tarefas', () => {
     };
     useBoardStore.getState().hydrate(data, []);
     expect(useBoardStore.getState().projects).toHaveLength(1);
-    useBoardStore.getState().hydrate({ version: 2, projects: [], tasks: [], tags: [] }, []);
+    useBoardStore.getState().hydrate({ version: 3, projects: [], tasks: [], tags: [] }, []);
     expect(useBoardStore.getState().projects).toHaveLength(0);
   });
 });

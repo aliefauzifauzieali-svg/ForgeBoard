@@ -11,6 +11,7 @@ import {
 } from '../storage/activity';
 import { getKV, setKV } from '../storage/idb';
 import type { BoardData } from '../types';
+import { FORMAT_VERSION } from '../types';
 
 let booted = false;
 
@@ -75,7 +76,7 @@ export async function bootApp(): Promise<void> {
   }
 
   if (!initial) {
-    useBoardStore.getState().hydrate({ version: 2, projects: [], tasks: [], tags: [] }, []);
+    useBoardStore.getState().hydrate({ version: FORMAT_VERSION, projects: [], tasks: [], tags: [] }, []);
     useUIStore.getState().pushToast({
       kind: 'error',
       message: 'Armazenamento indisponível — os dados podem não carregar',

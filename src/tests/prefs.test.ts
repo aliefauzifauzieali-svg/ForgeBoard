@@ -39,6 +39,8 @@ describe('usePrefsStore', () => {
     expect(await getKV<UserPreferences>(KV_PREFERENCES)).toEqual({
       theme: 'dark',
       shortcutsEnabled: true,
+      notificationsEnabled: false,
+      notifyDaysBefore: 1,
       lastView: { kind: 'dashboard' },
     });
   });
@@ -47,6 +49,8 @@ describe('usePrefsStore', () => {
     usePrefsStore.getState().hydrate({
       theme: 'dark',
       shortcutsEnabled: false,
+      notificationsEnabled: false,
+      notifyDaysBefore: 1,
       lastView: { kind: 'calendar' },
     });
     expect(usePrefsStore.getState().hydrated).toBe(true);

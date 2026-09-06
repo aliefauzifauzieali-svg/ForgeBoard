@@ -16,20 +16,24 @@ import {
 } from '../services/calendar';
 import type { Task } from '../types';
 
-const T = (id: string, dueDate: string | null, extra: Partial<Task> = {}): Task => ({
-  id,
-  projectId: 'p1',
-  title: `Tarefa ${id}`,
-  description: '',
-  priority: 'medium',
-  status: 'backlog',
-  createdAt: `2026-09-0${id}T10:00:00.000Z`,
-  updatedAt: `2026-09-0${id}T10:00:00.000Z`,
-  completedAt: null,
-  dueDate,
-  tagIds: [],
-  ...extra,
-});
+const T = (id: string, dueDate: string | null, extra: Partial<Task> = {}): Task => {
+  const base: Task = {
+    id,
+    projectId: 'p1',
+    title: `Tarefa ${id}`,
+    description: '',
+    priority: 'medium',
+    status: 'backlog',
+    createdAt: `2026-09-0${id}T10:00:00.000Z`,
+    updatedAt: `2026-09-0${id}T10:00:00.000Z`,
+    completedAt: null,
+    dueDate,
+    tagIds: [],
+    recurrence: null,
+    subtasks: [],
+  };
+  return Object.assign(base, extra);
+};
 
 describe('parseDateOnly / toDateOnlyString', () => {
   it('converte sem deslocar o dia (prova de timezone)', () => {

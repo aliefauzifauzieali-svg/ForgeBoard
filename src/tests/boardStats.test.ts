@@ -17,20 +17,24 @@ const P = (id: string): Project => ({
   updatedAt: '2026-01-01T00:00:00.000Z',
 });
 
-const T = (id: string, projectId: string, status: Task['status'], extra: Partial<Task> = {}): Task => ({
-  id,
-  projectId,
-  title: `Tarefa ${id}`,
-  description: '',
-  priority: 'medium',
-  status,
-  createdAt: `2026-01-0${id}T00:00:00.000Z`,
-  updatedAt: `2026-01-0${id}T00:00:00.000Z`,
-  completedAt: null,
-  dueDate: null,
-  tagIds: [],
-  ...extra,
-});
+const T = (id: string, projectId: string, status: Task['status'], extra: Partial<Task> = {}): Task => {
+  const base: Task = {
+    id,
+    projectId,
+    title: `Tarefa ${id}`,
+    description: '',
+    priority: 'medium',
+    status,
+    createdAt: `2026-01-0${id}T10:00:00.000Z`,
+    updatedAt: `2026-01-0${id}T10:00:00.000Z`,
+    completedAt: null,
+    dueDate: null,
+    tagIds: [],
+    recurrence: null,
+    subtasks: [],
+  };
+  return Object.assign(base, extra);
+};
 
 describe('projectProgress', () => {
   it('retorna 0% quando o projeto não tem tarefas', () => {

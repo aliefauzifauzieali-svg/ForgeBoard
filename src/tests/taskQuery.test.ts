@@ -8,20 +8,24 @@ const TAGS: Tag[] = [
 ];
 const TAGMAP = new Map(TAGS.map((t) => [t.id, t.name] as const));
 
-const T = (id: string, extra: Partial<Task> = {}): Task => ({
-  id,
-  projectId: 'p1',
-  title: `Tarefa ${id}`,
-  description: `descrição ${id}`,
-  priority: 'medium',
-  status: 'backlog',
-  createdAt: `2026-01-0${id}T10:00:00.000Z`,
-  updatedAt: `2026-01-0${id}T10:00:00.000Z`,
-  completedAt: null,
-  dueDate: null,
-  tagIds: [],
-  ...extra,
-});
+const T = (id: string, extra: Partial<Task> = {}): Task => {
+  const base: Task = {
+    id,
+    projectId: 'p1',
+    title: `Tarefa ${id}`,
+    description: `descrição ${id}`,
+    priority: 'medium',
+    status: 'backlog',
+    createdAt: `2026-01-0${id}T10:00:00.000Z`,
+    updatedAt: `2026-01-0${id}T10:00:00.000Z`,
+    completedAt: null,
+    dueDate: null,
+    tagIds: [],
+    recurrence: null,
+    subtasks: [],
+  };
+  return Object.assign(base, extra);
+};
 
 describe('filterTasks', () => {
   const tasks = [

@@ -62,7 +62,7 @@ describe('useBoardStore — undo/redo', () => {
 
   it('desfaz importação (replaceAll)', () => {
     const project = useBoardStore.getState().createProject({ name: 'Antigo' });
-    useBoardStore.getState().replaceAll({ version: 2, projects: [], tasks: [], tags: [] });
+    useBoardStore.getState().replaceAll({ version: 3, projects: [], tasks: [], tags: [] });
     expect(useBoardStore.getState().projects).toHaveLength(0);
     useBoardStore.getState().undo();
     expect(useBoardStore.getState().projects.map((p) => p.id)).toEqual([project.id]);

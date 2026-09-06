@@ -48,8 +48,8 @@ export const useThemeStore = create<ThemeState>()((set) => ({
     }
     set({ preference: p, resolved: resolve(p) });
     try {
-      const { shortcutsEnabled, lastView } = usePrefsStore.getState();
-      schedulePrefsPersist({ theme: p, shortcutsEnabled, lastView });
+      const { shortcutsEnabled, notificationsEnabled, notifyDaysBefore, lastView } = usePrefsStore.getState();
+      schedulePrefsPersist({ theme: p, shortcutsEnabled, notificationsEnabled, notifyDaysBefore, lastView });
     } catch {
       /* prefs ainda não hidratadas: boot cuida */
     }

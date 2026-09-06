@@ -7,20 +7,24 @@ import {
 } from '../services/stats';
 import type { Task } from '../types';
 
-const T = (id: string, extra: Partial<Task> = {}): Task => ({
-  id,
-  projectId: 'p1',
-  title: `Tarefa ${id}`,
-  description: '',
-  priority: 'medium',
-  status: 'backlog',
-  tagIds: [],
-  createdAt: '2026-09-01T10:00:00.000Z',
-  updatedAt: '2026-09-01T10:00:00.000Z',
-  completedAt: null,
-  dueDate: null,
-  ...extra,
-});
+const T = (id: string, extra: Partial<Task> = {}): Task => {
+  const base: Task = {
+    id,
+    projectId: 'p1',
+    title: `Tarefa ${id}`,
+    description: '',
+    priority: 'medium',
+    status: 'backlog',
+    tagIds: [],
+    createdAt: '2026-09-01T10:00:00.000Z',
+    updatedAt: '2026-09-01T10:00:00.000Z',
+    completedAt: null,
+    dueDate: null,
+    recurrence: null,
+    subtasks: [],
+  };
+  return Object.assign(base, extra);
+};
 
 describe('completionsPerDay', () => {
   it('conta conclusões por dia com completedAt válido', () => {

@@ -165,6 +165,39 @@ IndexedDB/localStorage persistem entre reinicializações. Nota: na WebView o
 service worker pode não registrar (esquema próprio do Capacitor) — irrelevante
 aqui, pois nada é buscado da rede; o `pwa.ts` trata a falha em silêncio.
 
+## Atualizações automáticas
+
+### Desktop (Tauri, assinado)
+
+O app verifica `latest.json` no GitHub Releases ao iniciar (silencioso) e em
+Configurações > Atualizações (botão "Verificar atualização" + "Instalar e
+reiniciar", com progresso). Pacotes verificados por assinatura minisign.
+
+- Chave: gerada com `tauri signer generate`; a pública está em
+  `tauri.conf.json` (`plugins.updater.pubkey`); a privada vive nos secrets
+  `TAURI_SIGNING_PRIVATE_KEY[_PASSWORD]` do repositório (nunca no código).
+- O workflow de release assina os bundles e publica `latest.json` junto aos
+  instaladores (Windows: `-setup.exe`; Linux: `.AppImage`; macOS: `.app.tar.gz`).
+- Teste manual: instale uma versão antiga, publique tag maior, abra o app —
+  o toast indica a nova versão; instale por Configurações e confirme a versão.
+
+### Android (Capacitor, OTA via servidor)
+
+Atualizações over-the-air do bundle web via plugin Capgo (`autoUpdate: false`
+por padrão — nada é verificado sozinho). Passos para habilitar:
+
+1. Contrate/choque um servidor de bundles (nuvem Capgo ou próprio compatível).
+2. Preencha `ANDROID_UPDATE_URL` em `src/services/updateServer.ts`
+   (fonte única: alimenta `capacitor.config.ts` e o serviço).
+3. `npm run android:sync` + rebuild do APK (`android:build:win`).
+4. No app: Configurações > Atualizações do Android > Verificar > Baixar e
+   aplicar; a troca vale após reiniciar. Bundles OTA não pedem confirmação
+   do sistema (só reinstalações de APK pedem).
+5. Quando houver servidor, chame `CapacitorUpdater.notifyAppReady()` no boot
+   (evita rollback automático do bundle).
+
+Sem servidor, a seção mostra "não configurado" e nenhuma rede é tocada.
+
 ## Nova versão (release automática)
 
 O workflow `.github/workflows/release.yml` gera instaladores Windows/Linux/macOS

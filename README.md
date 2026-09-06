@@ -108,6 +108,46 @@ npm run test:e2e:install
 | `npm run test:watch` | Vitest em modo watch |
 | `npm run test:e2e` | Playwright dev (sobe o `dev` sozinho via `webServer`) |
 | `npm run test:e2e:pwa` | Playwright contra o build (`preview`): manifest, SW, offline, update |
+| `npm run tauri:dev` | app desktop em desenvolvimento (exige Rust) |
+| `npm run tauri:build` | instaladores desktop em `src-tauri/target/release/bundle/` |
+| `npm run android:sync` | copia `dist/` + config para o projeto Android |
+| `npm run android:open` | abre o projeto no Android Studio |
+| `npm run android:build` | gera o APK de debug (`android/app/build/outputs/apk/debug/`) |
+
+## Instalação Desktop (Tauri — Windows/Linux/macOS)
+
+Pré-requisitos: Node.js 20+ e o toolchain **Rust estável** (`rustup`), além das
+dependências de sistema do [guia Tauri](https://v2.tauri.app/start/prerequisites/)
+(WebView2 no Windows 10/11 — já incluso no Windows 11; WebKitGTK no Linux).
+
+```powershell
+npm install
+npm run tauri:dev    # janela desktop apontando para o Vite em dev
+npm run tauri:build  # instaladores em src-tauri/target/release/bundle/
+```
+
+Saídas: Windows (`.msi` + `.exe` NSIS), macOS (`.dmg` + `.app`), Linux (`.deb` + `.AppImage`).
+O frontend é o mesmo `dist/` do PWA — nenhuma lógica muda; o armazenamento
+continua em IndexedDB/localStorage dentro da WebView.
+
+## Instalação Android (Capacitor — APK)
+
+Pré-requisitos: Node.js 20+, **JDK 17** e **Android SDK** (cmdline-tools +
+platform-tools + uma platform Android), com `ANDROID_HOME`/`ANDROID_SDK_ROOT`
+apontando para o SDK. Sem o SDK, só `android:sync`/`android:open` funcionam.
+
+```powershell
+npm install
+npm run build
+npm run android:sync    # copia dist/ para android/app/src/main/assets
+npm run android:build   # APK debug em android/app/build/outputs/apk/debug/
+```
+
+Alternativa sem linha de comando: `npm run android:open` e Build > Build APK no
+Android Studio. Offline funciona porque os assets vão empacotados no APK;
+IndexedDB/localStorage persistem entre reinicializações. Nota: na WebView o
+service worker pode não registrar (esquema próprio do Capacitor) — irrelevante
+aqui, pois nada é buscado da rede; o `pwa.ts` trata a falha em silêncio.
 
 ## Como executar os testes
 

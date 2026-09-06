@@ -253,6 +253,28 @@ dependências pesadas — só `date-fns`, já presente).
 
 ---
 
+## Fase 13 — Empacotamento Desktop e Mobile ✅ configurada em 2026-09-06
+
+Distribuição como app instalável, sem mudar lógica, storage ou PWA.
+
+- [x] Desktop **Tauri v2**: `src-tauri/` (`com.forgeboard.app`, janela
+      1200×800), ícones `.ico`/`.icns`/`.png` da identidade oficial,
+      scripts `tauri:dev`/`tauri:build`; só permissão `core:default`.
+- [x] Android **Capacitor 8**: `capacitor.config.ts` (`webDir: dist`),
+      `android/` versionado, launcher adaptativo + splash ForgeBoard,
+      scripts `android:sync/open/build`; só permissão INTERNET padrão.
+- [x] PWA intacto: `npm run build` inalterado; SW continua opcional e
+      silencioso onde a WebView não o suporta.
+- [x] Docs: seções de instalação Desktop/Android no README + CHANGELOG.
+- [x] Limitação honesta: sem Rust/JDK/SDK neste ambiente — `tauri dev`,
+      `tauri build` e o APK via Gradle **não executados**; validados CLI,
+      `cap sync`, configs e gates web. Builds nativos rodam em máquina
+      com toolchain ou CI.
+
+**Concluída quando:** configs versionadas + gates web verdes + docs.
+
+---
+
 ## Pós-roadmap (fora de escopo — só após a Fase 8)
 
 Contas, autenticação, sincronização, backend, compartilhamento e colaboração.

@@ -8,6 +8,13 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Empacotamento Desktop com **Tauri v2** (`src-tauri/`, id `com.forgeboard.app`,
+  janela 1200×800): `npm run tauri:dev` / `npm run tauri:build` geram
+  instaladores para Windows, Linux e macOS a partir do mesmo `dist/`.
+- Empacotamento Android com **Capacitor** (`capacitor.config.ts`, `android/`,
+  id `com.forgeboard.app`): `npm run android:sync/open/build`; ícones
+  adaptativos e splash com a identidade ForgeBoard; offline via assets
+  empacotados, IndexedDB persistente.
 - Tarefas recorrentes (diária, semanal, mensal, personalizada com intervalo):
   ao concluir, a próxima ocorrência é criada automaticamente; indicador de
   repetição nos cartões e edição/remoção no modal da tarefa.

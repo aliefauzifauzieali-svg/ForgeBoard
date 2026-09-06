@@ -2,13 +2,17 @@
 
 Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON versionada e persistência em IndexedDB (com migração do formato antigo) e página de Estatísticas com log de atividades e métricas históricas.
 
-## Screenshots (placeholder)
+## Screenshots
 
-> Substitua pelos prints reais em `docs/screenshots/`.
+> Geradas com `node scripts/capture-screenshots.mjs` (após `npm run build`).
 
 | Dashboard | Quadro Kanban |
 |---|---|
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Kanban](docs/screenshots/kanban.png) |
+
+| Calendário | Estatísticas |
+|---|---|
+| ![Calendário](docs/screenshots/calendar.png) | ![Estatísticas](docs/screenshots/stats.png) |
 
 | Modo escuro | Mobile |
 |---|---|

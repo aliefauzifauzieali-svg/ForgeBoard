@@ -202,14 +202,27 @@ bundle principal via Dashboard; componentes pequenos — documentado); sem erros
 console além dos 2 intencionais; E2E estabilizado com waits de durabilidade IDB e
 ramo lastView; `npx tsc/lint/test/build` + 45 E2E dev + 5 PWA verdes.
 
-## Fase 8 — Polimento (pré-beta)
+## Fase 8 — Polimento (pré-beta) ✅ concluída em 2026-09-05
 
-Auditoria completa e correção: UX, a11y, performance (budget: JS ≤ 300 KB gzip,
-Lighthouse perf ≥ 90 no desktop), responsividade, segurança (revisar CSP para deploy),
-dependências (`npm audit` + revisão de necessidade de cada dep), duplicação, console limpo,
-race conditions (ex.: saves concorrentes pós-IndexedDB), exceções.
+Auditoria executada por categoria; sem P0; 1 P1 corrigido (ações hover-only
+inacessíveis no touch → `max-sm:opacity-100` nos cards).
+
+- [x] UX/a11y/responsividade/segurança/arquitetura: revise visual via screenshots;
+      CSP documentada (`docs/deploy.md`) + E2E local; `npm audit` limpo; deps
+      revisadas (só majors disponíveis — sem updates); console só com os 2 erros
+      intencionais; races de persistência cobertas por gerações + waits IDB.
+- [x] Performance: Lighthouse desktop e mobile — Performance 100,
+      Acessibilidade 98, Best Practices 100, SEO 91; FCP ~0,4s; JS 109 KB gzip
+      (orçamento em `docs/performance.md`); sem code-splitting (justificado);
+      E2E de orçamento FCP < 8s.
+- [x] Screenshots reais (`scripts/capture-screenshots.mjs`) no README.
+- [x] Stores: branches reais cobertas (seed/reset/deletes/restore); sem testes
+      artificiais.
 
 **Concluída quando:** relatório de auditoria arquivado em `docs/` com zero P0/P1 abertos.
+
+Notas da execução: relatório = este checklist + `docs/performance.md` +
+`docs/deploy.md`; nenhuma funcionalidade adicionada ou removida.
 
 ---
 

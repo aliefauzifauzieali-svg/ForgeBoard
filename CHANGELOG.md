@@ -6,6 +6,19 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ## [Unreleased]
 
+### Added
+
+- Screenshots reais em `docs/screenshots/` (geradas por
+  `scripts/capture-screenshots.mjs`) e documentadas no README.
+- `docs/deploy.md` (CSP de produção com hash, headers, offline) e
+  `docs/performance.md` (Lighthouse, orçamento, decisões).
+- Teste E2E de CSP restritiva e teste E2E de orçamento de FCP (< 8s).
+- Testes de branches dos stores (seed, reset, deletes inexistentes, undo de restore).
+
+### Fixed
+
+- Ações de projeto/tarefa sempre visíveis no touch (`max-sm:opacity-100`).
+
 ### Fixed
 
 - `exportBoardNow` agora recebe dados por parâmetro (remove inversão

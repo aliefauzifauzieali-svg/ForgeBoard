@@ -12,7 +12,7 @@ test.describe('dados: backup, exportação e preferências', () => {
     await resetBoard(page);
   });
 
-  test('exportar gera JSON v2 com etiquetas', async ({ page }) => {
+  test('exportar gera JSON v3 com etiquetas', async ({ page }) => {
     await createProject(page, 'Projeto Dados');
     await openProject(page, 'Projeto Dados');
     await page.keyboard.press('n');
@@ -32,7 +32,7 @@ test.describe('dados: backup, exportação e preferências', () => {
       tags: Array<{ name: string }>;
       tasks: Array<{ tagIds: string[] }>;
     };
-    expect(json.version).toBe(2);
+    expect(json.version).toBe(3);
     expect(json.tags.map((t) => t.name)).toEqual(['exportada']);
     expect(json.tasks[0]?.tagIds).toHaveLength(1);
   });

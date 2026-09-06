@@ -226,7 +226,7 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
           }}
         />
       </div>
-      <p className="text-[11px] text-zinc-500">
+      <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
         CSV com colunas título, descrição, status, prioridade, prazo (aaaa-mm-dd), tags e projeto (opcional).
       </p>
       {error ? (

@@ -134,20 +134,6 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
   return (
     <div className="space-y-2" aria-busy={busy}>
       <div className="flex gap-2">
-        <label htmlFor="export-format" className="sr-only">
-          Formato de exportação
-        </label>
-        <select
-          id="export-format"
-          className="input !w-auto !px-2 !py-2 text-xs"
-          value={format}
-          onChange={(e) => setFormat(e.target.value as ExportFormat)}
-          aria-label="Formato de exportação"
-        >
-          <option value="json">JSON</option>
-          <option value="csv">CSV</option>
-          <option value="md">Markdown</option>
-        </select>
         <button type="button" className="btn-ghost flex-1 text-xs" onClick={doExport}>
           <Download size={14} aria-hidden /> Exportar
         </button>
@@ -179,6 +165,22 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
             e.target.value = '';
           }}
         />
+      </div>
+      <div className="flex items-center gap-2">
+        <label htmlFor="export-format" className="shrink-0 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+          Formato
+        </label>
+        <select
+          id="export-format"
+          className="input min-w-0 flex-1 !px-2 !py-2 text-xs"
+          value={format}
+          onChange={(e) => setFormat(e.target.value as ExportFormat)}
+          aria-label="Formato de exportação"
+        >
+          <option value="json">JSON</option>
+          <option value="csv">CSV</option>
+          <option value="md">Markdown</option>
+        </select>
       </div>
       <div className="flex gap-2">
         <label htmlFor="csv-target" className="sr-only">

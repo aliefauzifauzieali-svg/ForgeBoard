@@ -6,6 +6,7 @@ import { cn } from '../../utils/core';
 import { getNotificationPermission, requestNotificationPermission, type NotifyPermission } from '../../services/notifications';
 import { checkDesktopUpdate, installDesktopUpdate } from '../../services/desktopUpdater';
 import { checkAndroidUpdate, installAndroidUpdate, isNativeAndroid } from '../../services/androidUpdater';
+import { RELEASES_URL, getAppVersion } from '../../services/appInfo';
 import { isTauri } from '../../utils/platform';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { usePrefsStore } from '../../stores/usePrefsStore';
@@ -458,17 +459,16 @@ function AndroidUpdatesSection(): React.JSX.Element | null {
   };
 
   return (
-    <Section title="Atualizações do Android">
-      <div>
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
-          {state === 'available' && version
-            ? `Versão ${version} disponível.`
-            : state === 'ready'
-              ? 'Você está na versão mais recente.'
-              : state === 'unconfigured'
-                ? 'Servidor de atualização não configurado (ver README).'
-                : 'Busca atualizações do app Android.'}
-        </p>
+    <div>
+      <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        {state === 'available' && version
+          ? `Versão ${version} disponível.`
+          : state === 'ready'
+            ? 'Você está na versão mais recente.'
+            : state === 'unconfigured'
+              ? 'Servidor de atualização não configurado (ver README).'
+              : 'Busca atualizações do app Android.'}
+      </p>
       {error ? (
         <p role="alert" className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
           {error}
@@ -497,7 +497,62 @@ function AndroidUpdatesSection(): React.JSX.Element | null {
         ) : null}
       </div>
     </div>
-    </Section>
+  );
+}
+
+/** Sobre: nome, versão instalada, releases e atualização. */
+function AboutSection(): React.JSX.Element {
+  const pushToast = useUIStore((s) => s.pushToast);
+  const [version, setVersion] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    void getAppVersion().then(setVersion);
+  }, []);
+
+  // No desktop o WebView não abre links externos: copia em vez disso.
+  const onReleasesClick = (e: React.MouseEvent): void => {
+    if (!isTauri()) return;
+    e.preventDefault();
+    const done = (): void => {
+      setCopied(true);
+      pushToast({ kind: 'info', message: 'Link das releases copiado.' });
+      window.setTimeout(() => setCopied(false), 2000);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(RELEASES_URL).then(done, () => {
+        pushToast({ kind: 'error', message: 'Não foi possível copiar o link.' });
+      });
+    } else {
+      pushToast({ kind: 'error', message: 'Não foi possível copiar o link.' });
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-sm font-bold">ForgeBoard</p>
+      <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+        Versão instalada: {version ? <strong className="tabular-nums">{version}</strong> : '…'}
+      </p>
+      <p className="mt-1 text-xs">
+        <a
+          href={RELEASES_URL}
+          target="_blank"
+          rel="noreferrer"
+          onClick={onReleasesClick}
+          className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+        >
+          Ver releases no GitHub
+        </a>
+        {copied ? <span className="ml-1.5 text-zinc-600 dark:text-zinc-400">(copiado!)</span> : null}
+      </p>
+      {isTauri() ? (
+        <div className="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+          <UpdatesSection />
+        </div>
+      ) : null}
+      <AndroidUpdatesSection />
+    </div>
   );
 }
 
@@ -567,12 +622,9 @@ export function SettingsModal(): React.JSX.Element {
           <NotificationsSection />
         </Section>
 
-        {isTauri() ? (
-          <Section title="Atualizações">
-            <UpdatesSection />
-          </Section>
-        ) : null}
-        <AndroidUpdatesSection />
+        <Section title="Sobre">
+          <AboutSection />
+        </Section>
         <Section title="Etiquetas">
           <TagsManager />
         </Section>

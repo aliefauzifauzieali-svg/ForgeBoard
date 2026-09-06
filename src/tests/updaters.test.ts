@@ -1,12 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { checkAndroidUpdate, installAndroidUpdate, isNativeAndroid } from '../services/androidUpdater';
 import { checkDesktopUpdate, installDesktopUpdate } from '../services/desktopUpdater';
+import { RELEASES_URL, getAppVersion } from '../services/appInfo';
 import { isTauri } from '../utils/platform';
 import { ANDROID_UPDATE_URL } from '../services/updateServer';
 
 describe('platform', () => {
   it('fora do Tauri retorna false', () => {
     expect(isTauri()).toBe(false);
+  });
+});
+
+describe('appInfo', () => {
+  it('fora do Tauri usa a versão do package.json', async () => {
+    const { version } = await import('../../package.json');
+    await expect(getAppVersion()).resolves.toBe(version);
+  });
+
+  it('aponta para as releases do GitHub', () => {
+    expect(RELEASES_URL).toBe('https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases');
   });
 });
 

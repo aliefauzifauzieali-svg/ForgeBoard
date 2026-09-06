@@ -167,6 +167,9 @@ aqui, pois nada é buscado da rede; o `pwa.ts` trata a falha em silêncio.
 
 ## Atualizações automáticas
 
+A versão instalada aparece em Configurações > Sobre (nome, versão do bundle
+desktop ou do package.json, link das releases e verificação de update).
+
 ### Desktop (Tauri, assinado)
 
 O app verifica `latest.json` no GitHub Releases ao iniciar (silencioso) e em

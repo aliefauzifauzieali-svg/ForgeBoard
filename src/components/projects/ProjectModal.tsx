@@ -61,69 +61,69 @@ function ProjectForm(): React.JSX.Element {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-        <div>
-          <label className="label" htmlFor="project-name">
-            Nome *
-          </label>
-          <input
-            id="project-name"
-            className="input"
-            value={name}
-            maxLength={80}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ex.: Lançamento do site"
-          />
+      <div>
+        <label className="label" htmlFor="project-name">
+          Nome *
+        </label>
+        <input
+          id="project-name"
+          className="input"
+          value={name}
+          maxLength={80}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ex.: Lançamento do site"
+        />
+      </div>
+      <div>
+        <label className="label" htmlFor="project-desc">
+          Descrição
+        </label>
+        <textarea
+          id="project-desc"
+          className="input min-h-20 resize-y"
+          value={description}
+          maxLength={500}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Objetivo, escopo, links…"
+        />
+      </div>
+      <fieldset>
+        <legend className="label">Cor</legend>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Cor do projeto">
+          {PROJECT_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="radio"
+              aria-checked={color === c}
+              aria-label={`Cor ${c}`}
+              onClick={() => setColor(c)}
+              className={cn(
+                'h-9 w-9 rounded-full transition',
+                color === c
+                  ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-zinc-900'
+                  : 'hover:scale-110',
+              )}
+              style={{ backgroundColor: c }}
+            />
+          ))}
         </div>
-        <div>
-          <label className="label" htmlFor="project-desc">
-            Descrição
-          </label>
-          <textarea
-            id="project-desc"
-            className="input min-h-20 resize-y"
-            value={description}
-            maxLength={500}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Objetivo, escopo, links…"
-          />
-        </div>
-        <fieldset>
-          <legend className="label">Cor</legend>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Cor do projeto">
-            {PROJECT_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                role="radio"
-                aria-checked={color === c}
-                aria-label={`Cor ${c}`}
-                onClick={() => setColor(c)}
-                className={cn(
-                  'h-9 w-9 rounded-full transition',
-                  color === c
-                    ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-zinc-900'
-                    : 'hover:scale-110',
-                )}
-                style={{ backgroundColor: c }}
-              />
-            ))}
-          </div>
-        </fieldset>
+      </fieldset>
 
-        {error ? (
-          <p role="alert" className="rounded-xl bg-red-500/10 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300">
-            {error}
-          </p>
-        ) : null}
+      {error ? (
+        <p role="alert" className="rounded-xl bg-red-500/10 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300">
+          {error}
+        </p>
+      ) : null}
 
-        <div className="flex justify-end gap-2 pt-1">
-          <button type="button" className="btn-ghost" onClick={closeProjectModal}>
-            Cancelar
-          </button>
-          <button type="submit" className="btn-primary">
-            {editing ? 'Salvar alterações' : 'Criar projeto'}
-          </button>
-        </div>
+      <div className="flex justify-end gap-2 pt-1">
+        <button type="button" className="btn-ghost" onClick={closeProjectModal}>
+          Cancelar
+        </button>
+        <button type="submit" className="btn-primary">
+          {editing ? 'Salvar alterações' : 'Criar projeto'}
+        </button>
+      </div>
     </form>
   );
 }

@@ -5,6 +5,7 @@ import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
+import { highlightParts } from './highlight';
 import { cn } from '../../utils/core';
 import { buildCommands, filterCommands } from './commands';
 
@@ -16,6 +17,24 @@ interface PaletteItem {
   icon: LucideIcon;
   disabled?: boolean;
   run: () => void;
+}
+
+/** Texto com os termos da busca destacados (`<mark>`). */
+function Hi({ text, query }: { text: string; query: string }): React.JSX.Element {
+  const parts = highlightParts(text, query);
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.hit ? (
+          <mark key={i} className="rounded bg-indigo-600/20 px-px text-inherit">
+            {p.text}
+          </mark>
+        ) : (
+          <span key={i}>{p.text}</span>
+        ),
+      )}
+    </>
+  );
 }
 
 /**
@@ -176,7 +195,7 @@ export function CommandPalette(): React.JSX.Element | null {
               setActive(0);
             }}
             onKeyDown={onKeyDown}
-            placeholder="Digite um comando ou busque…"
+            placeholder="Digite um comando ou busque… (#etiqueta filtra por tag)"
             className="w-full bg-transparent py-3.5 text-[15px] outline-none placeholder:text-zinc-400 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <kbd
@@ -221,9 +240,13 @@ export function CommandPalette(): React.JSX.Element | null {
                   >
                     <Icon size={17} aria-hidden className="shrink-0 text-zinc-400" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{item.label}</span>
+                      <span className="block truncate font-semibold">
+                        <Hi text={item.label} query={query} />
+                      </span>
                       {item.sub ? (
-                        <span className="block truncate text-xs text-zinc-600 dark:text-zinc-400">{item.sub}</span>
+                        <span className="block truncate text-xs text-zinc-600 dark:text-zinc-400">
+                          <Hi text={item.sub} query={query} />
+                        </span>
                       ) : null}
                     </span>
                     {i === active && !item.disabled ? (

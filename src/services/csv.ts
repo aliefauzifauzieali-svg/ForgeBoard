@@ -61,8 +61,7 @@ export function parseCsv(text: string): string[][] {
   return rows;
 }
 
-// Faixa de diacríticos combinantes (construída por escape para não espalhar
-// caracteres invisíveis no fonte).
+// Faixa de diacríticos combinantes (por escape: nada de invisível no fonte).
 const COMBINING_MARKS = new RegExp('[\\u0300-\\u036f]', 'g');
 
 export function stripAccents(s: string): string {

@@ -17,20 +17,24 @@ const TAGS: Tag[] = [
 ];
 const TAGMAP = new Map(TAGS.map((t) => [t.id, t.name] as const));
 
-const T = (id: string, projectId: string, extra: Partial<Task> = {}): Task => ({
-  id,
-  projectId,
-  title: `Tarefa ${id}`,
-  description: '',
-  priority: 'medium',
-  status: 'backlog',
-  createdAt: `2026-01-0${id}T10:00:00.000Z`,
-  updatedAt: `2026-01-0${id}T10:00:00.000Z`,
-  completedAt: null,
-  dueDate: null,
-  tagIds: [],
-  ...extra,
-});
+const T = (id: string, projectId: string, extra: Partial<Task> = {}): Task => {
+  const base: Task = {
+    id,
+    projectId,
+    title: `Tarefa ${id}`,
+    description: '',
+    priority: 'medium',
+    status: 'backlog',
+    createdAt: `2026-01-0${id}T10:00:00.000Z`,
+    updatedAt: `2026-01-0${id}T10:00:00.000Z`,
+    completedAt: null,
+    dueDate: null,
+    tagIds: [],
+    recurrence: null,
+    subtasks: [],
+  };
+  return Object.assign(base, extra);
+};
 
 const projects = [P('1', 'Site pessoal', 'portfólio e blog'), P('2', 'ForgeBoard')];
 const tasks = [
@@ -71,6 +75,26 @@ describe('searchBoard', () => {
       T('2', '1', { title: 'Outra coisa', description: 'relatório aqui', createdAt: '2026-01-09T10:00:00.000Z' }),
     ];
     expect(searchBoard(projects, ts, 'relatório').tasks.map((t) => t.id)).toEqual(['1', '2']);
+  });
+
+  it('filtra por #etiqueta (prefixo, AND com texto)', () => {
+    expect(searchBoard(projects, tasks, '#bug', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['2']);
+    expect(searchBoard(projects, tasks, '#conte', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['1']);
+    expect(searchBoard(projects, tasks, '#bug post', 8, TAGMAP).tasks).toEqual([]);
+    expect(searchBoard(projects, tasks, '#inexistente', 8, TAGMAP).tasks).toEqual([]);
+    // Só texto continua funcionando; só #tag não lista projetos.
+    expect(searchBoard(projects, tasks, '#bug', 8, TAGMAP).projects).toEqual([]);
+  });
+
+  it('desempata por prioridade e prazo', () => {
+    const ts = [
+      T('1', '1', { title: 'X comum', priority: 'low', dueDate: '2026-01-01', createdAt: '2026-01-09T10:00:00.000Z' }),
+      T('2', '1', { title: 'X comum', priority: 'critical', dueDate: '2026-06-01', createdAt: '2026-01-01T10:00:00.000Z' }),
+      T('3', '1', { title: 'X comum', priority: 'critical', dueDate: '2026-02-01', createdAt: '2026-01-01T10:00:00.000Z' }),
+      T('4', '1', { title: 'X comum', priority: 'critical', dueDate: null, createdAt: '2026-01-09T10:00:00.000Z' }),
+    ];
+    // Mesma pontuação: crítica antes de baixa; entre críticas, prazo próximo antes; sem prazo por último.
+    expect(searchBoard(projects, ts, 'comum').tasks.map((t) => t.id)).toEqual(['3', '2', '4', '1']);
   });
 
   it('respeita o limite por lista', () => {

@@ -49,6 +49,19 @@ test.describe('PWA', () => {
     await expect(page.locator('#boot-splash')).toHaveCount(0);
   });
 
+  test('carregamento inicial dentro do orçamento (FCP)', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Bem-vindo ao ForgeBoard' })).toBeVisible();
+    const fcp = await page.evaluate(() => {
+      const entry = performance.getEntriesByName('first-contentful-paint')[0] as
+        | PerformanceEntry
+        | undefined;
+      return entry?.startTime ?? -1;
+    });
+    expect(fcp).toBeGreaterThanOrEqual(0);
+    expect(fcp).toBeLessThan(8000);
+  });
+
   test('funciona offline após a primeira visita', async ({ page, context }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Bem-vindo ao ForgeBoard' })).toBeVisible();

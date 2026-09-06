@@ -13,13 +13,15 @@ interface PrefsState extends UserPreferences {
   hydrated: boolean;
   hydrate: (prefs: UserPreferences) => void;
   setShortcutsEnabled: (v: boolean) => void;
+  setNotificationsEnabled: (v: boolean) => void;
+  setNotifyDaysBefore: (v: number) => void;
   setLastView: (view: UserPreferences['lastView']) => void;
 }
 
 function persist(get: () => PrefsState): void {
-  const { shortcutsEnabled, lastView } = get();
+  const { shortcutsEnabled, notificationsEnabled, notifyDaysBefore, lastView } = get();
   const theme = useThemeStore.getState().preference;
-  schedulePrefsPersist({ theme, shortcutsEnabled, lastView });
+  schedulePrefsPersist({ theme, shortcutsEnabled, notificationsEnabled, notifyDaysBefore, lastView });
 }
 
 export const usePrefsStore = create<PrefsState>()((set, get) => ({
@@ -30,6 +32,16 @@ export const usePrefsStore = create<PrefsState>()((set, get) => ({
 
   setShortcutsEnabled: (v) => {
     set({ shortcutsEnabled: v });
+    persist(get);
+  },
+
+  setNotificationsEnabled: (v) => {
+    set({ notificationsEnabled: v });
+    persist(get);
+  },
+
+  setNotifyDaysBefore: (v) => {
+    set({ notifyDaysBefore: Math.min(7, Math.max(1, Math.floor(v))) });
     persist(get);
   },
 

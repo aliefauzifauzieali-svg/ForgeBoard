@@ -76,7 +76,7 @@ describe('integração store + IndexedDB', () => {
     );
     const initial = await loadInitialData();
     expect(initial.migrated).toBe(true);
-    expect(initial.board.version).toBe(2);
+    expect(initial.board.version).toBe(3);
     expect(initial.board.tags.map((t) => t.name)).toEqual(['legado']);
   });
 

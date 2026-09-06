@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { TASK_PRIORITIES, TASK_STATUSES, type TaskPriority, type TaskStatus } from '../../types';
+import { TASK_PRIORITIES, TASK_STATUSES, type RecurrenceKind, type TaskPriority, type TaskStatus } from '../../types';
+import { RECURRENCE_META } from '../../services/recurrence';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { PRIORITY_META, STATUS_META } from '../../utils/constants';
@@ -52,6 +53,8 @@ function TaskForm(): React.JSX.Element {
   const [priority, setPriority] = useState<TaskPriority>(() => editing?.priority ?? 'medium');
   const [status, setStatus] = useState<TaskStatus>(() => editing?.status ?? taskModal.presetStatus ?? 'backlog');
   const [dueDate, setDueDate] = useState(() => editing?.dueDate ?? taskModal.presetDueDate ?? '');
+  const [recKind, setRecKind] = useState<'none' | RecurrenceKind>(() => editing?.recurrence?.kind ?? 'none');
+  const [recInterval, setRecInterval] = useState(() => editing?.recurrence?.intervalDays ?? 2);
   const [tagIds, setTagIds] = useState<string[]>(() => editing?.tagIds ?? []);
   const [tagInput, setTagInput] = useState('');
   const [tagOpen, setTagOpen] = useState(false);
@@ -89,6 +92,10 @@ function TaskForm(): React.JSX.Element {
     // Texto restante vira etiqueta (suporta colar "a, b, c").
     const extraIds = tagInput.trim() ? ensureTags(parseTags(tagInput)) : [];
     const finalIds = [...tagIds, ...extraIds.filter((id) => !tagIds.includes(id))].slice(0, 12);
+    const recurrence =
+      recKind === 'none'
+        ? null
+        : { kind: recKind, intervalDays: recKind === 'custom' ? Math.min(365, Math.max(1, recInterval || 1)) : 1 };
     try {
       if (editing) {
         updateTask(editing.id, {
@@ -99,6 +106,7 @@ function TaskForm(): React.JSX.Element {
           dueDate: dueDate || null,
           tagIds: finalIds,
           projectId,
+          recurrence,
         });
       } else {
         createTask({
@@ -109,6 +117,7 @@ function TaskForm(): React.JSX.Element {
           status,
           dueDate: dueDate || null,
           tagIds: finalIds,
+          recurrence,
         });
       }
       closeTaskModal();
@@ -226,6 +235,50 @@ function TaskForm(): React.JSX.Element {
               />
             </div>
           </div>
+
+          <fieldset>
+            <legend className="label">Repetição</legend>
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor="task-rec-kind" className="sr-only">
+                Tipo de repetição
+              </label>
+              <select
+                id="task-rec-kind"
+                className="input !w-auto"
+                value={recKind}
+                onChange={(e) => setRecKind(e.target.value as 'none' | RecurrenceKind)}
+              >
+                <option value="none">Sem repetição</option>
+                {(Object.keys(RECURRENCE_META) as RecurrenceKind[]).map((k) => (
+                  <option key={k} value={k}>
+                    {RECURRENCE_META[k].label}
+                  </option>
+                ))}
+              </select>
+              {recKind === 'custom' ? (
+                <>
+                  <label htmlFor="task-rec-interval" className="text-sm text-zinc-600 dark:text-zinc-400">
+                    a cada
+                  </label>
+                  <input
+                    id="task-rec-interval"
+                    type="number"
+                    min={1}
+                    max={365}
+                    className="input !w-20"
+                    value={recInterval}
+                    onChange={(e) => setRecInterval(Number(e.target.value))}
+                  />
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400">dias</span>
+                </>
+              ) : null}
+            </div>
+            {recKind !== 'none' ? (
+              <p className="mt-1 text-xs text-zinc-500">
+                Ao concluir, uma nova ocorrência é criada ({RECURRENCE_META[recKind].short}).
+              </p>
+            ) : null}
+          </fieldset>
 
           <div>
             <label className="label" htmlFor="task-tags">

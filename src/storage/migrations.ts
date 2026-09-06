@@ -59,12 +59,31 @@ export function migrateV1ToV2(legacy: LegacyBoardData): BoardData {
       updatedAt: t.updatedAt,
       completedAt: t.status === 'done' ? (t.completedAt ?? t.updatedAt) : null,
       dueDate: t.dueDate ?? null,
+      recurrence: null,
+      subtasks: [],
     })),
   };
 }
 
 function dedupe(ids: string[]): string[] {
   return ids.filter((id, i) => ids.indexOf(id) === i);
+}
+
+/**
+ * v2 → v3 (Fase 12): adiciona `recurrence` e `subtasks` com padrões.
+ * Pura e idempotente; preserva recorrência/subtarefas já presentes.
+ */
+export function migrateV2ToV3(data: BoardData): BoardData {
+  return {
+    version: FORMAT_VERSION,
+    projects: data.projects,
+    tags: data.tags,
+    tasks: data.tasks.map((t) => ({
+      ...t,
+      recurrence: t.recurrence ?? null,
+      subtasks: t.subtasks ?? [],
+    })),
+  };
 }
 
 /**
@@ -75,12 +94,12 @@ export function migrateToCurrent(input: unknown): BoardData {
   if (!isRecord(input)) throw new MigrationError('Payload inválido: objeto esperado');
   const version = (input as { version?: unknown }).version;
 
-  if (version === FORMAT_VERSION) {
+  if (version === FORMAT_VERSION || version === 2) {
     const result = validateBoardV2(input);
     if (!result.ok || !result.data) {
-      throw new MigrationError(`Dados v2 inválidos: ${result.errors.slice(0, 3).join(' · ')}`);
+      throw new MigrationError(`Dados inválidos: ${result.errors.slice(0, 3).join(' · ')}`);
     }
-    return result.data;
+    return result.data.version === FORMAT_VERSION ? result.data : migrateV2ToV3(result.data);
   }
 
   if (version === 1 || version === undefined) {

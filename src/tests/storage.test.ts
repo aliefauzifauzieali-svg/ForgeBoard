@@ -17,7 +17,7 @@ import { STORAGE_KEY } from '../utils/constants';
 import type { BoardData } from '../types';
 
 const BOARD: BoardData = {
-  version: 2,
+  version: 3,
   projects: [
     {
       id: 'p1',
@@ -42,7 +42,7 @@ describe('boardStorage (IndexedDB)', () => {
 
   it('carrega vazio na primeira execução', async () => {
     const initial = await loadInitialData();
-    expect(initial.board).toEqual({ version: 2, projects: [], tasks: [], tags: [] });
+    expect(initial.board).toEqual({ version: 3, projects: [], tasks: [], tags: [] });
     expect(initial.quarantined).toBe(false);
     expect(initial.backups).toEqual([]);
   });
@@ -78,7 +78,7 @@ describe('boardStorage (IndexedDB)', () => {
     );
     const initial = await loadInitialData();
     expect(initial.migrated).toBe(true);
-    expect(initial.board.version).toBe(2);
+    expect(initial.board.version).toBe(3);
     expect(initial.board.tags.map((t) => t.name)).toEqual(['legado']);
     expect(initial.board.tasks[0]?.tagIds).toHaveLength(1);
     expect(initial.board.tasks[0]?.completedAt).toBe('2026-01-03T00:00:00.000Z');
@@ -89,7 +89,7 @@ describe('boardStorage (IndexedDB)', () => {
   it('quarentena dados inválidos sem quebrar o boot', async () => {
     await setKV(KV_BOARD, { version: 2, projects: 'lixo', tasks: [], tags: [] });
     const initial = await loadInitialData();
-    expect(initial.board).toEqual({ version: 2, projects: [], tasks: [], tags: [] });
+    expect(initial.board).toEqual({ version: 3, projects: [], tasks: [], tags: [] });
     expect(initial.quarantined).toBe(true);
     expect(readQuarantine()).toContain('lixo');
     clearQuarantine();
@@ -135,7 +135,7 @@ describe('backups', () => {
     expect(fresh?.reason).toBe('auto');
     const skipped = await ensureDailyBackup(BOARD);
     expect(skipped).toBeNull();
-    expect(await ensureDailyBackup({ version: 2, projects: [], tasks: [], tags: [] })).toBeNull();
+    expect(await ensureDailyBackup({ version: 3, projects: [], tasks: [], tags: [] })).toBeNull();
   });
 });
 
@@ -143,12 +143,20 @@ describe('preferências', () => {
   beforeEach(reset);
 
   it('salva e carrega com saneamento', async () => {
-    schedulePrefsPersist({ theme: 'dark', shortcutsEnabled: false, lastView: { kind: 'calendar' } });
+    schedulePrefsPersist({
+      theme: 'dark',
+      shortcutsEnabled: false,
+      notificationsEnabled: true,
+      notifyDaysBefore: 3,
+      lastView: { kind: 'calendar' },
+    });
     await flushPrefs();
     const initial = await loadInitialData();
     expect(initial.preferences).toEqual({
       theme: 'dark',
       shortcutsEnabled: false,
+      notificationsEnabled: true,
+      notifyDaysBefore: 3,
       lastView: { kind: 'calendar' },
     });
   });

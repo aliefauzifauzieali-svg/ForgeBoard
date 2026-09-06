@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2, Circle, Repeat } from 'lucide-react';
 import type { Task } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -43,6 +43,12 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
           {task.dueDate ? toDateOnly(task.dueDate) : 'Sem prazo'}
           {overdue ? ' · Atrasada' : ''}
           {tagNames.length > 0 ? ` · #${tagNames.slice(0, 2).join(' #')}` : ''}
+          {task.recurrence ? (
+            <span className="ml-1 inline-flex items-center gap-0.5 align-middle">
+              <Repeat size={11} aria-hidden />
+              <span className="sr-only">Tarefa recorrente</span>
+            </span>
+          ) : null}
         </span>
       </button>
       <PriorityBadge value={task.priority} />

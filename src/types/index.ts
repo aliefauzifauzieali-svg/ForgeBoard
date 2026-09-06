@@ -37,10 +37,33 @@ export interface Task {
   completedAt: string | null;
   /** ISO date string (yyyy-mm-dd) or null when no deadline */
   dueDate: string | null;
+  /** Recorrência (Fase 12): `null` = sem repetição. */
+  recurrence: Recurrence | null;
+  /** Subtarefas (Fase 12): título + checkbox, ordem da lista. */
+  subtasks: Subtask[];
 }
 
+/** Item de checklist dentro de uma tarefa (Fase 12). */
+export interface Subtask {
+  id: string;
+  title: string;
+  done: boolean;
+  createdAt: string;
+}
+
+export type RecurrenceKind = 'daily' | 'weekly' | 'monthly' | 'custom';
+
+/** Regra de repetição (Fase 12): ao concluir, gera a próxima ocorrência. */
+export interface Recurrence {
+  kind: RecurrenceKind;
+  /** Passo da repetição em dias (custom), semanas (weekly) ou meses (monthly); daily ignora. */
+  intervalDays: number;
+}
+
+export const RECURRENCE_KINDS: RecurrenceKind[] = ['daily', 'weekly', 'monthly', 'custom'];
+
 /** Versão atual do formato de dados (ver `storage/migrations.ts`). */
-export const FORMAT_VERSION = 2 as const;
+export const FORMAT_VERSION = 3 as const;
 
 export interface BoardData {
   version: typeof FORMAT_VERSION;
@@ -53,7 +76,7 @@ export interface BoardData {
 export interface LegacyBoardData {
   version?: 1;
   projects: Project[];
-  tasks: Array<Omit<Task, 'tagIds' | 'completedAt' | 'previousStatus'> & {
+  tasks: Array<Omit<Task, 'tagIds' | 'completedAt' | 'previousStatus' | 'recurrence' | 'subtasks'> & {
     tags: string[];
     completedAt?: string | null;
     previousStatus?: TaskStatus;
@@ -62,8 +85,12 @@ export interface LegacyBoardData {
 
 export interface UserPreferences {
   theme: ThemePreference;
-  /** Atalhos de letra (N/P///?) ligados. Ctrl+K e Esc funcionam sempre. */
+  /** Atalhos de letra (N/P/T///?) ligados. Ctrl+K e Esc funcionam sempre. */
   shortcutsEnabled: boolean;
+  /** Notificações locais de prazo (Fase 12): exige permissão do navegador. */
+  notificationsEnabled: boolean;
+  /** Avisar N dias antes do vencimento (1–7). */
+  notifyDaysBefore: number;
   /** Última visão aberta (restaurada no boot). */
   lastView:
     | { kind: 'dashboard' }
@@ -75,6 +102,8 @@ export interface UserPreferences {
 export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: 'system',
   shortcutsEnabled: true,
+  notificationsEnabled: false,
+  notifyDaysBefore: 1,
   lastView: { kind: 'dashboard' },
 };
 

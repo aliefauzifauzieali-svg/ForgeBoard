@@ -16,7 +16,7 @@ describe('migrateV1ToV2 (fixture real v1)', () => {
     expect(checked.ok).toBe(true);
     const migrated = migrateV1ToV2(checked.data!);
 
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.projects).toHaveLength(2);
     expect(migrated.tasks).toHaveLength(3);
     // "Lançamento" (×3, com caixa/espaços variados) vira UMA tag normalizada.
@@ -26,6 +26,9 @@ describe('migrateV1ToV2 (fixture real v1)', () => {
     // Concluída sem completedAt herda updatedAt (histórico preservado).
     expect(t1.completedAt).toBe('2026-01-04T00:00:00.000Z');
     expect(migrated.tasks.find((t) => t.id === 't2')?.tagIds).toEqual([]);
+    // Fase 12: padrões de recorrência e subtarefas.
+    expect(t1.recurrence).toBeNull();
+    expect(t1.subtasks).toEqual([]);
   });
 
   it('é idempotente sobre o próprio resultado (v2 passa direto)', () => {
@@ -36,7 +39,7 @@ describe('migrateV1ToV2 (fixture real v1)', () => {
 });
 
 describe('migrateToCurrent', () => {
-  it('aceita v2 válido e rejeita versão futura', () => {
+  it('aceita v3 válido e rejeita versão futura', () => {
     const v2 = migrateToCurrent(loadFixture());
     expect(migrateToCurrent(v2)).toEqual(v2);
     expect(() => migrateToCurrent({ ...v2, version: 99 })).toThrow(MigrationError);
@@ -53,7 +56,16 @@ describe('migrateToCurrent', () => {
     const rest = JSON.parse(JSON.stringify(loadFixture())) as Record<string, unknown>;
     delete rest.version;
     const out = migrateToCurrent(rest);
-    expect(out.version).toBe(2);
+    expect(out.version).toBe(3);
     expect(out.tasks).toHaveLength(3);
+  });
+
+  it('eleva v2 preservando dados e preenchendo padrões', () => {
+    const v3 = migrateToCurrent(loadFixture());
+    const v2 = { ...v3, version: 2 };
+    const out = migrateToCurrent(v2);
+    expect(out.version).toBe(3);
+    expect(out.tasks).toHaveLength(v3.tasks.length);
+    expect(out.tasks[0]).toMatchObject({ recurrence: null, subtasks: [] });
   });
 });

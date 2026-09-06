@@ -3,6 +3,8 @@ import type {
   BackupMeta,
   BoardData,
   Project,
+  Recurrence,
+  Subtask,
   Tag,
   Task,
   TaskPriority,
@@ -18,6 +20,7 @@ import {
 import { logEvent, logEventsBulk, statusTransitionEvents } from '../storage/activity';
 import { PROJECT_COLORS } from '../utils/constants';
 import { generateId, nowIso } from '../utils/core';
+import { makeFollowUp, sanitizeRecurrence, sanitizeSubtasks } from '../services/recurrence';
 import { STATUS_META } from '../utils/constants';
 import { useUIStore } from './useUIStore';
 
@@ -35,6 +38,8 @@ export interface CreateTaskInput {
   status?: TaskStatus;
   dueDate?: string | null;
   tagIds?: string[];
+  recurrence?: Recurrence | null;
+  subtasks?: Subtask[];
 }
 
 export interface HistorySnapshot {
@@ -331,6 +336,8 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
       updatedAt: nowIso(),
       completedAt: status === 'done' ? nowIso() : null,
       dueDate: input.dueDate ?? null,
+      recurrence: sanitizeRecurrence(input.recurrence),
+      subtasks: sanitizeSubtasks(input.subtasks),
     };
     set((s) => ({ tasks: [task, ...s.tasks] }));
     persist(get);
@@ -343,31 +350,44 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     const title =
       patch.title !== undefined && patch.title.trim() ? patch.title.trim().slice(0, 140) : undefined;
     const before = get().tasks.find((t) => t.id === id);
+    if (!before) return;
     pushHistory(get, 'editar tarefa');
+    // Concluir tarefa recorrente gera a próxima ocorrência no mesmo histórico.
+    const followUp =
+      patch.status === 'done' && before.status !== 'done' ? makeFollowUp(before) : null;
     set((s) => ({
-      tasks: s.tasks.map((t) => {
-        if (t.id !== id) return t;
-        const enteringDone = patch.status === 'done' && t.status !== 'done';
-        const leavingDone = patch.status !== undefined && patch.status !== 'done' && t.status === 'done';
-        return {
-          ...t,
-          ...(title !== undefined ? { title } : {}),
-          ...(patch.description !== undefined
-            ? { description: patch.description.slice(0, 2000) }
-            : {}),
-          ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
-          ...(patch.status !== undefined ? { status: patch.status } : {}),
-          ...(enteringDone ? { previousStatus: t.status, completedAt: nowIso() } : {}),
-          ...(leavingDone ? { completedAt: null } : {}),
-          ...(patch.dueDate !== undefined ? { dueDate: patch.dueDate } : {}),
-          ...(patch.tagIds !== undefined ? { tagIds: patch.tagIds.slice(0, 12) } : {}),
-          ...(patch.projectId !== undefined ? { projectId: patch.projectId } : {}),
-          updatedAt: nowIso(),
-        };
-      }),
+      tasks: [
+        ...(followUp ? [followUp] : []),
+        ...s.tasks.map((t) => {
+          if (t.id !== id) return t;
+          const enteringDone = patch.status === 'done' && t.status !== 'done';
+          const leavingDone = patch.status !== undefined && patch.status !== 'done' && t.status === 'done';
+          return {
+            ...t,
+            ...(title !== undefined ? { title } : {}),
+            ...(patch.description !== undefined
+              ? { description: patch.description.slice(0, 2000) }
+              : {}),
+            ...(patch.priority !== undefined ? { priority: patch.priority } : {}),
+            ...(patch.status !== undefined ? { status: patch.status } : {}),
+            ...(enteringDone ? { previousStatus: t.status, completedAt: nowIso() } : {}),
+            ...(leavingDone ? { completedAt: null } : {}),
+            ...(patch.dueDate !== undefined ? { dueDate: patch.dueDate } : {}),
+            ...(patch.tagIds !== undefined ? { tagIds: patch.tagIds.slice(0, 12) } : {}),
+            ...(patch.projectId !== undefined ? { projectId: patch.projectId } : {}),
+            ...(patch.recurrence !== undefined ? { recurrence: sanitizeRecurrence(patch.recurrence) } : {}),
+            ...(patch.subtasks !== undefined ? { subtasks: sanitizeSubtasks(patch.subtasks) } : {}),
+            updatedAt: nowIso(),
+          };
+        }),
+      ],
     }));
     persist(get);
     announce('Tarefa atualizada');
+    if (followUp) {
+      announce(`Próxima ocorrência criada para ${followUp.dueDate ?? 'sem prazo'}`);
+      logEvent({ type: 'task.created', entity: 'task', entityId: followUp.id, projectId: followUp.projectId, meta: { title: followUp.title, status: followUp.status, tagIds: followUp.tagIds, recurring: true } });
+    }
     if (before) {
       logEvent({
         type: 'task.updated',
@@ -388,24 +408,33 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
     const found = get().tasks.find((t) => t.id === id);
     if (!found || found.status === status) return;
     pushHistory(get, 'mover tarefa');
+    // Concluir tarefa recorrente gera a próxima ocorrência no mesmo histórico.
+    const followUp = status === 'done' ? makeFollowUp(found) : null;
     set((s) => ({
-      tasks: s.tasks.map((t) =>
-        t.id === id
-          ? {
-              ...t,
-              status,
-              ...(status === 'done'
-                ? { previousStatus: found.status, completedAt: nowIso() }
-                : found.status === 'done'
-                  ? { completedAt: null }
-                  : {}),
-              updatedAt: nowIso(),
-            }
-          : t,
-      ),
+      tasks: [
+        ...(followUp ? [followUp] : []),
+        ...s.tasks.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                status,
+                ...(status === 'done'
+                  ? { previousStatus: found.status, completedAt: nowIso() }
+                  : found.status === 'done'
+                    ? { completedAt: null }
+                    : {}),
+                updatedAt: nowIso(),
+              }
+            : t,
+        ),
+      ],
     }));
     persist(get);
     announce(`Tarefa “${found.title}” movida para ${STATUS_META[status].label}`);
+    if (followUp) {
+      announce(`Próxima ocorrência criada para ${followUp.dueDate ?? 'sem prazo'}`);
+      logEvent({ type: 'task.created', entity: 'task', entityId: followUp.id, projectId: followUp.projectId, meta: { title: followUp.title, status: followUp.status, tagIds: followUp.tagIds, recurring: true } });
+    }
     logEventsBulk(statusTransitionEvents(id, found.projectId, found.title, found.status, status, found.tagIds));
   },
 
@@ -616,6 +645,8 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
       updatedAt: t,
       completedAt: status === 'done' ? t : null,
       dueDate,
+      recurrence: null,
+      subtasks: [],
     });
     set({
       projects: [p1, p2],

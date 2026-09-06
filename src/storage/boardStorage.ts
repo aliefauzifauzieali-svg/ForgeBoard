@@ -55,6 +55,11 @@ function sanitizePreferences(input: unknown): UserPreferences {
   return {
     theme,
     shortcutsEnabled: p.shortcutsEnabled !== false,
+    notificationsEnabled: p.notificationsEnabled === true,
+    notifyDaysBefore:
+      typeof p.notifyDaysBefore === 'number' && Number.isFinite(p.notifyDaysBefore)
+        ? Math.min(7, Math.max(1, Math.floor(p.notifyDaysBefore)))
+        : 1,
     lastView:
       p.lastView?.kind === 'project' && typeof p.lastView.projectId === 'string'
         ? { kind: 'project', projectId: p.lastView.projectId }

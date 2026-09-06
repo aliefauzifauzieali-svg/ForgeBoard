@@ -8,6 +8,7 @@ import type {
   TaskStatus,
 } from '../types';
 import { FORMAT_VERSION, TASK_PRIORITIES, TASK_STATUSES } from '../types';
+import { sanitizeRecurrence, sanitizeSubtasks } from './recurrence';
 
 export interface ValidationResult<T = BoardData> {
   ok: boolean;
@@ -180,12 +181,12 @@ function validateTag(t: unknown, index: number, errors: string[]): Tag | null {
   };
 }
 
-/** Valida o formato atual v2 (registro de tags + `tagIds`). */
+/** Valida o formato v2/v3 (registro de tags + `tagIds`; v3 soma recorrência e subtarefas). */
 export function validateBoardV2(input: unknown): ValidationResult<BoardData> {
   const errors: string[] = [];
   if (!isRecord(input)) return { ok: false, errors: ['Arquivo inválido: objeto raiz esperado'], data: null };
   const { projects, tasks, tags, version } = input;
-  if (version !== FORMAT_VERSION) errors.push(`version não suportada (esperado ${FORMAT_VERSION})`);
+  if (version !== FORMAT_VERSION && version !== 2) errors.push(`version não suportada (esperado 2 ou ${FORMAT_VERSION})`);
   if (!Array.isArray(projects)) errors.push('projects deve ser um array');
   if (!Array.isArray(tasks)) errors.push('tasks deve ser um array');
   if (tags !== undefined && !Array.isArray(tags)) errors.push('tags deve ser um array');
@@ -235,7 +236,7 @@ export function validateBoardV2(input: unknown): ValidationResult<BoardData> {
     }
     const before = errors.length;
     checkBaseTask(raw, i, errors);
-    const { tagIds: taskTagIds, previousStatus, completedAt } = raw;
+    const { tagIds: taskTagIds, previousStatus, completedAt, recurrence, subtasks } = raw;
     if (!Array.isArray(taskTagIds) || taskTagIds.some((x) => typeof x !== 'string'))
       errors.push(`tasks[${i}].tagIds inválidas`);
     else if ((taskTagIds as string[]).some((id) => !tagIds.has(id)))
@@ -244,6 +245,10 @@ export function validateBoardV2(input: unknown): ValidationResult<BoardData> {
       errors.push(`tasks[${i}].previousStatus inválido`);
     if (completedAt !== null && completedAt !== undefined && !isIsoDate(completedAt))
       errors.push(`tasks[${i}].completedAt inválido`);
+    if (recurrence !== undefined && recurrence !== null && sanitizeRecurrence(recurrence) === null)
+      errors.push(`tasks[${i}].recurrence inválida`);
+    if (subtasks !== undefined && !Array.isArray(subtasks))
+      errors.push(`tasks[${i}].subtasks inválidas`);
     if (typeof raw.projectId !== 'string' || !projectIds.has(raw.projectId)) {
       errors.push(`tasks[${i}].projectId referencia projeto inexistente`);
     }
@@ -266,6 +271,8 @@ export function validateBoardV2(input: unknown): ValidationResult<BoardData> {
       updatedAt: raw.updatedAt as string,
       completedAt: (completedAt as string | null) ?? null,
       dueDate: (raw.dueDate as string | null) ?? null,
+      recurrence: sanitizeRecurrence(recurrence),
+      subtasks: sanitizeSubtasks(subtasks),
     });
   }
 

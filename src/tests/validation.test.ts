@@ -33,7 +33,7 @@ const VALID_V1: LegacyBoardData = {
 };
 
 const VALID_V2: BoardData = {
-  version: 2,
+  version: 3,
   projects: VALID_V1.projects,
   tags: [
     { id: 'tg1', name: 'devops', color: '#6366f1', createdAt: '2026-01-01T00:00:00.000Z' },
@@ -51,6 +51,8 @@ const VALID_V2: BoardData = {
       updatedAt: '2026-01-02T00:00:00.000Z',
       completedAt: null,
       dueDate: '2026-02-01',
+      recurrence: null,
+      subtasks: [],
     },
   ],
 };
@@ -104,10 +106,20 @@ describe('validateBoardData (v1 legado)', () => {
 });
 
 describe('validateBoardV2', () => {
-  it('aceita um board v2 válido', () => {
+  it('aceita um board v3 válido', () => {
     const r = validateBoardV2(VALID_V2);
     expect(r.ok).toBe(true);
     expect(r.data).toEqual(VALID_V2);
+  });
+
+  it('aceita v2 legado normalizando recorrência e subtarefas', () => {
+    const { recurrence: _r, subtasks: _s, ...taskV2 } = VALID_V2.tasks[0]!;
+    void _r;
+    void _s;
+    const r = validateBoardV2({ ...VALID_V2, version: 2, tasks: [taskV2] });
+    expect(r.ok).toBe(true);
+    expect(r.data?.version).toBe(3);
+    expect(r.data?.tasks[0]).toMatchObject({ recurrence: null, subtasks: [] });
   });
 
   it('rejeita tagIds de tags inexistentes e previousStatus inválido', () => {
@@ -132,20 +144,30 @@ describe('validateBoardV2', () => {
 });
 
 describe('serializeBoard / parseImport', () => {
-  it('exporta v2 com metadados e revalida (round-trip)', () => {
+  it('exporta v3 com metadados e revalida (round-trip)', () => {
     const raw = serializeBoard(VALID_V2);
-    expect(raw).toContain('"version": 2');
+    expect(raw).toContain('"version": 3');
     const back = parseImport(raw);
     expect(back.ok).toBe(true);
     expect(back.migrated).toBe(false);
     expect(back.data).toEqual(VALID_V2);
   });
 
-  it('importa legado v1 migrando para v2', () => {
+  it('importa v2 legado migrando para v3', () => {
+    const { recurrence: _r, subtasks: _s, ...taskV2 } = VALID_V2.tasks[0]!;
+    void _r;
+    void _s;
+    const back = parseImport(JSON.stringify({ ...VALID_V2, version: 2, tasks: [taskV2] }));
+    expect(back.ok).toBe(true);
+    expect(back.migrated).toBe(true);
+    expect(back.data?.version).toBe(3);
+  });
+
+  it('importa legado v1 migrando para v3', () => {
     const back = parseImport(JSON.stringify(VALID_V1));
     expect(back.ok).toBe(true);
     expect(back.migrated).toBe(true);
-    expect(back.data?.version).toBe(2);
+    expect(back.data?.version).toBe(3);
     expect(back.data?.tags.map((t) => t.name)).toEqual(['devops']);
     expect(back.data?.tasks[0]?.tagIds).toHaveLength(1);
   });

@@ -4,7 +4,7 @@ import { useUIStore } from '../stores/useUIStore';
 import type { BoardData } from '../types';
 
 const BOARD: BoardData = {
-  version: 2,
+  version: 3,
   projects: [
     {
       id: 'p1',
@@ -42,7 +42,7 @@ describe('exportBoardNow', () => {
         reader.readAsText(blobs[0]!);
       });
       const parsed = JSON.parse(text) as BoardData & { app: string };
-      expect(parsed.version).toBe(2);
+      expect(parsed.version).toBe(3);
       expect(parsed.app).toBe('forgeboard');
       expect(parsed.projects).toHaveLength(1);
       expect(useUIStore.getState().toasts.map((t) => t.message)).toContain('Dados exportados em JSON');

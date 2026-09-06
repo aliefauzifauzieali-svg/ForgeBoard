@@ -1,4 +1,4 @@
-import { AlertCircle, CalendarDays, ChevronLeft, ChevronRight, Copy, Pencil, Trash2 } from 'lucide-react';
+import { AlertCircle, CalendarDays, ChevronLeft, ChevronRight, Copy, Pencil, Repeat, Trash2 } from 'lucide-react';
 import type { Task } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -105,6 +105,13 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
           {task.dueDate ? toDateOnly(task.dueDate) : 'Sem prazo'}
           {overdue ? ' · Atrasada' : ''}
         </span>
+        {task.recurrence ? (
+          <span className="inline-flex items-center gap-1" title={`Repete: ${task.recurrence.kind === 'custom' ? `a cada ${task.recurrence.intervalDays} dias` : task.recurrence.kind}`}>
+            <Repeat size={12} aria-hidden />
+            <span className="sr-only">Tarefa recorrente</span>
+            Recorrente
+          </span>
+        ) : null}
         {task.tagIds.slice(0, 3).map((id) => {
           const tag = allTags.find((t) => t.id === id);
           if (!tag) return null;

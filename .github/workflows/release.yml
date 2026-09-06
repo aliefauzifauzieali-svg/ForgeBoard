@@ -66,7 +66,11 @@ jobs:
             libayatana-appindicator3-dev librsvg2-dev \
             libwebkit2gtk-4.1-dev
       - run: npm ci
-      - run: npm run tauri:build
+      - name: Build Tauri (gera .sig com a chave de assinatura)
+        run: npm run tauri:build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ runner.os }}
@@ -81,6 +85,62 @@ jobs:
         with:
           path: dist-artifacts
           merge-multiple: true
+      - name: Gerar latest.json do updater (a partir dos .sig)
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          python3 - <<'EOF'
+          import datetime, json, os
+
+          tag = os.environ.get('TAG_NAME', '')
+          version = tag[1:] if tag.startswith('v') else tag
+          repo = 'aliefauzifauzieali-svg/ForgeBoard'
+          root = 'dist-artifacts'
+          platforms = {}
+
+          def triple(filename):
+              low = filename.lower()
+              if low.endswith('-setup.exe'):
+                  arch = 'aarch64' if ('aarch64' in low or 'arm64' in low) else 'x86_64'
+                  return f'windows-{arch}'
+              if low.endswith('.appimage'):
+                  arch = 'aarch64' if ('aarch64' in low or 'arm64' in low) else 'x86_64'
+                  return f'linux-{arch}'
+              if low.endswith('.app.tar.gz'):
+                  arch = 'aarch64' if ('aarch64' in low or 'arm64' in low) else 'x86_64'
+                  return f'darwin-{arch}'
+              return None
+
+          for dirpath, _, files in os.walk(root):
+              for f in sorted(files):
+                  if not f.endswith('.sig'):
+                      continue
+                  base = f[:-4]
+                  key = triple(base)
+                  if key is None or not os.path.exists(os.path.join(dirpath, base)):
+                      print(f'skip: {f} (formato sem updater)')
+                      continue
+                  with open(os.path.join(dirpath, f), encoding='utf-8') as fh:
+                      sig = fh.read().strip()
+                  platforms[key] = {
+                      'signature': sig,
+                      'url': f'https://github.com/{repo}/releases/download/{tag}/{base}',
+                  }
+                  print(f'updater: {key} -> {base}')
+
+          if not platforms:
+              raise SystemExit('ERRO: nenhum artefato de updater (.sig) encontrado')
+
+          latest = {
+              'version': version,
+              'notes': f'ForgeBoard {tag}: notas em https://github.com/{repo}/releases/tag/{tag}',
+              'pub_date': datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z'),
+              'platforms': platforms,
+          }
+          with open(os.path.join(root, 'latest.json'), 'w', encoding='utf-8') as fh:
+              json.dump(latest, fh, indent=2)
+          print(f'latest.json gerado para a versão {version}')
+          EOF
       - uses: softprops/action-gh-release@v2
         with:
           files: dist-artifacts/**/*

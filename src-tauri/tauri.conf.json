@@ -38,6 +38,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "category": "Productivity",
     "shortDescription": "Dashboard pessoal de projetos e tarefas, local-first.",
     "longDescription": "ForgeBoard — workspace pessoal para projetos e tarefas. Rápido, offline e local-first: Kanban, calendário, estatísticas e backup, tudo no seu dispositivo.",

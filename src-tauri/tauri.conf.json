@@ -1,0 +1,42 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "ForgeBoard",
+  "version": "1.0.0",
+  "identifier": "com.forgeboard.app",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://127.0.0.1:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "ForgeBoard",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 360,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Productivity",
+    "shortDescription": "Dashboard pessoal de projetos e tarefas, local-first.",
+    "longDescription": "ForgeBoard — workspace pessoal para projetos e tarefas. Rápido, offline e local-first: Kanban, calendário, estatísticas e backup, tudo no seu dispositivo.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

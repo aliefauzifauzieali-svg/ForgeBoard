@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "ForgeBoard",
   "version": "1.0.0",
-  "identifier": "com.forgeboard.app",
+  "identifier": "com.forgeboard.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://127.0.0.1:5173",

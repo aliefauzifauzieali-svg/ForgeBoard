@@ -113,12 +113,19 @@ npm run test:e2e:install
 | `npm run android:sync` | copia `dist/` + config para o projeto Android |
 | `npm run android:open` | abre o projeto no Android Studio |
 | `npm run android:build` | gera o APK de debug (`android/app/build/outputs/apk/debug/`) |
+| `npm run android:build:win` | mesmo build via `.\gradlew` (PowerShell/Windows) |
 
 ## Instalação Desktop (Tauri — Windows/Linux/macOS)
 
 Pré-requisitos: Node.js 20+ e o toolchain **Rust estável** (`rustup`), além das
 dependências de sistema do [guia Tauri](https://v2.tauri.app/start/prerequisites/)
 (WebView2 no Windows 10/11 — já incluso no Windows 11; WebKitGTK no Linux).
+No Windows, instale via winget (toolchain verificada: Rust 1.98.1):
+
+```powershell
+winget install --id Rustlang.Rustup -e --silent --accept-package-agreements
+#toolchain MSVC (link.exe) vem com o Visual Studio 2022 + workload C++
+```
 
 ```powershell
 npm install
@@ -132,9 +139,18 @@ continua em IndexedDB/localStorage dentro da WebView.
 
 ## Instalação Android (Capacitor — APK)
 
-Pré-requisitos: Node.js 20+, **JDK 17** e **Android SDK** (cmdline-tools +
+Pré-requisitos: Node.js 20+, **JDK 21** e **Android SDK** (cmdline-tools +
 platform-tools + uma platform Android), com `ANDROID_HOME`/`ANDROID_SDK_ROOT`
-apontando para o SDK. Sem o SDK, só `android:sync`/`android:open` funcionam.
+apontando para o SDK. No Windows, instale via winget (toolchain verificada:
+Temurin JDK 21.0.12, SDK com platform android-36 + build-tools 35):
+
+```powershell
+winget install --id EclipseAdoptium.Temurin.21.JDK -e --silent --accept-package-agreements
+#Android Studio (traz o SDK): winget install --id Google.AndroidStudio -e
+setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot"
+setx ANDROID_HOME "$env:LOCALAPPDATA\Android\Sdk"
+#Reabra o terminal para herdar as variáveis.
+```
 
 ```powershell
 npm install

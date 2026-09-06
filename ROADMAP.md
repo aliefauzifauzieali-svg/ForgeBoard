@@ -266,10 +266,10 @@ Distribuição como app instalável, sem mudar lógica, storage ou PWA.
 - [x] PWA intacto: `npm run build` inalterado; SW continua opcional e
       silencioso onde a WebView não o suporta.
 - [x] Docs: seções de instalação Desktop/Android no README + CHANGELOG.
-- [x] Limitação honesta: sem Rust/JDK/SDK neste ambiente — `tauri dev`,
-      `tauri build` e o APK via Gradle **não executados**; validados CLI,
-      `cap sync`, configs e gates web. Builds nativos rodam em máquina
-      com toolchain ou CI.
+- [x] Toolchain verificada em 2026-09-06 (Windows): Rust 1.98.1 + MSVC,
+      Temurin JDK 21.0.12, SDK android-36/build-tools 35 — `tauri:build`
+      gerou `.msi` + `-setup.exe` (janela abre, título "ForgeBoard") e
+      `android:build:win` gerou `app-debug.apk` (~4 MB).
 
 **Concluída quando:** configs versionadas + gates web verdes + docs.
 

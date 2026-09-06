@@ -6,6 +6,15 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ## [Unreleased]
 
+### Changed (visual, sem mudança de comportamento)
+
+- Microinterações: botões com escala no `active`, inputs com transição de borda,
+  hover com elevação nos cards de estatística, cursor de arrasto nos cartões.
+- Entrada escalonada (`stagger`) em listas e grades; fade na troca de mês/semana
+  do calendário; destaque com sombra na coluna de drop do Kanban.
+- Indicador lateral no item ativo da sidebar; screenshots do README atualizadas.
+- Tudo em CSS/Tailwind, coberto pelo `prefers-reduced-motion` global existente.
+
 ### Added
 
 - Screenshots reais em `docs/screenshots/` (geradas por

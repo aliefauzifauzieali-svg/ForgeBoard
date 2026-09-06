@@ -98,7 +98,7 @@ export function Dashboard(): React.JSX.Element {
         </div>
       </div>
 
-      <section aria-label="Estatísticas gerais" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <section aria-label="Estatísticas gerais" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6 stagger">
         <StatCard icon={<FolderKanban size={20} />} label="Projetos" value={stats.totalProjects} />
         <StatCard
           icon={<Inbox size={20} />}
@@ -176,7 +176,7 @@ export function Dashboard(): React.JSX.Element {
             + Novo projeto
           </button>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 stagger">
           {projects.map((p) => (
             <ProjectCard key={p.id} project={p} />
           ))}
@@ -197,7 +197,7 @@ export function Dashboard(): React.JSX.Element {
               Nenhuma tarefa atrasada. Bom ritmo!
             </p>
           ) : (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 space-y-2 stagger">
               {overdue.map((t) => (
                 <TaskRow key={t.id} task={t} projectName={projectNameOf(t.projectId)} />
               ))}
@@ -213,7 +213,7 @@ export function Dashboard(): React.JSX.Element {
           {recent.length === 0 ? (
             <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">Nenhuma tarefa ainda.</p>
           ) : (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 space-y-2 stagger">
               {recent.map((t) => (
                 <TaskRow key={t.id} task={t} projectName={projectNameOf(t.projectId)} />
               ))}
@@ -243,7 +243,7 @@ export function Dashboard(): React.JSX.Element {
             Nenhuma tarefa corresponde aos filtros. Ajuste a busca ou limpe os filtros.
           </p>
         ) : (
-          <ul className="grid gap-2 md:grid-cols-2">
+          <ul className="grid gap-2 md:grid-cols-2 stagger">
             {filtered.map((t) => (
               <TaskRow key={t.id} task={t} projectName={projectNameOf(t.projectId)} />
             ))}

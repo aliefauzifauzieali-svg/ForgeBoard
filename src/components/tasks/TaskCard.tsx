@@ -29,7 +29,7 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
       draggable
       onDragStart={onDragStart}
       aria-label={`Tarefa ${task.title}. Status ${task.status}. Prioridade ${task.priority}.`}
-      className="group rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition hover:-translate-y-px hover:shadow-card focus-visible:ring-2 dark:border-zinc-700/80 dark:bg-zinc-900"
+      className="group cursor-grab rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition hover:-translate-y-px hover:shadow-card focus-visible:ring-2 active:cursor-grabbing dark:border-zinc-700/80 dark:bg-zinc-900"
     >
       <div className="flex items-start gap-2">
         {projectColor ? (

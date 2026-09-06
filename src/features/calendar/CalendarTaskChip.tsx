@@ -40,7 +40,7 @@ export function CalendarTaskChip({
       title={`${task.title}${projectName ? ` · ${projectName}` : ''}`}
       aria-label={`${task.title}. Status ${STATUS_META[task.status].label}. Ativar para editar; arraste para outro dia para remarcar.${overdue ? ' Atrasada.' : ''}`}
       className={cn(
-        'flex w-full items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-xs font-medium transition hover:shadow-card',
+        'flex w-full cursor-grab items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-xs font-medium transition hover:shadow-card active:cursor-grabbing',
         overdue
           ? 'border-red-300 bg-red-50 text-red-900 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200'
           : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200',

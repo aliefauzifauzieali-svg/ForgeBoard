@@ -181,12 +181,15 @@ export function Sidebar(): React.JSX.Element {
             onClick={goDashboard}
             aria-current={view.kind === 'dashboard' ? 'page' : undefined}
             className={cn(
-              'flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
+              'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
               view.kind === 'dashboard'
                 ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
+            {view.kind === 'dashboard' ? (
+              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+            ) : null}
             <LayoutDashboard size={17} aria-hidden />
             Dashboard
           </button>
@@ -195,12 +198,15 @@ export function Sidebar(): React.JSX.Element {
             onClick={goCalendar}
             aria-current={view.kind === 'calendar' ? 'page' : undefined}
             className={cn(
-              'flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
+              'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
               view.kind === 'calendar'
                 ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
+            {view.kind === 'calendar' ? (
+              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+            ) : null}
             <CalendarDays size={17} aria-hidden />
             Calendário
           </button>
@@ -209,12 +215,15 @@ export function Sidebar(): React.JSX.Element {
             onClick={goStats}
             aria-current={view.kind === 'stats' ? 'page' : undefined}
             className={cn(
-              'flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
+              'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
               view.kind === 'stats'
                 ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
+            {view.kind === 'stats' ? (
+              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+            ) : null}
             <BarChart3 size={17} aria-hidden />
             Estatísticas
           </button>

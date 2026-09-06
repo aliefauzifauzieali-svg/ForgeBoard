@@ -44,7 +44,7 @@ export function StatCard({
   accent?: string;
 }): React.JSX.Element {
   return (
-    <div className="card animate-fade-up p-4">
+    <div className="card animate-fade-up p-4 transition-shadow hover:shadow-pop">
       <div className="flex items-center gap-3">
         <span
           aria-hidden

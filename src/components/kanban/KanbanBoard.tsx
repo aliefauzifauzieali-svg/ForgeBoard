@@ -45,9 +45,9 @@ export function KanbanColumn({
         if (id) moveTask(id, status);
       }}
       className={cn(
-        'flex w-72 shrink-0 snap-start flex-col rounded-2xl border bg-zinc-50/80 p-3 transition dark:bg-zinc-900/60 sm:w-80',
+        'flex w-72 shrink-0 snap-start animate-fade-up flex-col rounded-2xl border bg-zinc-50/80 p-3 transition dark:bg-zinc-900/60 sm:w-80',
         over
-          ? 'border-indigo-500 ring-2 ring-indigo-500/40'
+          ? 'border-indigo-500 shadow-pop ring-2 ring-indigo-500/40'
           : 'border-zinc-200 dark:border-zinc-800',
       )}
     >
@@ -106,7 +106,7 @@ export function KanbanBoard({
 }): React.JSX.Element {
   return (
     <div
-      className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 lg:mx-0 lg:px-0"
+      className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 lg:mx-0 lg:px-0 stagger"
       role="region"
       aria-label="Quadro Kanban. Arraste tarefas entre as colunas ou use os botões Mover de cada cartão."
     >

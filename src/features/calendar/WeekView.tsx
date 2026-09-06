@@ -26,9 +26,9 @@ export function WeekView({
       aria-label="Calendário semanal. Arraste tarefas entre dias para remarcar."
       className="-mx-4 overflow-x-auto px-4 pb-2 lg:mx-0 lg:px-0"
     >
-      <div className="grid min-w-[720px] grid-cols-7 gap-1.5">
+      <div className="grid min-w-[720px] grid-cols-7 gap-1.5 stagger">
         {buckets.map((b, i) => (
-          <div key={b.iso}>
+          <div key={b.iso} className="animate-fade-up">
             <p
               aria-hidden
               className="pb-1 text-center text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400"

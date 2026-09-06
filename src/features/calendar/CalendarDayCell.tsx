@@ -72,11 +72,14 @@ export function CalendarDayCell({
       )}
     >
       <div className="flex items-center justify-between gap-1 px-0.5">
-        <time
-          dateTime={bucket.iso}
-          aria-label={`${bucket.date.getDate()}${bucket.isToday ? ', hoje' : ''}`}
+        {/* Número do dia também cria tarefa (atalho F7); o `+` ao lado faz o mesmo. */}
+        <button
+          type="button"
+          onClick={() => onNewTask(bucket.iso)}
+          aria-label={`Dia ${bucket.iso}${bucket.isToday ? ' (hoje)' : ''}: criar tarefa`}
+          title={`Criar tarefa em ${toDateOnlyString(bucket.date)}`}
           className={cn(
-            'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums',
+            'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums transition hover:ring-2 hover:ring-indigo-500/50',
             bucket.isToday
               ? 'bg-indigo-600 text-white'
               : bucket.isOutside
@@ -85,7 +88,7 @@ export function CalendarDayCell({
           )}
         >
           {bucket.date.getDate()}
-        </time>
+        </button>
         <button
           type="button"
           onClick={() => onNewTask(bucket.iso)}

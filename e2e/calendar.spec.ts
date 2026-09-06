@@ -90,6 +90,16 @@ test.describe('calendário', () => {
     await expect(page.getByTestId(`cal-day-${TARGET}`).getByText('Nova pelo calendário')).toBeVisible();
   });
 
+  test('clicar no número do dia abre nova tarefa com a data', async ({ page }) => {
+    await seedBoard(page, seed());
+    await gotoCalendar(page);
+    await page.getByTestId(`cal-day-${TARGET}`).getByRole('button', { name: `Dia ${TARGET}: criar tarefa` }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Nova tarefa' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByLabel('Prazo (opcional)', { exact: true })).toHaveValue(TARGET);
+  });
+
   test('clicar no chip abre a edição', async ({ page }) => {
     await seedBoard(page, seed());
     await gotoCalendar(page);

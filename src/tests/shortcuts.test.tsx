@@ -45,6 +45,16 @@ describe('atalhos de teclado (integração App)', () => {
     expect(useUIStore.getState().taskModal.open).toBe(true);
   });
 
+  it('T abre nova tarefa com o prazo de hoje', () => {
+    useBoardStore.getState().createProject({ name: 'Site' });
+    key('t');
+    const modal = useUIStore.getState().taskModal;
+    expect(modal.open).toBe(true);
+    const d = new Date();
+    const today = `${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, '0')}-${`${d.getDate()}`.padStart(2, '0')}`;
+    expect(modal.presetDueDate).toBe(today);
+  });
+
   it('ignora N digitando na pesquisa', () => {
     const input = screen.getByLabelText(/pesquisar tarefas/i);
     (input as HTMLElement).focus();

@@ -336,7 +336,7 @@ export function SettingsModal(): React.JSX.Element {
         <Section title="Atalhos de teclado">
           <label className="flex cursor-pointer items-center justify-between gap-3 text-sm">
             <span>
-              Atalhos de letra (N, P, /, ?)
+              Atalhos de letra (N, P, T, /, ?)
               <span className="block text-xs font-normal text-zinc-500">
                 Ctrl+K e Esc funcionam sempre.
               </span>

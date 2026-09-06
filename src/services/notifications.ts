@@ -1,13 +1,7 @@
 import type { Task } from '../types';
+import { todayDateOnly } from '../utils/date';
 
 export type NotifyPermission = NotificationPermission | 'unsupported';
-
-function todayLocalISO(): string {
-  const d = new Date();
-  const m = `${d.getMonth() + 1}`.padStart(2, '0');
-  const day = `${d.getDate()}`.padStart(2, '0');
-  return `${d.getFullYear()}-${m}-${day}`;
-}
 
 function parseDay(iso: string): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
@@ -33,7 +27,7 @@ export interface DueTasks {
  * Pura e determinística (`todayISO` injetável em testes).
  */
 export function findDueTasks(tasks: Task[], daysBefore: number, todayISO?: string): DueTasks {
-  const today = startOfDay(parseDay(todayISO ?? todayLocalISO()) ?? Date.now());
+  const today = startOfDay(parseDay(todayISO ?? todayDateOnly()) ?? Date.now());
   const limit = today + Math.max(0, daysBefore) * 86_400_000;
   const dueSoon: Task[] = [];
   const overdue: Task[] = [];

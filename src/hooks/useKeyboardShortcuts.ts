@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useBoardStore } from '../stores/useBoardStore';
 import { usePrefsStore } from '../stores/usePrefsStore';
 import { useUIStore } from '../stores/useUIStore';
+import { todayDateOnly } from '../utils/date';
 
 function isTypingTarget(el: EventTarget | null): boolean {
   if (!(el instanceof HTMLElement)) return false;
@@ -13,7 +14,8 @@ function isTypingTarget(el: EventTarget | null): boolean {
 
 /**
  * Atalhos globais:
- *  Ctrl/⌘+K → paleta · N → nova tarefa · P → novo projeto · / → pesquisa
+ *  Ctrl/⌘+K → paleta · N → nova tarefa · T → nova tarefa com prazo de hoje
+ *  P → novo projeto · / → pesquisa
  *  Ctrl/⌘+Z → desfazer · Ctrl/⌘+Shift+Z ou Ctrl+Y → refazer · ? → atalhos
  *  Esc → fechar (confirmação, paleta, modais, menu)
  * Teclas simples são ignoradas digitando ou com diálogos abertos.
@@ -79,6 +81,11 @@ export function useKeyboardShortcuts(searchRef: React.RefObject<HTMLInputElement
         e.preventDefault();
         const view = state.view;
         state.openNewTask(view.kind === 'project' ? view.projectId : null, null);
+      } else if (e.key === 't' || e.key === 'T') {
+        if (!lettersOn) return;
+        e.preventDefault();
+        const view = state.view;
+        state.openNewTask(view.kind === 'project' ? view.projectId : null, null, todayDateOnly());
       } else if (e.key === 'p' || e.key === 'P') {
         if (!lettersOn) return;
         e.preventDefault();

@@ -22,6 +22,14 @@ export function startOfToday(): Date {
   return d;
 }
 
+/** Hoje em yyyy-mm-dd (horário local, sem desvio de fuso). */
+export function todayDateOnly(): string {
+  const d = new Date();
+  const m = `${d.getMonth() + 1}`.padStart(2, '0');
+  const day = `${d.getDate()}`.padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
 export function isOverdue(dueDate: string | null, status: string): boolean {
   if (!dueDate || status === 'done') return false;
   const due = new Date(`${dueDate}T23:59:59`);

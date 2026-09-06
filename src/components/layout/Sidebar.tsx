@@ -399,7 +399,7 @@ export function Sidebar(): React.JSX.Element {
             <SettingsIcon size={15} aria-hidden /> Configurações
           </button>
           <p className="text-center text-[10px] text-zinc-600 dark:text-zinc-400">
-            Atalhos: <kbd>N</kbd> tarefa · <kbd>P</kbd> projeto · <kbd>/</kbd> busca ·{' '}
+            Atalhos: <kbd>N</kbd> tarefa · <kbd>T</kbd> hoje · <kbd>P</kbd> projeto · <kbd>/</kbd> busca ·{' '}
             <kbd>Ctrl K</kbd> paleta · <kbd>?</kbd> ajuda · <kbd>Esc</kbd> fecha
           </p>
         </div>

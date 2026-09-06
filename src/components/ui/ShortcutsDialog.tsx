@@ -11,6 +11,7 @@ function mod(): string {
 
 const ROWS: Array<{ keys: string[]; action: string }> = [
   { keys: ['N'], action: 'Nova tarefa (no projeto aberto)' },
+  { keys: ['T'], action: 'Nova tarefa com o prazo de hoje' },
   { keys: ['P'], action: 'Novo projeto' },
   { keys: ['/'], action: 'Focar a pesquisa' },
   { keys: [mod(), 'K'], action: 'Abrir a paleta de comandos e busca global' },

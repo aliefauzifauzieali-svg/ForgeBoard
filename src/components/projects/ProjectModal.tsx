@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PROJECT_COLORS } from '../../utils/constants';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
+import { useIsTouchDevice } from '../../hooks/useIsTouchDevice';
 import { cn } from '../../utils/core';
 import { Modal } from '../ui/Modal';
 
@@ -13,12 +14,15 @@ export function ProjectModal(): React.JSX.Element {
   // O formulário remonta a cada abertura (via `key`): estado sempre limpo.
   // O Modal permanece montado para permitir a animação de saída.
   const formKey = projectModal.open ? `project-${projectModal.editingId ?? 'new'}` : 'project-closed';
+  const description = useIsTouchDevice()
+    ? 'Organize um conjunto de tarefas em um quadro Kanban.'
+    : 'Organize um conjunto de tarefas em um quadro Kanban. (atalho: P)';
 
   return (
     <Modal
       open={projectModal.open}
       title={editing ? 'Editar projeto' : 'Novo projeto'}
-      description="Organize um conjunto de tarefas em um quadro Kanban. (atalho: P)"
+      description={description}
       onClose={closeProjectModal}
     >
       <ProjectForm key={formKey} />

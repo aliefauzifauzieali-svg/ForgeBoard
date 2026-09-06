@@ -3,6 +3,7 @@ import { TASK_PRIORITIES, TASK_STATUSES, type RecurrenceKind, type Subtask, type
 import { RECURRENCE_META } from '../../services/recurrence';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
+import { useIsTouchDevice } from '../../hooks/useIsTouchDevice';
 import { PRIORITY_META, STATUS_META } from '../../utils/constants';
 import { parseTags } from '../../utils/core';
 import { Modal } from '../ui/Modal';
@@ -18,12 +19,15 @@ export function TaskModal(): React.JSX.Element {
   const formKey = taskModal.open
     ? `task-${taskModal.editingId ?? taskModal.presetProjectId ?? 'new'}-${taskModal.presetStatus ?? ''}`
     : 'task-closed';
+  const newDescription = useIsTouchDevice()
+    ? 'Descreva o trabalho a ser feito.'
+    : 'Descreva o trabalho a ser feito. (atalho: N)';
 
   return (
     <Modal
       open={taskModal.open}
       title={editing ? 'Editar tarefa' : 'Nova tarefa'}
-      description={editing ? 'Ajuste os detalhes da tarefa.' : 'Descreva o trabalho a ser feito. (atalho: N)'}
+      description={editing ? 'Ajuste os detalhes da tarefa.' : newDescription}
       onClose={closeTaskModal}
       wide
     >

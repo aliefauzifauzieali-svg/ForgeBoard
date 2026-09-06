@@ -9,6 +9,7 @@ import { projectProgress } from '../../services/boardStats';
 import { queryTasks } from '../../services/taskQuery';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
+import { useIsTouchDevice } from '../../hooks/useIsTouchDevice';
 import { isOverdue } from '../../utils/date';
 
 export function ProjectView({ projectId }: { projectId: string }): React.JSX.Element {
@@ -23,6 +24,7 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
   const filters = useUIStore((s) => s.filters);
   const sortKey = useUIStore((s) => s.sortKey);
   const sortDir = useUIStore((s) => s.sortDir);
+  const isTouch = useIsTouchDevice();
 
   const project = projects.find((p) => p.id === projectId);
 
@@ -137,9 +139,17 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
 
       {mine.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-3 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-          Quadro vazio — crie a primeira tarefa (atalho{' '}
-          <kbd className="rounded bg-zinc-200 px-1 font-bold dark:bg-zinc-800">N</kbd>) ou use o{' '}
-          <span aria-hidden>+</span> de uma coluna. Arraste cartões entre as colunas.
+          Quadro vazio — crie a primeira tarefa
+          {isTouch ? (
+            <> usando o <span aria-hidden>+</span> de uma coluna.</>
+          ) : (
+            <>
+              {' '}(atalho{' '}
+              <kbd className="rounded bg-zinc-200 px-1 font-bold dark:bg-zinc-800">N</kbd>) ou use o{' '}
+              <span aria-hidden>+</span> de uma coluna.
+            </>
+          )}{' '}
+          Arraste cartões entre as colunas.
         </p>
       ) : null}
       <KanbanBoard

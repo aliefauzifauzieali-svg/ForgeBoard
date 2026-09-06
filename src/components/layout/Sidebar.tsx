@@ -7,6 +7,7 @@ import { FORMAT_VERSION } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
+import { useIsTouchDevice } from '../../hooks/useIsTouchDevice';
 import { MAX_IMPORT_BYTES } from '../../utils/constants';
 import { cn } from '../../utils/core';
 import { InstallButton } from '../ui/InstallButton';
@@ -252,6 +253,7 @@ export function Sidebar(): React.JSX.Element {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
+  const isTouch = useIsTouchDevice();
 
   return (
     <>
@@ -379,7 +381,9 @@ export function Sidebar(): React.JSX.Element {
             })}
           </ul>
           {projects.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-zinc-600 dark:text-zinc-400">Nenhum projeto. Crie o primeiro com “P”.</p>
+            <p className="px-3 py-2 text-xs text-zinc-600 dark:text-zinc-400">
+              Nenhum projeto.{isTouch ? '' : ' Crie o primeiro com “P”.'}
+            </p>
           ) : null}
         </nav>
 
@@ -387,9 +391,11 @@ export function Sidebar(): React.JSX.Element {
           <InstallButton />
           <button type="button" className="btn-primary w-full" onClick={() => openNewTask(null, null)}>
             <Plus size={16} aria-hidden /> Nova tarefa
-            <kbd aria-hidden className="ml-auto rounded bg-white/20 px-1.5 text-[10px]">
-              N
-            </kbd>
+            {isTouch ? null : (
+              <kbd aria-hidden className="ml-auto rounded bg-white/20 px-1.5 text-[10px]">
+                N
+              </kbd>
+            )}
           </button>
           <DataButtons />
           <ThemeToggle />
@@ -400,10 +406,16 @@ export function Sidebar(): React.JSX.Element {
           >
             <SettingsIcon size={15} aria-hidden /> Configurações
           </button>
-          <p className="text-center text-[10px] text-zinc-600 dark:text-zinc-400">
-            Atalhos: <kbd>N</kbd> tarefa · <kbd>T</kbd> hoje · <kbd>P</kbd> projeto · <kbd>/</kbd> busca ·{' '}
-            <kbd>Ctrl K</kbd> paleta · <kbd>?</kbd> ajuda · <kbd>Esc</kbd> fecha
-          </p>
+          {isTouch ? (
+            <p className="text-center text-[10px] text-zinc-600 dark:text-zinc-400">
+              Toque nos botões para criar, mover e organizar.
+            </p>
+          ) : (
+            <p className="text-center text-[10px] text-zinc-600 dark:text-zinc-400">
+              Atalhos: <kbd>N</kbd> tarefa · <kbd>T</kbd> hoje · <kbd>P</kbd> projeto · <kbd>/</kbd> busca ·{' '}
+              <kbd>Ctrl K</kbd> paleta · <kbd>?</kbd> ajuda · <kbd>Esc</kbd> fecha
+            </p>
+          )}
         </div>
       </aside>
     </>

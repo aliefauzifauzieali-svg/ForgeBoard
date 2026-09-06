@@ -150,7 +150,7 @@ export function CommandPalette(): React.JSX.Element | null {
         data-testid="command-palette"
         className="animate-fade-up flex max-h-[70dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-pop dark:bg-zinc-900"
       >
-        <div className="flex items-center gap-2 border-b border-zinc-200 px-4 dark:border-zinc-800">
+        <div className="flex items-center gap-2 border-b border-zinc-200 px-4 transition-colors focus-within:border-indigo-500 dark:border-zinc-800 dark:focus-within:border-indigo-400">
           <Search size={18} aria-hidden className="shrink-0 text-zinc-400" />
           <input
             role="combobox"
@@ -166,7 +166,7 @@ export function CommandPalette(): React.JSX.Element | null {
             }}
             onKeyDown={onKeyDown}
             placeholder="Digite um comando ou busque…"
-            className="w-full bg-transparent py-3.5 text-[15px] outline-none placeholder:text-zinc-400"
+            className="w-full bg-transparent py-3.5 text-[15px] outline-none placeholder:text-zinc-400 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <kbd
             aria-hidden

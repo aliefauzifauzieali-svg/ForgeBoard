@@ -38,9 +38,6 @@ export default function App(): React.JSX.Element {
   const searchRef = useRef<HTMLInputElement>(null);
   useKeyboardShortcuts(searchRef);
   const view = useUIStore((s) => s.view);
-  const projectModal = useUIStore((s) => s.projectModal);
-  const taskModal = useUIStore((s) => s.taskModal);
-  const paletteOpen = useUIStore((s) => s.paletteOpen);
 
   return (
     <div className="min-h-dvh">
@@ -58,15 +55,21 @@ export default function App(): React.JSX.Element {
           <OfflineBanner />
           <QuarantineBanner />
           <StorageErrorBanner />
-          {view.kind === 'dashboard' ? (
-            <DashboardPage />
-          ) : view.kind === 'project' ? (
-            <ProjectPage key={view.projectId} projectId={view.projectId} />
-          ) : view.kind === 'calendar' ? (
-            <CalendarPage />
-          ) : (
-            <StatsPage />
-          )}
+          {/* Fade a cada troca de visão (remonta o contêiner). */}
+          <div
+            key={view.kind === 'project' ? `project-${view.projectId}` : view.kind}
+            className="animate-fade-in"
+          >
+            {view.kind === 'dashboard' ? (
+              <DashboardPage />
+            ) : view.kind === 'project' ? (
+              <ProjectPage projectId={view.projectId} />
+            ) : view.kind === 'calendar' ? (
+              <CalendarPage />
+            ) : (
+              <StatsPage />
+            )}
+          </div>
           <footer className="mt-10 border-t border-zinc-200 pt-4 text-center text-[11px] text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
             ForgeBoard · seus dados ficam no navegador (localStorage) · exporte JSON para backup
           </footer>
@@ -74,18 +77,10 @@ export default function App(): React.JSX.Element {
       </div>
       <BottomNav />
       <ToastStack />
-      {/* `key` força remount a cada abertura: os formulários inicializam no mount. */}
-      <ProjectModal
-        key={projectModal.open ? `project-${projectModal.editingId ?? 'new'}` : 'project-closed'}
-      />
-      <TaskModal
-        key={
-          taskModal.open
-            ? `task-${taskModal.editingId ?? taskModal.presetProjectId ?? 'new'}-${taskModal.presetStatus ?? ''}`
-            : 'task-closed'
-        }
-      />
-      <CommandPalette key={paletteOpen ? 'palette-open' : 'palette-closed'} />
+      {/* Modais montados de forma estável (saída animada); reset via `key` interno. */}
+      <ProjectModal />
+      <TaskModal />
+      <CommandPalette />
       <ShortcutsDialog />
       <SettingsModal />
       <ConfirmDialog />

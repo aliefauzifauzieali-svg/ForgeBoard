@@ -28,10 +28,20 @@ export default {
           from: { opacity: '0' },
           to: { opacity: '1' },
         },
+        'fade-out': {
+          from: { opacity: '1' },
+          to: { opacity: '0' },
+        },
+        'fade-out-scale': {
+          from: { opacity: '1', transform: 'translateY(0) scale(1)' },
+          to: { opacity: '0', transform: 'translateY(4px) scale(0.98)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 180ms ease-out both',
         'fade-in': 'fade-in 150ms ease-out both',
+        'fade-out': 'fade-out 160ms ease-in both',
+        'fade-out-scale': 'fade-out-scale 160ms ease-in both',
       },
     },
   },

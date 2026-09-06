@@ -35,7 +35,7 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
         className="min-w-0 flex-1 text-left"
         aria-label={`Editar tarefa ${task.title}`}
       >
-        <span className={`block truncate text-sm font-semibold ${done ? 'text-zinc-600 line-through dark:text-zinc-400' : ''}`}>
+        <span className={`strike block truncate text-sm font-semibold ${done ? 'strike-on text-zinc-600 dark:text-zinc-400' : ''}`}>
           {task.title}
         </span>
         <span className="mt-0.5 block truncate text-[11px] text-zinc-600 dark:text-zinc-400">

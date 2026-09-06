@@ -292,7 +292,7 @@ export function StatsPage(): React.JSX.Element {
     <Suspense
       fallback={
         <div aria-busy className="space-y-4" aria-label="Carregando estatísticas">
-          <div className="card animate-pulse p-4">
+          <div className="card skeleton p-4">
             <p className="text-sm text-zinc-500">Carregando estatísticas…</p>
           </div>
         </div>

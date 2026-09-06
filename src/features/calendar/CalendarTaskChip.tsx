@@ -54,7 +54,7 @@ export function CalendarTaskChip({
           style={{ backgroundColor: projectColor }}
         />
       ) : null}
-      <span className={cn('min-w-0 flex-1 truncate', done && 'line-through')}>
+      <span className={cn('strike min-w-0 flex-1 truncate', done && 'strike-on')}>
         {task.title}
         {detailed && projectName ? <span className="block truncate text-[11px] font-normal opacity-70">{projectName}</span> : null}
       </span>

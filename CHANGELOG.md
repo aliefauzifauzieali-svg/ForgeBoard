@@ -13,6 +13,12 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Entrada escalonada (`stagger`) em listas e grades; fade na troca de mês/semana
   do calendário; destaque com sombra na coluna de drop do Kanban.
 - Indicador lateral no item ativo da sidebar; screenshots do README atualizadas.
+- Saída animada (160ms) em modais e paleta via `useDelayedUnmount` (fecha na
+  hora, desmonta depois); formulários remontam por `key` interno no
+  `TaskForm`/`ProjectForm`.
+- Transição suave de tema claro↔escuro (`body` + `.card`); glow no hover do
+  `.btn-primary`; riscado animado ao concluir tarefa (`.strike`); skeleton
+  com brilho deslizante (`.skeleton`); fade a cada troca de visão.
 - Tudo em CSS/Tailwind, coberto pelo `prefers-reduced-motion` global existente.
 
 ### Added

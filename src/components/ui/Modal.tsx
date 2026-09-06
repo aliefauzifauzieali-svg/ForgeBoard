@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
 
 export function Modal({
   open,
@@ -19,6 +20,8 @@ export function Modal({
 }): React.JSX.Element | null {
   const panelRef = useRef<HTMLDivElement>(null);
   const descriptionId = useId();
+  // Fecha na hora (lógica/foco), desmonta depois (animação de saída).
+  const { rendered, leaving } = useDelayedUnmount(open);
 
   useEffect(() => {
     if (!open) return;
@@ -30,24 +33,32 @@ export function Modal({
       );
       el?.focus();
     }, 30);
-    // Trava rolagem do fundo
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     return () => {
       window.clearTimeout(t);
-      document.body.style.overflow = prevOverflow;
       prev?.focus?.();
     };
   }, [open ]);
 
-  // Mantém o Tab circulando dentro do diálogo (focus trap).
-  useFocusTrap(panelRef, open);
+  // Trava a rolagem enquanto o diálogo está montado (inclui a saída).
+  useEffect(() => {
+    if (!rendered) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [rendered ]);
 
-  if (!open) return null;
+  // Mantém o Tab circulando dentro do diálogo enquanto visível.
+  useFocusTrap(panelRef, rendered);
+
+  if (!rendered) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/50 p-0 backdrop-blur-[2px] animate-fade-in sm:items-center sm:p-6"
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-6 ${
+        leaving ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'
+      }`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -58,9 +69,9 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         aria-describedby={description ? descriptionId : undefined}
-        className={`animate-fade-up flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-pop dark:bg-zinc-900 sm:rounded-2xl ${
-          wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'
-        }`}
+        className={`flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-pop dark:bg-zinc-900 sm:rounded-2xl ${
+          leaving ? 'animate-fade-out-scale' : 'animate-fade-up'
+        } ${wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'}`}
       >
         <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
           <div>

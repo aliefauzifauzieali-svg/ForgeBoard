@@ -9,6 +9,10 @@
   }
   body {
     @apply bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+    /* Transição suave de tema (claro ↔ escuro) */
+    transition-property: background-color, color;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
   }
   :focus-visible {
     @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950;
@@ -20,7 +24,7 @@
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-zinc-200/80 bg-white shadow-card dark:border-zinc-800 dark:bg-zinc-900;
+    @apply rounded-2xl border border-zinc-200/80 bg-white shadow-card transition-colors dark:border-zinc-800 dark:bg-zinc-900;
   }
   .input {
     @apply w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 transition-colors focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500;
@@ -29,13 +33,48 @@
     @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 hover:shadow active:scale-[0.98] active:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 hover:shadow-md hover:shadow-indigo-600/25 active:scale-[0.98] active:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 hover:shadow-sm active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:shadow-none disabled:active:scale-100;
   }
   .icon-btn {
     @apply inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800 active:scale-95 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100;
+  }
+}
+
+/* Riscado animado (conclusão de tarefa): linha cresce via background-size.
+   Só anima `background-size` + `color` — sem layout shift. */
+.strike {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1.5px;
+  background-repeat: no-repeat;
+  background-position: 0 58%;
+  transition:
+    background-size 200ms ease-out,
+    color 200ms ease-out;
+}
+.strike-on {
+  background-size: 100% 1.5px;
+}
+
+/* Skeleton com brilho deslizante (só `transform`, sem repintura de layout). */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(161 161 170 / 0.25), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
   }
 }
 

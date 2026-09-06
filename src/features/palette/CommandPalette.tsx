@@ -4,6 +4,7 @@ import { searchBoard } from '../../services/globalSearch';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
 import { cn } from '../../utils/core';
 import { buildCommands, filterCommands } from './commands';
 
@@ -19,7 +20,7 @@ interface PaletteItem {
 
 /**
  * Paleta de comandos + busca global (Ctrl/⌘+K).
- * Remontada a cada abertura (via `key` no App): estado sempre limpo.
+ * Montada de forma estável (saída animada); a busca zera ao desmontar.
  */
 export function CommandPalette(): React.JSX.Element | null {
   const open = useUIStore((s) => s.paletteOpen);
@@ -34,7 +35,13 @@ export function CommandPalette(): React.JSX.Element | null {
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(panelRef, open);
+  // Saída animada (mesmo padrão do Modal); ao desmontar, limpa a busca
+  // para a próxima abertura começar zerada.
+  const { rendered, leaving } = useDelayedUnmount(open, undefined, () => {
+    setQuery('');
+    setActive(0);
+  });
+  useFocusTrap(panelRef, rendered);
 
   const names = useMemo(() => new Map(projects.map((p) => [p.id, p.name] as const)), [projects]);
 
@@ -100,7 +107,7 @@ export function CommandPalette(): React.JSX.Element | null {
     ];
   }, [query, projects, tasks, tags, names, openEditTask, openProject, setOpen]);
 
-  if (!open) return null;
+  if (!rendered) return null;
 
   const runIndex = (i: number): void => {
     const item = items[i];
@@ -131,7 +138,9 @@ export function CommandPalette(): React.JSX.Element | null {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center bg-zinc-950/50 p-4 pt-[12vh] backdrop-blur-[2px] animate-fade-in"
+      className={`fixed inset-0 z-[60] flex items-start justify-center bg-zinc-950/50 p-4 pt-[12vh] backdrop-blur-[2px] ${
+        leaving ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'
+      }`}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.stopPropagation();
@@ -148,7 +157,9 @@ export function CommandPalette(): React.JSX.Element | null {
         aria-modal="true"
         aria-label="Paleta de comandos e busca global"
         data-testid="command-palette"
-        className="animate-fade-up flex max-h-[70dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-pop dark:bg-zinc-900"
+        className={`flex max-h-[70dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-pop dark:bg-zinc-900 ${
+          leaving ? 'animate-fade-out-scale' : 'animate-fade-up'
+        }`}
       >
         <div className="flex items-center gap-2 border-b border-zinc-200 px-4 transition-colors focus-within:border-indigo-500 dark:border-zinc-800 dark:focus-within:border-indigo-400">
           <Search size={18} aria-hidden className="shrink-0 text-zinc-400" />

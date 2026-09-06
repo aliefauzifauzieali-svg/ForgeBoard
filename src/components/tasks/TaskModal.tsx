@@ -9,6 +9,30 @@ import { Modal } from '../ui/Modal';
 export function TaskModal(): React.JSX.Element {
   const taskModal = useUIStore((s) => s.taskModal);
   const closeTaskModal = useUIStore((s) => s.closeTaskModal);
+  const tasks = useBoardStore((s) => s.tasks);
+  const editing = tasks.find((t) => t.id === taskModal.editingId) ?? null;
+  // O formulário remonta a cada abertura (via `key`): estado sempre limpo.
+  // O Modal permanece montado para permitir a animação de saída.
+  const formKey = taskModal.open
+    ? `task-${taskModal.editingId ?? taskModal.presetProjectId ?? 'new'}-${taskModal.presetStatus ?? ''}`
+    : 'task-closed';
+
+  return (
+    <Modal
+      open={taskModal.open}
+      title={editing ? 'Editar tarefa' : 'Nova tarefa'}
+      description={editing ? 'Ajuste os detalhes da tarefa.' : 'Descreva o trabalho a ser feito. (atalho: N)'}
+      onClose={closeTaskModal}
+      wide
+    >
+      <TaskForm key={formKey} />
+    </Modal>
+  );
+}
+
+function TaskForm(): React.JSX.Element {
+  const taskModal = useUIStore((s) => s.taskModal);
+  const closeTaskModal = useUIStore((s) => s.closeTaskModal);
   const projects = useBoardStore((s) => s.projects);
   const tasks = useBoardStore((s) => s.tasks);
   const createTask = useBoardStore((s) => s.createTask);
@@ -20,7 +44,7 @@ export function TaskModal(): React.JSX.Element {
     [tasks, taskModal.editingId],
   );
 
-  // Estado inicializado no mount: o App remonta este componente (via `key`)
+  // Estado inicializado no mount: o formulário remonta (via `key`)
   // a cada abertura, então não há sincronização via efeito.
   const [projectId, setProjectId] = useState(() => editing?.projectId ?? taskModal.presetProjectId ?? projects[0]?.id ?? '');
   const [title, setTitle] = useState(() => editing?.title ?? '');
@@ -94,13 +118,7 @@ export function TaskModal(): React.JSX.Element {
   };
 
   return (
-    <Modal
-      open={taskModal.open}
-      title={editing ? 'Editar tarefa' : 'Nova tarefa'}
-      description={editing ? 'Ajuste os detalhes da tarefa.' : 'Descreva o trabalho a ser feito. (atalho: N)'}
-      onClose={closeTaskModal}
-      wide
-    >
+    <>
       {projects.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-4 text-sm dark:border-zinc-700">
           <p className="font-semibold">Nenhum projeto ainda</p>
@@ -336,6 +354,6 @@ export function TaskModal(): React.JSX.Element {
           </div>
         </form>
       )}
-    </Modal>
+    </>
   );
 }

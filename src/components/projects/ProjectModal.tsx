@@ -9,12 +9,33 @@ export function ProjectModal(): React.JSX.Element {
   const projectModal = useUIStore((s) => s.projectModal);
   const closeProjectModal = useUIStore((s) => s.closeProjectModal);
   const projects = useBoardStore((s) => s.projects);
+  const editing = projects.find((p) => p.id === projectModal.editingId) ?? null;
+  // O formulário remonta a cada abertura (via `key`): estado sempre limpo.
+  // O Modal permanece montado para permitir a animação de saída.
+  const formKey = projectModal.open ? `project-${projectModal.editingId ?? 'new'}` : 'project-closed';
+
+  return (
+    <Modal
+      open={projectModal.open}
+      title={editing ? 'Editar projeto' : 'Novo projeto'}
+      description="Organize um conjunto de tarefas em um quadro Kanban. (atalho: P)"
+      onClose={closeProjectModal}
+    >
+      <ProjectForm key={formKey} />
+    </Modal>
+  );
+}
+
+function ProjectForm(): React.JSX.Element {
+  const projectModal = useUIStore((s) => s.projectModal);
+  const closeProjectModal = useUIStore((s) => s.closeProjectModal);
+  const projects = useBoardStore((s) => s.projects);
   const createProject = useBoardStore((s) => s.createProject);
   const updateProject = useBoardStore((s) => s.updateProject);
 
   const editing = projects.find((p) => p.id === projectModal.editingId) ?? null;
 
-  // Estado inicializado no mount: o App remonta este componente (via `key`)
+  // Estado inicializado no mount: o formulário remonta (via `key`)
   // a cada abertura, então não há sincronização via efeito.
   const [name, setName] = useState(() => editing?.name ?? '');
   const [description, setDescription] = useState(() => editing?.description ?? '');
@@ -39,13 +60,7 @@ export function ProjectModal(): React.JSX.Element {
   };
 
   return (
-    <Modal
-      open={projectModal.open}
-      title={editing ? 'Editar projeto' : 'Novo projeto'}
-      description="Organize um conjunto de tarefas em um quadro Kanban. (atalho: P)"
-      onClose={closeProjectModal}
-    >
-      <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="label" htmlFor="project-name">
             Nome *
@@ -109,7 +124,6 @@ export function ProjectModal(): React.JSX.Element {
             {editing ? 'Salvar alterações' : 'Criar projeto'}
           </button>
         </div>
-      </form>
-    </Modal>
+    </form>
   );
 }

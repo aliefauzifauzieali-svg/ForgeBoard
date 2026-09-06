@@ -25,6 +25,16 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases/latest/download/latest.json"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM3ODEzRjRCOTNDQzZFRTAKUldUZ2JzeVRTeitCeCtYVTY3TGhiN1pCOFBWZUxZWjJYOU8vWEtkOEMzSHNNSGVyRHk5NmwreXQK"
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

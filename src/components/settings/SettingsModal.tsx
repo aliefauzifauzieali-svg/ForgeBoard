@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Download, Pencil, Plus, Settings2, Trash2, Upload } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Download, Pencil, Plus, RefreshCw, Settings2, Trash2, Upload } from 'lucide-react';
 import { PROJECT_COLORS } from '../../utils/constants';
 import { toDateTime } from '../../utils/date';
 import { cn } from '../../utils/core';
 import { getNotificationPermission, requestNotificationPermission, type NotifyPermission } from '../../services/notifications';
+import { checkDesktopUpdate, installDesktopUpdate } from '../../services/desktopUpdater';
+import { isTauri } from '../../utils/platform';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { usePrefsStore } from '../../stores/usePrefsStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -298,6 +300,108 @@ function NotificationsSection(): React.JSX.Element {
   );
 }
 
+/** Atualizações do app desktop (só renderizado no Tauri). */
+function UpdatesSection(): React.JSX.Element {
+  const pushToast = useUIStore((s) => s.pushToast);
+  const [state, setState] = useState<'idle' | 'checking' | 'available' | 'ready' | 'installing' | 'error'>('idle');
+  const [version, setVersion] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState('');
+
+  // Verificação automática silenciosa ao abrir o app (uma vez por sessão).
+  useEffect(() => {
+    if (autoChecked) return;
+    autoChecked = true;
+    void checkDesktopUpdate().then(
+      (info) => {
+        if (info.available) {
+          setState('available');
+          setVersion(info.version);
+          pushToast({
+            kind: 'info',
+            message: `Nova versão ${info.version ?? ''} disponível — veja em Configurações > Atualizações`.trim(),
+          });
+        }
+      },
+      () => {},
+    );
+  }, [pushToast]);
+
+  const check = async (): Promise<void> => {
+    setState('checking');
+    setError('');
+    try {
+      const info = await checkDesktopUpdate();
+      if (info.available) {
+        setState('available');
+        setVersion(info.version);
+      } else {
+        setState('ready');
+        setVersion(null);
+      }
+    } catch (err) {
+      setState('error');
+      setError(err instanceof Error ? err.message : 'Falha ao verificar.');
+    }
+  };
+
+  const install = async (): Promise<void> => {
+    setState('installing');
+    setError('');
+    setProgress(0);
+    try {
+      await installDesktopUpdate((pct) => setProgress(pct));
+    } catch (err) {
+      setState('error');
+      setError(err instanceof Error ? err.message : 'Falha ao instalar.');
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        {state === 'available' && version
+          ? `Versão ${version} disponível.`
+          : state === 'ready'
+            ? 'Você está na versão mais recente.'
+            : 'Busca novas versões no GitHub Releases.'}
+      </p>
+      {state === 'installing' ? (
+        <div className="mt-2" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Baixando atualização">
+          <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+            <div className="h-full bg-indigo-600 transition-[width]" style={{ width: `${progress}%` }} />
+          </div>
+          <p className="mt-1 text-xs tabular-nums text-zinc-600 dark:text-zinc-400">{progress}%</p>
+        </div>
+      ) : null}
+      {error ? (
+        <p role="alert" className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      ) : null}
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          className="btn-ghost text-xs"
+          disabled={state === 'checking' || state === 'installing'}
+          onClick={() => void check()}
+        >
+          <RefreshCw size={14} aria-hidden />
+          {state === 'checking' ? 'Verificando…' : 'Verificar atualização'}
+        </button>
+        {state === 'available' ? (
+          <button type="button" className="btn-primary text-xs" onClick={() => void install()}>
+            <Download size={14} aria-hidden /> Instalar e reiniciar
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// Guarda de sessão: a verificação automática roda uma vez.
+let autoChecked = false;
+
 /** Configurações: aparência, atalhos, notificações, etiquetas e backups. */
 export function SettingsModal(): React.JSX.Element {
   const open = useUIStore((s) => s.settingsOpen);
@@ -363,6 +467,12 @@ export function SettingsModal(): React.JSX.Element {
         <Section title="Notificações">
           <NotificationsSection />
         </Section>
+
+        {isTauri() ? (
+          <Section title="Atualizações">
+            <UpdatesSection />
+          </Section>
+        ) : null}
 
         <Section title="Etiquetas">
           <TagsManager />

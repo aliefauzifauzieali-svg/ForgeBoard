@@ -30,6 +30,8 @@
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
     "@capacitor/core": "^8.5.1",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.11.0",
     "date-fns": "^4.4.0",
     "idb": "^8.0.3",
     "lucide-react": "^0.469.0",

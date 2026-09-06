@@ -50,7 +50,7 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
           </button>
         </h4>
         <div
-          className="flex shrink-0 items-center gap-0.5 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100"
+          className="flex shrink-0 items-center gap-0.5 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100"
           role="toolbar"
           aria-label={`Ações da tarefa ${task.title}`}
         >

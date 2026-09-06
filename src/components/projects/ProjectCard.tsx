@@ -38,7 +38,7 @@ export function ProjectCard({ project }: { project: Project }): React.JSX.Elemen
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
+        <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100">
           <button
             type="button"
             className="icon-btn"

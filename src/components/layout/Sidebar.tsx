@@ -1,7 +1,7 @@
 import { BarChart3, CalendarDays, Download, LayoutDashboard, Plus, Settings as SettingsIcon, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { parseImport } from '../../services/boardIO';
-import { exportBoardNow } from '../../services/boardIO';
+import { exportBoardNow, type ExportFormat } from '../../services/boardIO';
 import { FORMAT_VERSION } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useThemeStore } from '../../stores/useThemeStore';
@@ -44,10 +44,11 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [format, setFormat] = useState<ExportFormat>('json');
 
   const doExport = (): void => {
     const { projects, tasks, tags } = useBoardStore.getState();
-    exportBoardNow({ version: FORMAT_VERSION, projects, tasks, tags });
+    exportBoardNow({ version: FORMAT_VERSION, projects, tasks, tags }, format);
     onDone?.();
   };
 
@@ -88,6 +89,20 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
   return (
     <div className="space-y-2" aria-busy={busy}>
       <div className="flex gap-2">
+        <label htmlFor="export-format" className="sr-only">
+          Formato de exportação
+        </label>
+        <select
+          id="export-format"
+          className="input !w-auto !px-2 !py-2 text-xs"
+          value={format}
+          onChange={(e) => setFormat(e.target.value as ExportFormat)}
+          aria-label="Formato de exportação"
+        >
+          <option value="json">JSON</option>
+          <option value="csv">CSV</option>
+          <option value="md">Markdown</option>
+        </select>
         <button type="button" className="btn-ghost flex-1 text-xs" onClick={doExport}>
           <Download size={14} aria-hidden /> Exportar
         </button>

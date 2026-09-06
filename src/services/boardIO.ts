@@ -2,21 +2,34 @@ import { useUIStore } from '../stores/useUIStore';
 import { migrateToCurrent, MigrationError } from '../storage/migrations';
 import type { BoardData } from '../types';
 import { FORMAT_VERSION } from '../types';
-import { datedFilename, downloadJson } from './download';
+import { datedFilename, downloadFile, downloadJson } from './download';
+import { boardToMarkdown, tasksToCsv } from './exportFormats';
 import { serializeBoard } from './validation';
 
+export type ExportFormat = 'json' | 'csv' | 'md';
+
+const FORMAT_LABEL: Record<ExportFormat, string> = {
+  json: 'JSON',
+  csv: 'CSV',
+  md: 'Markdown',
+};
+
 /**
- * Exporta o board em JSON com toast de confirmação.
+ * Exporta o board no formato escolhido, com toast de confirmação.
  * Recebe os dados por parâmetro (sem ler stores: inversão removida).
  * Usado pela sidebar e pela paleta de comandos.
  */
-export function exportBoardNow(board: BoardData): void {
-  downloadJson(
-    datedFilename('forgeboard'),
-    serializeBoard({ version: FORMAT_VERSION, projects: board.projects, tasks: board.tasks, tags: board.tags }),
-  );
+export function exportBoardNow(board: BoardData, format: ExportFormat = 'json'): void {
+  const data = { version: FORMAT_VERSION, projects: board.projects, tasks: board.tasks, tags: board.tags };
+  if (format === 'csv') {
+    downloadFile(datedFilename('forgeboard', 'csv'), tasksToCsv(data), 'text/csv;charset=utf-8');
+  } else if (format === 'md') {
+    downloadFile(datedFilename('forgeboard', 'md'), boardToMarkdown(data), 'text/markdown;charset=utf-8');
+  } else {
+    downloadJson(datedFilename('forgeboard'), serializeBoard(data));
+  }
   try {
-    useUIStore.getState().pushToast({ kind: 'success', message: 'Dados exportados em JSON' });
+    useUIStore.getState().pushToast({ kind: 'success', message: `Dados exportados em ${FORMAT_LABEL[format]}` });
   } catch {
     /* ignore */
   }

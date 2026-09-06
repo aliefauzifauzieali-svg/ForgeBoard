@@ -6,6 +6,27 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ## [Unreleased]
 
+### Added
+
+- Tarefas recorrentes (diária, semanal, mensal, personalizada com intervalo):
+  ao concluir, a próxima ocorrência é criada automaticamente; indicador de
+  repetição nos cartões e edição/remoção no modal da tarefa.
+- Subtarefas (título + checkbox) com editor no modal (adicionar, renomear,
+  concluir, excluir, reordenar) e progresso compacto (`2/4`) no Kanban.
+- Exportação em CSV (RFC 4180, com BOM) e Markdown, com seletor de formato
+  na sidebar; JSON mantido como padrão.
+- Importação de tarefas via CSV (colunas título, descrição, status,
+  prioridade, prazo, tags, projeto opcional), com validação por linha,
+  criação de etiquetas e feedback de sucesso/erros.
+- Notificações locais de prazo (Web Notifications + toast), opcionais, com
+  antecedência configurável (1/2/3/7 dias) nas Configurações.
+- Busca global: filtro por `#etiqueta`, ranking por prioridade e prazo, e
+  destaque dos termos nos resultados da paleta.
+- Criação rápida com prazo: clique no número do dia no calendário abre nova
+  tarefa com a data; atalho `T` cria tarefa com o prazo de hoje.
+- Formato de dados v3 (migração automática v1/v2 → v3: `recurrence`,
+  `subtasks` com padrões).
+
 ### Changed (visual, sem mudança de comportamento)
 
 - Microinterações: botões com escala no `active`, inputs com transição de borda,

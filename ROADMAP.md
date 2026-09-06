@@ -226,6 +226,33 @@ Notas da execução: relatório = este checklist + `docs/performance.md` +
 
 ---
 
+## Fase 12 — Funcionalidades de Produtividade ✅ concluída em 2026-09-06
+
+Demandas da validação beta, 100% local-first (sem backend, sem novas
+dependências pesadas — só `date-fns`, já presente).
+
+- [x] Tarefas recorrentes: `recurrence` na tarefa, próxima ocorrência
+      automática ao concluir (`services/recurrence.ts`), indicador visual e
+      edição no modal.
+- [x] Subtarefas: checklist com editor (`SubtaskEditor`), progresso `n/m`
+      no cartão do Kanban.
+- [x] Exportação CSV (RFC 4180 + BOM) e Markdown com seletor de formato
+      (`services/exportFormats.ts`); JSON mantido.
+- [x] Importação de CSV com validação por linha e feedback
+      (`services/csv.ts` + `importTasks` no store).
+- [x] Notificações locais de prazo (opt-in, 1/2/3/7 dias) via Web
+      Notifications + toast (`services/notifications.ts`).
+- [x] Busca global: filtro `#etiqueta`, ranking (prioridade/prazo) e
+      destaque dos termos (`highlight.ts`).
+- [x] Criação rápida com prazo: clique no dia do calendário + atalho `T`.
+- [x] Formato de dados v3 com migração automática (v1/v2 → v3).
+- [x] Docs (README, CHANGELOG) e gates verdes: typecheck, lint, Vitest,
+      build, E2E dev + PWA, axe, `diff --check`, sem segredos.
+
+**Concluída quando:** 7 features com commits atômicos + gates acima verdes.
+
+---
+
 ## Pós-roadmap (fora de escopo — só após a Fase 8)
 
 Contas, autenticação, sincronização, backend, compartilhamento e colaboração.

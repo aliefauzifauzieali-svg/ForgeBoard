@@ -1,6 +1,6 @@
 # ForgeBoard
 
-Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, importação/exportação JSON versionada e persistência em IndexedDB (com migração do formato antigo) e página de Estatísticas com log de atividades e métricas históricas.
+Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tarefas recorrentes (diária/semanal/mensal/personalizada), subtarefas com progresso, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, notificações locais de prazo, importação/exportação JSON versionada, exportação CSV/Markdown, importação de CSV e persistência em IndexedDB (com migração do formato antigo) e página de Estatísticas com log de atividades e métricas históricas.
 
 ## Screenshots
 
@@ -124,6 +124,7 @@ Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`,
 | Tecla | Ação |
 |---|---|
 | `N` | nova tarefa (herda o projeto aberto) |
+| `T` | nova tarefa com o prazo de hoje |
 | `P` | novo projeto |
 | `/` | focar pesquisa |
 | `Ctrl/⌘+K` | paleta de comandos e busca global (funciona em qualquer lugar) |
@@ -158,17 +159,17 @@ Teclas simples ignoradas enquanto o foco está em `input`, `textarea`, `select` 
 - Persistência limitada à cota do IndexedDB do navegador e a um único dispositivo — sem sincronização.
 - Sem colaboração em tempo real, anexos ou contas de usuário (fora do escopo local-first).
 - Drag-and-drop usa HTML5 DnD (sem animações físicas de bibliotecas como dnd-kit); no toque (mobile) o movimento é feito pelos botões “Mover”.
-- Sem migração automática além de `v1 → v2` (versões futuras desconhecidas vão para quarentena em vez de migrar).
+- Sem migração automática além de `v1 → v3` (versões futuras desconhecidas vão para quarentena em vez de migrar).
 
 ## Possíveis melhorias futuras
 
 - [ ] Backend opcional (REST/Supabase/Firebase) implementando o repositório de dados + sincronização e resolução de conflitos.
-- [x] Migrações versionadas de schema (`v1 → v2`).
-- [ ] Subtarefas, comentários e anexos (IndexedDB para binários).
+- [x] Migrações versionadas de schema (`v1 → v3`).
+- [x] Subtarefas com progresso (sem comentários/anexos).
 - [x] Visões de calendário (mês/semana/dia) com drag and drop de prazos.
-- [ ] Recorrência de tarefas.
-- [x] Busca global com paleta de comandos (`Ctrl/⌘+K`) e atalhos (`?` lista todos).
+- [x] Recorrência de tarefas (diária/semanal/mensal/personalizada).
+- [x] Busca global com paleta de comandos (`Ctrl/⌘+K`), filtro `#etiqueta`, ranking e destaque, e atalhos (`?` lista todos).
 - [ ] Arrastar com `@dnd-kit` + suporte completo a toque.
 - [x] PWA instalável.
-- [ ] Exportação CSV/Markdown.
+- [x] Exportação CSV/Markdown e importação de CSV.
 - [x] Testes de acessibilidade automatizados (axe) no CI.

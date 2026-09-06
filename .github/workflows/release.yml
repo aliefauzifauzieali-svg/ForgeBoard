@@ -42,12 +42,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Globs restritos aos distribuíveis (fora staging: .so, AppDir, etc.)
           - os: windows-latest
-            bundle: 'src-tauri/target/release/bundle/**/*'
+            artifact: desktop-windows
+            files: |
+              src-tauri/target/release/bundle/**/*.msi
+              src-tauri/target/release/bundle/**/*-setup.exe
+              src-tauri/target/release/bundle/**/*.sig
           - os: ubuntu-latest
-            bundle: 'src-tauri/target/release/bundle/**/*'
+            artifact: desktop-ubuntu
+            files: |
+              src-tauri/target/release/bundle/**/*.AppImage
+              src-tauri/target/release/bundle/**/*.deb
+              src-tauri/target/release/bundle/**/*.rpm
+              src-tauri/target/release/bundle/**/*.sig
           - os: macos-latest
-            bundle: 'src-tauri/target/release/bundle/**/*'
+            artifact: desktop-macos-arm64
+            files: |
+              src-tauri/target/release/bundle/**/*.dmg
+              src-tauri/target/release/bundle/**/*.app.tar.gz
+              src-tauri/target/release/bundle/**/*.sig
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -73,18 +87,19 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
-          name: desktop-${{ runner.os }}
-          path: ${{ matrix.bundle }}
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.files }}
           if-no-files-found: error
 
   release:
     needs: [build-android, build-desktop]
     runs-on: ubuntu-latest
     steps:
+      # Sem merge-multiple: cada artefato fica em dist-artifacts/<nome>,
+      # preservando a origem (usada como fallback deSO/arch no latest.json).
       - uses: actions/download-artifact@v4
         with:
           path: dist-artifacts
-          merge-multiple: true
       - name: Gerar latest.json do updater (a partir dos .sig)
         env:
           TAG_NAME: ${{ github.ref_name }}
@@ -98,25 +113,36 @@ jobs:
           root = 'dist-artifacts'
           platforms = {}
 
-          def triple(filename):
+          # Fallback de SO/arch pela pasta do artefato (ex.: desktop-macos-arm64).
+          LEG_DEFAULTS = {
+              'desktop-windows': ('windows', 'x86_64'),
+              'desktop-ubuntu': ('linux', 'x86_64'),
+              'desktop-macos-arm64': ('darwin', 'aarch64'),
+          }
+
+          def triple(filename, leg):
               low = filename.lower()
+              if 'aarch64' in low or 'arm64' in low:
+                  arch = 'aarch64'
+              elif 'x64' in low or 'x86_64' in low or 'amd64' in low:
+                  arch = 'x86_64'
+              else:
+                  arch = (LEG_DEFAULTS.get(leg) or (None, None))[1]
               if low.endswith('-setup.exe'):
-                  arch = 'aarch64' if ('aarch64' in low or 'arm64' in low) else 'x86_64'
-                  return f'windows-{arch}'
+                  return f'windows-{arch}' if arch else None
               if low.endswith('.appimage'):
-                  arch = 'aarch64' if ('aarch64' in low or 'arm64' in low) else 'x86_64'
-                  return f'linux-{arch}'
+                  return f'linux-{arch}' if arch else None
               if low.endswith('.app.tar.gz'):
-                  arch = 'aarch64' if ('aarch64' in low or 'arm64' in low) else 'x86_64'
-                  return f'darwin-{arch}'
+                  return f'darwin-{arch}' if arch else None
               return None
 
           for dirpath, _, files in os.walk(root):
+              leg = os.path.relpath(dirpath, root).split(os.sep)[0]
               for f in sorted(files):
                   if not f.endswith('.sig'):
                       continue
                   base = f[:-4]
-                  key = triple(base)
+                  key = triple(base, leg)
                   if key is None or not os.path.exists(os.path.join(dirpath, base)):
                       print(f'skip: {f} (formato sem updater)')
                       continue

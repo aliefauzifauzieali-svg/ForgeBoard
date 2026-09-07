@@ -409,8 +409,9 @@ let autoChecked = false;
 function AndroidUpdatesSection(): React.JSX.Element | null {
   const pushToast = useUIStore((s) => s.pushToast);
   const [native, setNative] = useState<boolean | null>(null);
-  const [state, setState] = useState<'idle' | 'checking' | 'available' | 'ready' | 'installing' | 'error' | 'unconfigured'>('idle');
+  const [state, setState] = useState<'idle' | 'checking' | 'available' | 'ready' | 'installing' | 'error' | 'unconfigured' | 'unreachable'>('idle');
   const [version, setVersion] = useState<string | null>(null);
+  const [apkUrl, setApkUrl] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -429,8 +430,12 @@ function AndroidUpdatesSection(): React.JSX.Element | null {
       if (info.available) {
         setState('available');
         setVersion(info.version);
+        setApkUrl(info.apkUrl);
       } else if (!info.available && info.reason === 'unconfigured') {
         setState('unconfigured');
+      } else if (!info.available && info.reason === 'unreachable') {
+        setState('error');
+        setError('Sem conexão com o servidor de atualização.');
       } else {
         setState('ready');
       }
@@ -450,7 +455,7 @@ function AndroidUpdatesSection(): React.JSX.Element | null {
     setState('installing');
     setError('');
     try {
-      await installAndroidUpdate(info.version, info.url);
+      await installAndroidUpdate(info.version, info.bundleUrl);
       pushToast({ kind: 'success', message: 'Atualização baixada — reinicie o app para aplicar.' });
       setState('ready');
     } catch (err) {
@@ -467,9 +472,22 @@ function AndroidUpdatesSection(): React.JSX.Element | null {
           : state === 'ready'
             ? 'Você está na versão mais recente.'
             : state === 'unconfigured'
-              ? 'Servidor de atualização não configurado (ver README).'
+              ? 'Atualização via releases do GitHub (ver README).'
               : 'Busca atualizações do app Android.'}
       </p>
+      {state === 'available' && apkUrl ? (
+        <p className="mt-1 text-xs">
+          <a
+            href={apkUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-[var(--accent)] hover:underline dark:text-[var(--accent-bright)]"
+          >
+            Ou baixe o APK completo
+          </a>
+          <span className="text-zinc-600 dark:text-zinc-400"> (instalação manual, pede confirmação).</span>
+        </p>
+      ) : null}
       {error ? (
         <p role="alert" className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
           {error}

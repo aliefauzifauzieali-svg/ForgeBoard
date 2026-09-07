@@ -30,11 +30,18 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run android:sync
+      - name: Empacotar bundle web OTA
+        run: python3 -c "import shutil; shutil.make_archive('forgeboard-web-${{ github.ref_name }}', 'zip', 'dist')"
       - run: cd android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: apk-android
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-bundle
+          path: forgeboard-web-*.zip
           if-no-files-found: error
 
   build-desktop:
@@ -157,12 +164,39 @@ jobs:
           if not platforms:
               raise SystemExit('ERRO: nenhum artefato de updater (.sig) encontrado')
 
+          # Seção Android: bundle OTA (Capgo) + APK manual.
+          import glob
+          android = None
+          zips = sorted(glob.glob(os.path.join(root, '**', 'forgeboard-web-*.zip'), recursive=True))
+          apk = None
+          for dirpath, _, files in os.walk(root):
+              if 'app-debug.apk' in files:
+                  apk = 'app-debug.apk'
+                  break
+          if zips:
+              bundle = os.path.basename(zips[0])
+              android = {
+                  'version': version,
+                  'bundleUrl': f'https://github.com/{repo}/releases/download/{tag}/{bundle}',
+                  'apkUrl': f'https://github.com/{repo}/releases/download/{tag}/{apk}' if apk else None,
+              }
+              print(f'android: bundle {bundle}' + (f' + apk {apk}' if apk else ' (sem apk)'))
+          elif apk:
+              android = {
+                  'version': version,
+                  'bundleUrl': None,
+                  'apkUrl': f'https://github.com/{repo}/releases/download/{tag}/{apk}',
+              }
+              print(f'android: só apk {apk} (sem bundle OTA)')
+
           latest = {
               'version': version,
               'notes': f'ForgeBoard {tag}: notas em https://github.com/{repo}/releases/tag/{tag}',
               'pub_date': datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z'),
               'platforms': platforms,
           }
+          if android is not None:
+              latest['android'] = android
           with open(os.path.join(root, 'latest.json'), 'w', encoding='utf-8') as fh:
               json.dump(latest, fh, indent=2)
           print(f'latest.json gerado para a versão {version}')

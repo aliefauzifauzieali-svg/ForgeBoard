@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { checkAndroidUpdate, installAndroidUpdate, isNativeAndroid } from '../services/androidUpdater';
+import {
+  checkAndroidUpdate,
+  compareVersions,
+  installAndroidUpdate,
+  isNativeAndroid,
+  resolveAndroidUpdate,
+} from '../services/androidUpdater';
 import { checkDesktopUpdate, installDesktopUpdate } from '../services/desktopUpdater';
 import { RELEASES_URL, getAppVersion } from '../services/appInfo';
 import { isTauri } from '../utils/platform';
@@ -49,5 +55,35 @@ describe('androidUpdater (web)', () => {
 
   it('install fora do nativo falha em vez de travar', async () => {
     await expect(installAndroidUpdate('1.0.0', 'https://example.com/b.zip')).rejects.toThrow();
+  });
+});
+
+describe('resolveAndroidUpdate (puro)', () => {
+  const manifest = {
+    version: '1.5.1',
+    android: { version: '1.5.1', bundleUrl: 'https://ex.com/web.zip', apkUrl: 'https://ex.com/app.apk' },
+  };
+
+  it('disponível quando o manifesto é mais novo', () => {
+    expect(resolveAndroidUpdate(manifest, '1.5.0')).toEqual({
+      available: true,
+      version: '1.5.1',
+      bundleUrl: 'https://ex.com/web.zip',
+      apkUrl: 'https://ex.com/app.apk',
+    });
+  });
+
+  it('null quando igual, mais velho ou sem seção utilizável', () => {
+    expect(resolveAndroidUpdate(manifest, '1.5.1')).toBeNull();
+    expect(resolveAndroidUpdate(manifest, '2.0.0')).toBeNull();
+    expect(resolveAndroidUpdate({ version: '9.9.9' }, '1.0.0')).toBeNull();
+    expect(resolveAndroidUpdate(null, '1.0.0')).toBeNull();
+    expect(resolveAndroidUpdate({ android: { version: '2.0.0' } }, '1.0.0')).toBeNull();
+  });
+
+  it('compareVersions numérico por partes', () => {
+    expect(compareVersions('1.5.0', '1.5.1')).toBe(-1);
+    expect(compareVersions('1.5.1', '1.5.1')).toBe(0);
+    expect(compareVersions('1.10.0', '1.9.9')).toBe(1);
   });
 });

@@ -184,22 +184,20 @@ reiniciar", com progresso). Pacotes verificados por assinatura minisign.
 - Teste manual: instale uma versão antiga, publique tag maior, abra o app —
   o toast indica a nova versão; instale por Configurações e confirme a versão.
 
-### Android (Capacitor, OTA via servidor)
+### Android (Capacitor, OTA via GitHub Releases)
 
-Atualizações over-the-air do bundle web via plugin Capgo (`autoUpdate: false`
-por padrão — nada é verificado sozinho). Passos para habilitar:
+O app verifica `latest.json` da release (`seção android`) em Configurações >
+Atualizações do Android: se houver bundle web mais novo, baixa e aplica no
+restart (sem reinstalar o APK). O mesmo manifesto traz `apkUrl` para baixar
+o APK completo manualmente (aí sim o Android pede confirmação).
 
-1. Contrate/choque um servidor de bundles (nuvem Capgo ou próprio compatível).
-2. Preencha `ANDROID_UPDATE_URL` em `src/services/updateServer.ts`
-   (fonte única: alimenta `capacitor.config.ts` e o serviço).
-3. `npm run android:sync` + rebuild do APK (`android:build:win`).
-4. No app: Configurações > Atualizações do Android > Verificar > Baixar e
-   aplicar; a troca vale após reiniciar. Bundles OTA não pedem confirmação
-   do sistema (só reinstalações de APK pedem).
-5. Quando houver servidor, chame `CapacitorUpdater.notifyAppReady()` no boot
-   (evita rollback automático do bundle).
-
-Sem servidor, a seção mostra "não configurado" e nenhuma rede é tocada.
+- O CI empacota `dist/` em `forgeboard-web-<tag>.zip` e publica junto à
+  release; nenhum servidor extra é necessário.
+- Sem seção `android` no manifesto (releases antigas), a tela informa que
+  não há atualização configurada e nenhuma rede é tocada além do GET.
+- Quando migrar para um servidor Capgo dedicado, preencha
+  `ANDROID_UPDATE_URL` em `src/services/updateServer.ts` e chame
+  `CapacitorUpdater.notifyAppReady()` no boot (evita rollback do bundle).
 
 ## Nova versão (release automática)
 

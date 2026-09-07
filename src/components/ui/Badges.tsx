@@ -3,11 +3,11 @@ import type { TaskPriority, TaskStatus } from '../../types';
 import { PRIORITY_META, STATUS_META } from '../../utils/constants';
 import { cn } from '../../utils/core';
 
-const PRIORITY_STYLE: Record<TaskPriority, string> = {
-  low: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
-  medium: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
-  high: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
-  critical: 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300',
+const PRIORITY_TEXT: Record<TaskPriority, string> = {
+  low: 'text-sky-600 dark:text-sky-400',
+  medium: 'text-amber-600 dark:text-amber-400',
+  high: 'text-orange-600 dark:text-orange-400',
+  critical: 'text-red-600 dark:text-red-400',
 };
 
 const PRIORITY_ICON = {
@@ -21,12 +21,9 @@ export function PriorityBadge({ value }: { value: TaskPriority }): React.JSX.Ele
   const Icon = PRIORITY_ICON[value];
   return (
     <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
-        PRIORITY_STYLE[value],
-      )}
+      className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200"
     >
-      <Icon size={12} strokeWidth={2.5} aria-hidden />
+      <Icon size={12} strokeWidth={2.5} aria-hidden className={PRIORITY_TEXT[value]} />
       {PRIORITY_META[value].label}
     </span>
   );

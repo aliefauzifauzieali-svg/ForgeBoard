@@ -13,54 +13,64 @@ export function BottomNav(): React.JSX.Element {
 
   const currentProjectId = view.kind === 'project' ? view.projectId : projects[0]?.id;
 
+  const item = (active: boolean): string =>
+    cn(
+      'flex flex-col items-center gap-1 py-2 text-[11px] font-semibold transition-[transform,color] duration-200 active:scale-95',
+      active ? 'text-[var(--accent)] dark:text-[var(--accent-bright)]' : 'text-zinc-600 dark:text-zinc-400',
+    );
+  const iconWrap = (active: boolean): string =>
+    cn(
+      'flex items-center justify-center rounded-full px-4 py-1 transition-[background-color,transform] duration-200',
+      active && 'bg-[color-mix(in_srgb,var(--accent)_12%,transparent)]',
+    );
+
   return (
     <nav
       aria-label="Navegação móvel"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden dark:border-zinc-800 dark:bg-zinc-950/95"
+      className="fixed inset-x-4 bottom-4 z-30 rounded-2xl border border-zinc-200/80 bg-white/95 pb-[max(0.25rem,env(safe-area-inset-bottom))] shadow-pop backdrop-blur-md lg:hidden dark:border-zinc-800 dark:bg-zinc-900/95"
     >
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-4 px-2">
         <button
           type="button"
           onClick={goDashboard}
           aria-current={view.kind === 'dashboard' ? 'page' : undefined}
-          className={cn(
-            'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold',
-            view.kind === 'dashboard' ? 'text-[var(--accent)] dark:text-[var(--accent-bright)]' : 'text-zinc-600 dark:text-zinc-400',
-          )}
+          className={item(view.kind === 'dashboard')}
         >
-          <Home size={20} aria-hidden />
+          <span className={iconWrap(view.kind === 'dashboard')}>
+            <Home size={20} aria-hidden />
+          </span>
           Início
         </button>
         <button
           type="button"
           disabled={!currentProjectId}
           onClick={() => currentProjectId && openProject(currentProjectId)}
-          className={cn(
-            'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold disabled:opacity-40',
-            view.kind === 'project' ? 'text-[var(--accent)] dark:text-[var(--accent-bright)]' : 'text-zinc-600 dark:text-zinc-400',
-          )}
+          className={cn(item(view.kind === 'project'), 'disabled:opacity-40')}
         >
-          <KanbanSquare size={20} aria-hidden />
+          <span className={iconWrap(view.kind === 'project')}>
+            <KanbanSquare size={20} aria-hidden />
+          </span>
           Quadro
         </button>
         <button
           type="button"
           onClick={goCalendar}
           aria-current={view.kind === 'calendar' ? 'page' : undefined}
-          className={cn(
-            'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold',
-            view.kind === 'calendar' ? 'text-[var(--accent)] dark:text-[var(--accent-bright)]' : 'text-zinc-600 dark:text-zinc-400',
-          )}
+          className={item(view.kind === 'calendar')}
         >
-          <CalendarDays size={20} aria-hidden />
+          <span className={iconWrap(view.kind === 'calendar')}>
+            <CalendarDays size={20} aria-hidden />
+          </span>
           Agenda
         </button>
         <button
           type="button"
           onClick={() => openNewTask(view.kind === 'project' ? view.projectId : null, null)}
-          className="flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold text-zinc-600 dark:text-zinc-400"
+          className={item(false)}
         >
-          <Plus size={20} aria-hidden />
+          <span className={iconWrap(false)}>
+            <Plus size={20} aria-hidden />
+          </span>
           Nova
         </button>
       </div>

@@ -294,7 +294,7 @@ export function Sidebar(): React.JSX.Element {
             onClick={goDashboard}
             aria-current={view.kind === 'dashboard' ? 'page' : undefined}
             className={cn(
-              'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
+              'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
               view.kind === 'dashboard'
                 ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
@@ -303,7 +303,7 @@ export function Sidebar(): React.JSX.Element {
             {view.kind === 'dashboard' ? (
               <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
             ) : null}
-            <LayoutDashboard size={17} aria-hidden />
+            <LayoutDashboard size={17} aria-hidden className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
             Dashboard
           </button>
           <button
@@ -311,7 +311,7 @@ export function Sidebar(): React.JSX.Element {
             onClick={goCalendar}
             aria-current={view.kind === 'calendar' ? 'page' : undefined}
             className={cn(
-              'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
+              'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
               view.kind === 'calendar'
                 ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
@@ -320,7 +320,7 @@ export function Sidebar(): React.JSX.Element {
             {view.kind === 'calendar' ? (
               <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
             ) : null}
-            <CalendarDays size={17} aria-hidden />
+            <CalendarDays size={17} aria-hidden className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
             Calendário
           </button>
           <button
@@ -328,7 +328,7 @@ export function Sidebar(): React.JSX.Element {
             onClick={goStats}
             aria-current={view.kind === 'stats' ? 'page' : undefined}
             className={cn(
-              'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
+              'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
               view.kind === 'stats'
                 ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
@@ -337,7 +337,7 @@ export function Sidebar(): React.JSX.Element {
             {view.kind === 'stats' ? (
               <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
             ) : null}
-            <BarChart3 size={17} aria-hidden />
+            <BarChart3 size={17} aria-hidden className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
             Estatísticas
           </button>
 
@@ -363,7 +363,7 @@ export function Sidebar(): React.JSX.Element {
                     onClick={() => openProject(p.id)}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition',
+                      'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
                       active
                         ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] font-semibold text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                         : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',

@@ -14,11 +14,13 @@ export function KanbanColumn({
   tasks,
   projectColor,
   projectId,
+  dragging,
 }: {
   status: TaskStatus;
   tasks: Task[];
   projectColor?: string;
   projectId: string;
+  dragging: boolean;
 }): React.JSX.Element {
   const moveTask = useBoardStore((s) => s.moveTask);
   const openNewTask = useUIStore((s) => s.openNewTask);
@@ -47,7 +49,9 @@ export function KanbanColumn({
       }}
       className={cn(
         'flex w-full flex-col rounded-2xl border bg-zinc-50/80 p-3 transition animate-fade-up dark:bg-zinc-900/60 lg:w-72 lg:shrink-0 lg:snap-start xl:w-80',
-        over
+        // `dragging` vem do quadro: sem arrasto ativo (ex.: cancelado com
+        // Esc, que não dispara dragleave/drop), nenhum destaque sobrevive.
+        over && dragging
           ? 'border-[var(--accent)] shadow-pop ring-2 ring-[color-mix(in_srgb,var(--accent)_40%,transparent)]'
           : 'border-zinc-200 dark:border-zinc-800',
       )}
@@ -108,12 +112,18 @@ export function KanbanBoard({
   tasks: Task[];
   projectColor?: string;
 }): React.JSX.Element {
+  // Sessão de arrasto do quadro: liga no dragstart, desliga no dragend
+  // (que sempre dispara — drop, Escape ou soltura fora de alvo). Handlers
+  // de evento, sem setState em efeito.
+  const [dragging, setDragging] = useState(false);
   return (
     <div
       data-kanban-region
       className="flex flex-col gap-4 pb-4 stagger lg:-mx-4 lg:flex-row lg:gap-3 lg:overflow-x-auto lg:px-4 lg:snap-x lg:snap-mandatory"
       role="region"
       aria-label="Quadro Kanban. No computador, arraste tarefas entre as colunas; no touch, segure e arraste ou use os botões Mover de cada cartão."
+      onDragStartCapture={() => setDragging(true)}
+      onDragEndCapture={() => setDragging(false)}
     >
       {COLUMNS.map((status) => (
         <KanbanColumn
@@ -121,6 +131,7 @@ export function KanbanBoard({
           status={status}
           projectId={projectId}
           projectColor={projectColor}
+          dragging={dragging}
           tasks={tasks.filter((t) => t.status === status)}
         />
       ))}

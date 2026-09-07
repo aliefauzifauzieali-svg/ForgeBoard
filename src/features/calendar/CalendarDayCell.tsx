@@ -66,8 +66,8 @@ export function CalendarDayCell({
         bucket.isToday
           ? 'border-[color-mix(in_srgb,var(--accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]'
           : bucket.isOutside
-            ? 'border-zinc-200 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-900/30'
-            : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60',
+            ? 'border-zinc-200 bg-zinc-50/70 dark:border-zinc-800 dark:bg-transparent'
+            : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-white/[0.02]',
         over && 'border-[var(--accent)] ring-2 ring-[color-mix(in_srgb,var(--accent)_40%,transparent)]',
       )}
     >

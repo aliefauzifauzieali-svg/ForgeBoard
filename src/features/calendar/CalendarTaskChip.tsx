@@ -52,7 +52,7 @@ export function CalendarTaskChip({
         PRIORITY_EDGE[task.priority],
         overdue
           ? 'border-red-300 bg-red-50 text-red-900 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200'
-          : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600',
+          : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-zinc-200 dark:hover:border-zinc-600',
         done && !overdue && 'opacity-75',
       )}
     >

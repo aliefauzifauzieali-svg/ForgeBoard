@@ -61,7 +61,7 @@ export function FocusTimer(): React.JSX.Element {
             key={state.mode}
             role="timer"
             aria-label={`${state.mode === 'focus' ? 'Foco' : 'Pausa'}: ${formatClock(state.remainingSec)} restantes`}
-            className="animate-fade-in text-4xl font-extrabold tabular-nums tracking-tight"
+            className="animate-fade-in text-6xl font-bold tabular-nums tracking-tight"
           >
             {formatClock(state.remainingSec)}
           </p>
@@ -71,7 +71,7 @@ export function FocusTimer(): React.JSX.Element {
         </div>
       </div>
       <div className="mt-3 flex justify-center gap-2">
-        <button type="button" className="btn-primary !px-4 !py-2 text-xs" onClick={toggle}>
+        <button type="button" className="btn-primary !rounded-full !px-6 !py-2.5 text-xs shadow-glow" onClick={toggle}>
           {state.running ? <Pause size={14} aria-hidden /> : <Play size={14} aria-hidden />}
           {state.running ? 'Pausar' : 'Iniciar'}
         </button>

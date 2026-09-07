@@ -33,10 +33,12 @@ jobs:
       - name: Empacotar bundle web OTA
         run: python3 -c "import shutil; shutil.make_archive('forgeboard-web-${{ github.ref_name }}', 'zip', 'dist')"
       - run: cd android && ./gradlew assembleDebug
+      - name: Renomear APK com a tag
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk "forgeboard-${{ github.ref_name }}.apk"
       - uses: actions/upload-artifact@v4
         with:
           name: apk-android
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: forgeboard-*.apk
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
@@ -169,10 +171,13 @@ jobs:
           android = None
           zips = sorted(glob.glob(os.path.join(root, '**', 'forgeboard-web-*.zip'), recursive=True))
           apk = None
-          for dirpath, _, files in os.walk(root):
-              if 'app-debug.apk' in files:
-                  apk = 'app-debug.apk'
-                  break
+          for candidate in sorted(glob.glob(os.path.join(root, '**', 'forgeboard-*.apk'), recursive=True)):
+              apk = os.path.basename(candidate)
+          if apk is None:
+              for dirpath, _, files in os.walk(root):
+                  if 'app-debug.apk' in files:
+                      apk = 'app-debug.apk'
+                      break
           if zips:
               bundle = os.path.basename(zips[0])
               android = {

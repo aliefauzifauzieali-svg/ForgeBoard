@@ -54,19 +54,23 @@ export function resolveAndroidUpdate(
 /**
  * Verifica atualização do app Android: baixa o manifesto da release,
  * compara com a versão embutida e oferece o bundle OTA (+ APK manual).
- * Sem seção Android no manifesto = `unconfigured`, sem rede além do GET.
+ * Usa HTTP nativo (CapacitorHttp), que não sofre CORS do WebView
+ * (`fetch` é bloqueado: o GitHub não envia ACAO para `http://localhost`).
  */
 export async function checkAndroidUpdate(): Promise<AndroidUpdateState> {
   if (!(await isNativeAndroid())) return { available: false, reason: 'not-native' };
+  let status: number;
   let manifest: unknown;
   try {
-    const res = await fetch(ANDROID_MANIFEST_URL, { cache: 'no-store' });
-    if (res.status === 404) return { available: false, reason: 'not-found' };
-    if (!res.ok) return { available: false, reason: 'unreachable' };
-    manifest = (await res.json()) as unknown;
+    const { CapacitorHttp } = await import('@capacitor/core');
+    const res = await CapacitorHttp.get({ url: ANDROID_MANIFEST_URL });
+    status = res.status;
+    manifest = res.data;
   } catch {
     return { available: false, reason: 'unreachable' };
   }
+  if (status === 404) return { available: false, reason: 'not-found' };
+  if (status < 200 || status >= 300) return { available: false, reason: 'unreachable' };
   const resolved = resolveAndroidUpdate(manifest, await builtinVersion());
   if (!resolved) {
     return { available: false, reason: hasAndroidSection(manifest) ? 'up-to-date' : 'unconfigured' };

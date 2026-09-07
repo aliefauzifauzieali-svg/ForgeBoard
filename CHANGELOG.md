@@ -6,14 +6,25 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ## [Unreleased]
 
+### Added
+
+- Kanban por toque: segurar o cartão (~450ms) inicia o arrasto entre colunas,
+  com destaque da coluna de destino, autoscroll nas bordas e Esc para
+  cancelar; botões Mover de cada cartão seguem como alternativa.
+- Teste E2E (Pixel 7) do arrasto por toque: long-press move a tarefa de
+  coluna; toque rápido com movimento não inicia arrasto.
+
 ### Fixed
+
+- Contraste da dica de kanban vazio (`text-zinc-600` sobre fundo `zinc-50`).
+- Overflow horizontal em 375px: etiquetas com truncate e `min-w-0` em
+  cartões/listas do Dashboard e Kanban (calendário largo segue em scroll
+  próprio, intencional).
 
 - Update desktop não é mais apagado ao reabrir o app (seed só quando falta;
   nunca sobrescreve pasta válida); respostas do protocolo com `no-store`;
   Sobre mostra versão da interface + bundle.
 - Android lê o manifesto mesmo com content-type não-JSON (octet-stream).
-
-- Contraste da dica de kanban vazio (`text-zinc-600` sobre fundo `zinc-50`).
 
 ### Added
 

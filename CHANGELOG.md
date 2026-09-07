@@ -11,6 +11,30 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Kanban por toque: segurar o cartão (~450ms) inicia o arrasto entre colunas,
   com destaque da coluna de destino, autoscroll nas bordas e Esc para
   cancelar; botões Mover de cada cartão seguem como alternativa.
+- Interruptor animado (`Switch`, pino com spring) nas opções de atalhos e
+  notificações das Configurações.
+- Anel de progresso no widget Modo Foco com tempo tabular grande e controle
+  segmentado de modo (Foco/Pausa).
+- Entradas padrão `pop-in` (modais/paleta) e `toast-in` (notificações).
+
+### Changed (visual, sem mudança de comportamento)
+
+- Fundação motion: easing spring (`cubic-bezier(0.16, 1, 0.3, 1)`), entradas
+  com fill `backwards` (hovers com translate voltam a funcionar após a
+  entrada) e transições explícitas (sem `transition: all`).
+- Dashboard: `StatCard` com elevação no hover, gráficos na cor de destaque e
+  linhas com hover sutil; Kanban com transições explícitas e drop suave.
+- Calendário: troca de período com fade + slide; chips com faixa lateral de
+  prioridade e hover com elevação.
+- Sidebar com hover deslizante nos itens; navegação mobile vira pill
+  flutuante com indicador de ativo; inputs com glow de foco na cor de
+  destaque; botões de tema/destaque com microinterações.
+
+### Fixed
+
+- Drop por toque no Kanban: a coluna de destino é resolvida antes de
+  remover o marcador do card arrastado (solturas rápidas não caem mais na
+  coluna de origem).
 - Teste E2E (Pixel 7) do arrasto por toque: long-press move a tarefa de
   coluna; toque rápido com movimento não inicia arrasto.
 

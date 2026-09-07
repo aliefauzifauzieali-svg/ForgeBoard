@@ -42,9 +42,36 @@ interface Field {
   weight: number;
 }
 
+/** Levenshtein com teto: aborta cedo acima de `max` (custo O(n·max)). */
+export function levenshtein(a: string, b: string, max: number): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  if (a === b) return 0;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let cur0 = i;
+    let rowMin = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      const next = Math.min(prev[j]! + 1, cur0 + 1, prev[j - 1]! + cost);
+      prev[j - 1] = cur0;
+      cur0 = next;
+      if (next < rowMin) rowMin = next;
+    }
+    prev[b.length] = cur0;
+    if (rowMin > max) return max + 1;
+  }
+  return prev[b.length]!;
+}
+
+/** Tolerância a typos por tamanho do token (1 para curtos, 2 para longos). */
+function fuzzyBudget(tok: string): number {
+  return tok.length >= 6 ? 2 : 1;
+}
+
 /**
  * Todos os tokens precisam aparecer em ao menos um campo (AND);
- * a pontuação favorece título/nome, prefixo e tags.
+ * a pontuação favorece título/nome, prefixo e tags. Sem substring exata,
+ * aceita palavra próxima (fuzzy, 1 ponto de penalidade).
  */
 function scoreFields(fields: Field[], toks: string[]): number | null {
   let score = 0;
@@ -53,8 +80,18 @@ function scoreFields(fields: Field[], toks: string[]): number | null {
     for (const f of fields) {
       const t = norm(f.text);
       const i = t.indexOf(tok);
-      if (i === -1) continue;
-      best = Math.max(best, f.weight + (i === 0 ? 1 : 0));
+      if (i !== -1) {
+        best = Math.max(best, f.weight + (i === 0 ? 1 : 0));
+        continue;
+      }
+      const budget = fuzzyBudget(tok);
+      for (const word of t.split(/[^a-z0-9]+/).filter((w) => w.length >= 3)) {
+        if (Math.abs(word.length - tok.length) > budget) continue;
+        if (levenshtein(tok, word, budget) <= budget) {
+          best = Math.max(best, Math.max(1, f.weight - 1));
+          break;
+        }
+      }
     }
     if (best === 0) return null;
     score += best;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { searchBoard } from '../services/globalSearch';
+import { levenshtein, searchBoard } from '../services/globalSearch';
 import type { Project, Tag, Task } from '../types';
 
 const P = (id: string, name: string, description = ''): Project => ({
@@ -97,10 +97,27 @@ describe('searchBoard', () => {
     expect(searchBoard(projects, ts, 'comum').tasks.map((t) => t.id)).toEqual(['3', '2', '4', '1']);
   });
 
+  it('tolera erros de digitação (fuzzy)', () => {
+    // 'tarfa' ~ 'tarefa'? Não há 'tarefa' nos fixtures: usa 'pagina' ~ 'pagima'.
+    expect(searchBoard(projects, tasks, 'pagima', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['1']);
+    expect(searchBoard(projects, tasks, 'logim', 8, TAGMAP).tasks.map((t) => t.id)).toEqual(['2']);
+    // Distante demais não casa.
+    expect(searchBoard(projects, tasks, 'xyz', 8, TAGMAP).tasks).toEqual([]);
+  });
+
   it('respeita o limite por lista', () => {
     const many = Array.from({ length: 10 }, (_, i) =>
       T(`${i}`, '1', { title: `tarefa comum ${i}`, createdAt: `2026-01-0${(i % 9) + 1}T10:00:00.000Z` }),
     );
     expect(searchBoard(projects, many, 'comum', 3).tasks).toHaveLength(3);
+  });
+});
+
+describe('levenshtein', () => {
+  it('distância com teto e early-exit', () => {
+    expect(levenshtein('tarefa', 'tarefa', 2)).toBe(0);
+    expect(levenshtein('tarfa', 'tarefa', 2)).toBe(1);
+    expect(levenshtein('abc', 'xyz', 1)).toBeGreaterThan(1);
+    expect(levenshtein('a', 'abcdef', 1)).toBeGreaterThan(1);
   });
 });

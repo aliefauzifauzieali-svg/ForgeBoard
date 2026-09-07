@@ -270,7 +270,7 @@ export function Sidebar(): React.JSX.Element {
       <aside
         aria-label="Navegação principal"
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-zinc-200 bg-white transition-transform dark:border-zinc-800 dark:bg-zinc-950',
+          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-zinc-200 bg-white transition-transform dark:border-white/[0.06] dark:bg-[#0E0E11]',
           'lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
@@ -294,16 +294,20 @@ export function Sidebar(): React.JSX.Element {
             onClick={goDashboard}
             aria-current={view.kind === 'dashboard' ? 'page' : undefined}
             className={cn(
-              'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
+              'group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
               view.kind === 'dashboard'
-                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
+                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:bg-white/[0.06] dark:text-zinc-100'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
-            {view.kind === 'dashboard' ? (
-              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
-            ) : null}
-            <LayoutDashboard size={17} aria-hidden className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
+            <LayoutDashboard
+              size={17}
+              aria-hidden
+              className={cn(
+                'shrink-0 transition-[transform,color] duration-200 group-hover:scale-110',
+                view.kind === 'dashboard' && 'dark:text-[var(--accent-bright)]',
+              )}
+            />
             Dashboard
           </button>
           <button
@@ -311,16 +315,20 @@ export function Sidebar(): React.JSX.Element {
             onClick={goCalendar}
             aria-current={view.kind === 'calendar' ? 'page' : undefined}
             className={cn(
-              'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
+              'group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
               view.kind === 'calendar'
-                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
+                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:bg-white/[0.06] dark:text-zinc-100'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
-            {view.kind === 'calendar' ? (
-              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
-            ) : null}
-            <CalendarDays size={17} aria-hidden className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
+            <CalendarDays
+              size={17}
+              aria-hidden
+              className={cn(
+                'shrink-0 transition-[transform,color] duration-200 group-hover:scale-110',
+                view.kind === 'calendar' && 'dark:text-[var(--accent-bright)]',
+              )}
+            />
             Calendário
           </button>
           <button
@@ -328,16 +336,20 @@ export function Sidebar(): React.JSX.Element {
             onClick={goStats}
             aria-current={view.kind === 'stats' ? 'page' : undefined}
             className={cn(
-              'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
+              'group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
               view.kind === 'stats'
-                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
+                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:bg-white/[0.06] dark:text-zinc-100'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
-            {view.kind === 'stats' ? (
-              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
-            ) : null}
-            <BarChart3 size={17} aria-hidden className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
+            <BarChart3
+              size={17}
+              aria-hidden
+              className={cn(
+                'shrink-0 transition-[transform,color] duration-200 group-hover:scale-110',
+                view.kind === 'stats' && 'dark:text-[var(--accent-bright)]',
+              )}
+            />
             Estatísticas
           </button>
 
@@ -363,15 +375,12 @@ export function Sidebar(): React.JSX.Element {
                     onClick={() => openProject(p.id)}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
+                      'group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
                       active
-                        ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] font-semibold text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
+                        ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] font-semibold text-[var(--accent-dark)] dark:bg-white/[0.06] dark:text-zinc-100'
                         : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
                     )}
                   >
-                    {active ? (
-                      <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
-                    ) : null}
                     <span
                       aria-hidden
                       className="h-2.5 w-2.5 shrink-0 rounded-full"

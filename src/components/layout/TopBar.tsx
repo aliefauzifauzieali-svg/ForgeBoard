@@ -24,7 +24,7 @@ export function TopBar({
   const openCount = tasks.filter((t) => t.status !== 'done').length;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/85 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/85">
+    <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/85 backdrop-blur dark:border-white/[0.06] dark:bg-[#0E0E11]/85">
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
         <button
           type="button"

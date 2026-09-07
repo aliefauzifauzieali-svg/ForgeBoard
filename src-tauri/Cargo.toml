@@ -1,6 +1,6 @@
 [package]
 name = "forgeboard"
-version = "1.6.0"
+version = "1.6.1"
 description = "ForgeBoard — dashboard pessoal de projetos e tarefas, local-first."
 authors = ["ForgeBoard"]
 license = "MIT"

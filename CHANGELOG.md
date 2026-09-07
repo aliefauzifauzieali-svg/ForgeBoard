@@ -19,6 +19,17 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Changed (visual, sem mudança de comportamento)
 
+- Retrabalho dark estilo Linear: fundo `#0E0E11` com gradiente radial no
+  topo; superfícies `#151519`/`#1A1A1E` com bordas brancas translúcidas;
+  sombras pretas com blur maior; títulos de página em semibold.
+- Sidebar com item ativo em pill `white/6` (ícone indigo, sem barra
+  lateral); navegação mobile com item ativo em pílula clara e ícone escuro.
+- Kanban dark: cards `#1A1A1E` com hover de borda indigo, colunas quase
+  fundidas ao fundo, prioridades em pills neutras com ícone colorido.
+- Dashboard: números `text-4xl` com sparkline indigo, gráfico de barras com
+  gradiente, linhas de tarefa sutis (`white/5`); Modo Foco com timer
+  `text-6xl` e botão START em pill com glow; modais `#1A1A1E` com overlay
+  `black/60`; botões com raio 8px e clareamento no hover.
 - Fundação motion: easing spring (`cubic-bezier(0.16, 1, 0.3, 1)`), entradas
   com fill `backwards` (hovers com translate voltam a funcionar após a
   entrada) e transições explícitas (sem `transition: all`).

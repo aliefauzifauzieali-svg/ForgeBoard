@@ -15,11 +15,15 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+    @apply bg-zinc-100 text-zinc-900 dark:bg-[#0E0E11] dark:text-zinc-100;
     /* Transição suave de tema (claro ↔ escuro) */
     transition-property: background-color, color;
     transition-duration: 200ms;
     transition-timing-function: ease-out;
+  }
+  .dark body {
+    /* Gradiente radial sutil no topo (estilo Linear); cor via @apply acima. */
+    background-image: radial-gradient(1200px 420px at 50% -120px, rgb(99 102 241 / 0.07), transparent);
   }
   :focus-visible {
     @apply outline-none ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950;
@@ -32,7 +36,7 @@
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-zinc-200/80 bg-white shadow-card transition-colors duration-200 dark:border-zinc-800 dark:bg-zinc-900;
+    @apply rounded-2xl border border-zinc-200/80 bg-white shadow-card transition-colors duration-200 dark:border-white/[0.07] dark:bg-[#151519];
   }
   /* Elevação no hover (só transform + sombra): aplica junto de `.card`. */
   .card-hover {
@@ -43,7 +47,7 @@
     @apply text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400;
   }
   .input {
-    @apply w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 transition-[border-color,box-shadow,background-color] duration-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500;
+    @apply w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 transition-[border-color,box-shadow,background-color] duration-200 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-100 dark:placeholder:text-zinc-500;
   }
   .input:focus {
     border-color: var(--accent);
@@ -53,7 +57,7 @@
     @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 ease-spring active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 ease-spring hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 disabled:hover:brightness-100;
     background-color: var(--accent);
   }
   .btn-primary:hover {
@@ -67,7 +71,7 @@
     background-color: var(--accent-dark);
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition duration-200 hover:bg-zinc-50 hover:shadow-sm active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:shadow-none disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition duration-200 hover:bg-zinc-50 hover:shadow-sm active:scale-[0.98] dark:border-white/10 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:shadow-none disabled:active:scale-100;
   }
   .icon-btn {
     @apply inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition duration-200 hover:bg-zinc-100 hover:text-zinc-800 active:scale-95 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100;
@@ -107,6 +111,39 @@
   to {
     transform: translateX(100%);
   }
+}
+
+/* Tema escuro profundo (Linear): remap de superfícies/bordas/sombras zinc
+   para pretos quentes + branco translúcido. Regras sem camada (unlayered)
+   vencem os utilitários em empate de especificidade; light mode intacto. */
+.dark .dark\:bg-zinc-950 {
+  background-color: #0e0e11;
+}
+.dark .dark\:bg-zinc-900 {
+  background-color: #151519;
+}
+.dark .dark\:bg-zinc-800 {
+  background-color: rgb(255 255 255 / 0.05);
+}
+.dark .dark\:border-zinc-800 {
+  border-color: rgb(255 255 255 / 0.07);
+}
+.dark .dark\:border-zinc-700 {
+  border-color: rgb(255 255 255 / 0.1);
+}
+.dark .shadow-card {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+.dark .shadow-pop {
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
+}
+.dark .shadow-glow {
+  box-shadow:
+    0 10px 15px -3px var(--accent-glow),
+    0 0 28px -6px var(--accent-glow);
+}
+.dark .shadow-sm {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
 }
 
 /* Alvo do arrasto por toque (long-press): mesmo destaque da coluna em drop. */

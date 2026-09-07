@@ -83,7 +83,7 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
               style={{ backgroundColor: project.color }}
             />
             <div className="min-w-0">
-              <h1 className="text-xl font-extrabold tracking-tight">{project.name}</h1>
+              <h1 className="text-xl font-semibold tracking-tight">{project.name}</h1>
               {project.description ? (
                 <p className="mt-1 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
                   {project.description}

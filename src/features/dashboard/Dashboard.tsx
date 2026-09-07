@@ -57,7 +57,7 @@ export function Dashboard(): React.JSX.Element {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Bem-vindo ao ForgeBoard</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Bem-vindo ao ForgeBoard</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Seu dashboard pessoal de projetos e tarefas — tudo salvo no navegador.
           </p>
@@ -85,7 +85,7 @@ export function Dashboard(): React.JSX.Element {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Visão geral dos seus projetos e tarefas.
           </p>

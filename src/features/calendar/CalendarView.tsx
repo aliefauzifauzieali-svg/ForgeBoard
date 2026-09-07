@@ -66,7 +66,7 @@ export function CalendarView(): React.JSX.Element {
     <div className="space-y-5" data-testid="calendar-view">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
             <CalendarDays size={24} aria-hidden className="text-[var(--accent)] dark:text-[var(--accent-bright)]" />
             Calendário
           </h1>

@@ -112,7 +112,7 @@ function StatsView(): React.JSX.Element {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
+        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <BarChart3 size={24} aria-hidden className="text-[var(--accent)] dark:text-[var(--accent-bright)]" />
           Estatísticas
         </h1>

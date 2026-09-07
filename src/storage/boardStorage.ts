@@ -8,6 +8,7 @@ import {
   getDB,
   getKV,
   KV_BOARD,
+  KV_NOTES,
   KV_PREFERENCES,
   listBackups,
   putBackup,
@@ -223,6 +224,26 @@ export async function flushPrefs(): Promise<void> {
     pendingPrefs = null;
     await setKV(KV_PREFERENCES, snapshot).catch(() => {});
   }
+}
+
+// ---------------------------------------------------------------------------
+// Notas rápidas (texto livre do Dashboard, fora das migrações do board).
+// ---------------------------------------------------------------------------
+
+/** Teto do bloco de notas (evita abuso do kv). */
+export const MAX_NOTES_LENGTH = 5000;
+
+export async function readQuickNotes(): Promise<string> {
+  try {
+    const raw = await getKV<unknown>(KV_NOTES);
+    return typeof raw === 'string' ? raw.slice(0, MAX_NOTES_LENGTH) : '';
+  } catch {
+    return '';
+  }
+}
+
+export async function persistQuickNotes(text: string): Promise<void> {
+  await setKV(KV_NOTES, text.slice(0, MAX_NOTES_LENGTH)).catch(() => {});
 }
 
 // ---------------------------------------------------------------------------

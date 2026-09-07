@@ -8,6 +8,7 @@ const DB_VERSION = 2;
 /** Chaves do object store `kv`. */
 export const KV_BOARD = 'board';
 export const KV_PREFERENCES = 'preferences';
+export const KV_NOTES = 'quickNotes';
 
 export interface StoredBackup {
   id: string;

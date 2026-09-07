@@ -18,6 +18,7 @@ import { useUIStore } from '../../stores/useUIStore';
 import { ProjectCard } from '../../components/projects/ProjectCard';
 import { ActivityBars } from '../../components/charts/ActivityBars';
 import { PriorityDonut } from '../../components/charts/PriorityDonut';
+import { QuickNotes } from './QuickNotes';
 import { TaskFiltersBar } from '../../components/tasks/TaskFiltersBar';
 import { TaskRow } from '../../components/tasks/TaskRow';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -221,6 +222,8 @@ export function Dashboard(): React.JSX.Element {
           )}
         </section>
       </div>
+
+      <QuickNotes />
 
       <section aria-labelledby="all-tasks-heading">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

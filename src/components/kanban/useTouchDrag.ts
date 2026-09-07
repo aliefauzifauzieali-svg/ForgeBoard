@@ -107,13 +107,9 @@ export function useTouchDrag(task: Task): {
 
   const endDrag = useCallback(
     (commit: boolean): void => {
-      cancelPress();
-      stopScrollLoop();
-      clearColumnGlow();
-      if (cardEl.current) {
-        cardEl.current.style.touchAction = '';
-        delete cardEl.current.dataset.touchDragging;
-      }
+      // Ordem importa: resolve o destino ANTES de remover o marcador
+      // `data-touch-dragging` — o card traduzido ainda está sob o dedo e
+      // precisa ser ignorado pelo hit-test (senão o drop cai na origem).
       if (draggingRef.current) {
         draggingRef.current = false;
         if (commit) {
@@ -126,6 +122,13 @@ export function useTouchDrag(task: Task): {
         window.setTimeout(() => {
           justDragged.current = false;
         }, 0);
+      }
+      cancelPress();
+      stopScrollLoop();
+      clearColumnGlow();
+      if (cardEl.current) {
+        cardEl.current.style.touchAction = '';
+        delete cardEl.current.dataset.touchDragging;
       }
       setDragPos(null);
     },

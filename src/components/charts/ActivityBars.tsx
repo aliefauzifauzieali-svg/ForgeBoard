@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { DayCount } from '../../services/stats';
 
 /**
@@ -21,6 +22,7 @@ export function ActivityBars({
   const PAD = 22;
   const step = (W - PAD * 2) / data.length;
   const barW = Math.max(4, Math.min(26, step * 0.55));
+  const gradId = useId();
 
   return (
     <figure>
@@ -32,6 +34,12 @@ export function ActivityBars({
         className="h-28 w-full sm:h-32"
       >
         <title>{`Total de ${total} conclusões`}</title>
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="var(--accent)" stopOpacity="0.95" />
+            <stop offset="1" stopColor="var(--accent)" stopOpacity="0.45" />
+          </linearGradient>
+        </defs>
         {data.map((d, i) => {
           const h = d.count === 0 ? 3 : Math.max(8, ((H - PAD * 2 - 14) * d.count) / max);
           const x = PAD + step * i + (step - barW) / 2;
@@ -45,7 +53,7 @@ export function ActivityBars({
                 width={barW}
                 height={h}
                 rx={3}
-                fill={d.count === 0 ? undefined : 'var(--accent)'}
+                fill={d.count === 0 ? undefined : `url(#${gradId})`}
                 className={d.count === 0 ? 'fill-zinc-300 dark:fill-zinc-700' : undefined}
                 opacity={selected ? 1 : d.count === 0 ? 0.6 : 0.85}
                 stroke={selected ? 'var(--accent-dark)' : 'none'}

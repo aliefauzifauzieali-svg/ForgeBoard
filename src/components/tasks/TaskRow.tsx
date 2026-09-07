@@ -18,7 +18,7 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
   return (
     <li
       data-testid={`task-row-${task.id}`}
-      className="flex min-w-0 animate-fade-up items-center gap-3 rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5 transition-[transform,box-shadow,border-color] duration-200 ease-spring hover:-translate-y-px hover:border-zinc-300 hover:shadow-card dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+      className="flex min-w-0 animate-fade-up items-center gap-3 rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5 transition-[transform,box-shadow,border-color,background-color] duration-200 ease-spring hover:-translate-y-px hover:border-zinc-300 hover:shadow-card dark:border-white/5 dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:bg-white/5"
     >
       <button
         type="button"

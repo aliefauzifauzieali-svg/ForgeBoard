@@ -118,6 +118,7 @@ export function Dashboard(): React.JSX.Element {
           icon={<CheckCircle2 size={20} />}
           label="Concluídas"
           value={stats.doneTasks}
+          spark={activity.map((d) => d.count)}
           accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
         />
         <StatCard

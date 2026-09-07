@@ -36,13 +36,20 @@ export function StatCard({
   value,
   hint,
   accent,
+  spark,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   hint?: string;
   accent?: string;
+  /** Mini-série para sparkline (ex.: conclusões por dia). */
+  spark?: number[];
 }): React.JSX.Element {
+  const max = Math.max(1, ...(spark ?? [1]));
+  const pts = (spark ?? [])
+    .map((v, i, a) => `${(i * 96) / Math.max(1, a.length - 1)},${26 - (v / max) * 22}`)
+    .join(' ');
   return (
     <div className="card card-hover group animate-fade-up p-4">
       <div className="flex flex-col items-start gap-2">
@@ -62,9 +69,22 @@ export function StatCard({
           >
             {label}
           </p>
-          <p className="text-2xl font-bold tabular-nums leading-tight tracking-tight">{value}</p>
+          <p className="text-4xl font-bold tabular-nums leading-tight tracking-tight">{value}</p>
         </div>
       </div>
+      {pts ? (
+        <svg viewBox="0 0 96 28" aria-hidden className="mt-2 h-7 w-full">
+          <polyline
+            points={pts}
+            fill="none"
+            stroke="var(--accent)"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={0.9}
+          />
+        </svg>
+      ) : null}
       {hint ? <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">{hint}</p> : null}
     </div>
   );

@@ -445,6 +445,9 @@ function AndroidUpdatesSection(): React.JSX.Element | null {
       } else if (!info.available && info.reason === 'unreachable') {
         setState('error');
         setError('Sem conexão com o servidor de atualização.');
+      } else if (!info.available && info.reason === 'not-found') {
+        setState('error');
+        setError('Release não encontrada (HTTP 404): repositório privado ou sem release publicada.');
       } else {
         setState('ready');
       }

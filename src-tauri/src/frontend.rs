@@ -278,9 +278,15 @@ pub async fn frontend_check(app: AppHandle) -> Result<FrontendStatus, String> {
     .and_then(|d| read_version(&d))
     .unwrap_or_else(|| "0.0.0".to_owned());
   let bundle = package_version(&app);
-  let body = reqwest::get(MANIFEST_URL)
+  let resp = reqwest::get(MANIFEST_URL)
     .await
-    .map_err(|e| format!("falha ao buscar manifesto: {e}"))?
+    .map_err(|e| format!("falha ao buscar manifesto: {e}"))?;
+  if resp.status() == reqwest::StatusCode::NOT_FOUND {
+    return Err(
+      "manifesto não encontrado (HTTP 404): confira se o repositório é público ou se a release existe".to_owned(),
+    );
+  }
+  let body = resp
     .error_for_status()
     .map_err(|e| format!("manifesto HTTP inválido: {e}"))?
     .json::<serde_json::Value>()

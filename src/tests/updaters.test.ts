@@ -131,6 +131,11 @@ describe('resolveAndroidUpdate (puro)', () => {
     expect(resolveAndroidUpdate({ android: { version: '2.0.0' } }, '1.0.0')).toBeNull();
   });
 
+  it('estado not-found existe no tipo', async () => {
+    const s: Awaited<ReturnType<typeof checkAndroidUpdate>> = { available: false, reason: 'not-found' };
+    expect(s.reason).toBe('not-found');
+  });
+
   it('compareVersions numérico por partes', () => {
     expect(compareVersions('1.5.0', '1.5.1')).toBe(-1);
     expect(compareVersions('1.5.1', '1.5.1')).toBe(0);

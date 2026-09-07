@@ -1,7 +1,7 @@
 import { ANDROID_MANIFEST_URL } from './updateServer';
 
 export type AndroidUpdateState =
-  | { available: false; reason: 'not-native' | 'unconfigured' | 'up-to-date' | 'unreachable' }
+  | { available: false; reason: 'not-native' | 'unconfigured' | 'up-to-date' | 'unreachable' | 'not-found' }
   | { available: true; version: string; bundleUrl: string; apkUrl: string | null };
 
 export interface AndroidManifest {
@@ -61,6 +61,7 @@ export async function checkAndroidUpdate(): Promise<AndroidUpdateState> {
   let manifest: unknown;
   try {
     const res = await fetch(ANDROID_MANIFEST_URL, { cache: 'no-store' });
+    if (res.status === 404) return { available: false, reason: 'not-found' };
     if (!res.ok) return { available: false, reason: 'unreachable' };
     manifest = (await res.json()) as unknown;
   } catch {

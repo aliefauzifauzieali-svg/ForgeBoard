@@ -183,6 +183,18 @@ reiniciar", com progresso). Pacotes verificados por assinatura minisign.
   instaladores (Windows: `-setup.exe`; Linux: `.AppImage`; macOS: `.app.tar.gz`).
 - Teste manual: instale uma versão antiga, publique tag maior, abra o app —
   o toast indica a nova versão; instale por Configurações e confirme a versão.
+- Empacotamento: os assets vão **embutidos no binário** (padrão Tauri) e o
+  updater baixa o instalador completo (~2–4 MB). Pasta externa de assets foi
+  avaliada e rejeitada: exige protocolo customizado em Rust, layout de
+  instalador próprio e revalidação de segurança — sem benefício, pois a causa
+  de telas desatualizadas nunca foi o embutimento (ver abaixo).
+- Service worker **só no navegador** (`initPWA` pula o registro no Tauri e no
+  Capacitor nativo). Registrar o SW no shell desktop fazia o workbox servir
+  shell antigo após upgrades (prova: `workbox-precache-v2-http://tauri.localhost/`
+  no perfil WebView2), congelando a UI na versão anterior mesmo com binário
+  novo. Se uma instalação antiga travou assim: abra o app, clique em
+  "Atualizar" no toast "Nova versão disponível" — ou desinstale e instale a
+  release atual (o perfil WebView2 antigo vai junto).
 
 ### Android (Capacitor, OTA via GitHub Releases)
 

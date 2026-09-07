@@ -1,4 +1,6 @@
 import { useUIStore } from '../stores/useUIStore';
+import { isNativeAndroid } from './androidUpdater';
+import { isTauri } from '../utils/platform';
 
 /** Evento do navegador quando o PWA pode ser instalado. */
 export interface BeforeInstallPromptEvent extends Event {
@@ -44,26 +46,33 @@ export function initPWA(): void {
     ui().pushToast({ kind: 'success', message: 'ForgeBoard instalado. Boa produtividade!' });
   });
 
-  void import('virtual:pwa-register')
-    .then(({ registerSW }) => {
-      updateSW = registerSW({
-        immediate: true,
-        onOfflineReady() {
-          ui().pushToast({ kind: 'success', message: 'Pronto para uso offline' });
-        },
-        onNeedRefresh() {
-          ui().pushToast({
-            kind: 'info',
-            message: 'Nova versão disponível',
-            action: { label: 'Atualizar', run: applyUpdate },
-          });
-        },
-        onRegisterError(error: unknown) {
-          console.error('[ForgeBoard] falha ao registrar o service worker:', error);
-        },
-      });
-    })
-    .catch(() => {
+  void Promise.all([
+    import('virtual:pwa-register').catch((): null => null),
+    isNativeAndroid(),
+  ]).then(([mod, nativeAndroid]) => {
+    // Service worker SÓ no navegador web. Nos shells nativos (Tauri,
+    // Capacitor) os assets já são locais; registrar o SW lá faz o
+    // workbox servir shell antigo após upgrades (stale-while-revalidate
+    // travado), congelando a UI na versão anterior. Prova: CacheStorage
+    // `workbox-precache-v2-http://tauri.localhost/` no perfil WebView2.
+    if (!mod || isTauri() || nativeAndroid) return;
+    updateSW = mod.registerSW({
+      immediate: true,
+      onOfflineReady() {
+        ui().pushToast({ kind: 'success', message: 'Pronto para uso offline' });
+      },
+      onNeedRefresh() {
+        ui().pushToast({
+          kind: 'info',
+          message: 'Nova versão disponível',
+          action: { label: 'Atualizar', run: applyUpdate },
+        });
+      },
+      onRegisterError(error: unknown) {
+        console.error('[ForgeBoard] falha ao registrar o service worker:', error);
+      },
+    });
+  }).catch(() => {
       /* sem plugin/SW (dev sem build, testes): app segue 100% funcional */
     });
 }

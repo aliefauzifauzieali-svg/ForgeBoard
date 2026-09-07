@@ -138,7 +138,7 @@ export function ProjectView({ projectId }: { projectId: string }): React.JSX.Ele
       </div>
 
       {mine.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-3 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+          <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-3 text-center text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
           Quadro vazio — crie a primeira tarefa
           {isTouch ? (
             <> usando o <span aria-hidden>+</span> de uma coluna.</>

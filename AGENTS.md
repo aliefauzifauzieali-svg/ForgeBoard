@@ -114,6 +114,4 @@ Gates antes de commit/push: typecheck, lint, testes relevantes (ou suite),
 
 ## Pendências conhecidas (não bloqueiam)
 
-- Dica de kanban vazio (`text-zinc-500` sobre `zinc-100`) é marginal no AA;
-  só aparece com kanban vazio (nenhum teste cobre).
 - `latest.json` desktop usa convenção `v<versão>` + `forgeboard-web-<tag>.zip`.

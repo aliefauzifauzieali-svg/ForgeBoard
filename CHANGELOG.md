@@ -6,6 +6,10 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Contraste da dica de kanban vazio (`text-zinc-600` sobre fundo `zinc-50`).
+
 ### Added
 
 - Modo Foco (Pomodoro 25/5) no Dashboard: iniciar/pausar/reiniciar, troca

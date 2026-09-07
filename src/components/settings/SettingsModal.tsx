@@ -15,6 +15,7 @@ import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
 import type { ThemePreference } from '../../types';
 import { Modal } from '../ui/Modal';
+import { Switch } from '../ui/Switch';
 
 const THEMES: Array<{ id: ThemePreference; label: string }> = [
   { id: 'light', label: 'Claro' },
@@ -25,7 +26,7 @@ const THEMES: Array<{ id: ThemePreference; label: string }> = [
 function Section({ title, children }: { title: string; children: React.ReactNode }): React.JSX.Element {
   return (
     <section aria-label={title} className="border-t border-zinc-200 pt-4 first:border-t-0 first:pt-0 dark:border-zinc-800">
-      <h3 className="mb-3 text-sm font-bold">{title}</h3>
+      <h3 className="heading-section mb-3">{title}</h3>
       {children}
     </section>
   );
@@ -269,12 +270,7 @@ function NotificationsSection(): React.JSX.Element {
             Toast no app + notificação do sistema (se permitido).
           </span>
         </span>
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => void toggle(e.target.checked)}
-          className="h-5 w-5 accent-[var(--accent)]"
-        />
+        <Switch checked={enabled} onChange={(v) => void toggle(v)} label="Avisar sobre prazos próximos" />
       </label>
       {enabled ? (
         <div className="mt-2 flex items-center gap-2 text-sm">
@@ -620,10 +616,10 @@ export function SettingsModal(): React.JSX.Element {
                 aria-checked={preference === t.id}
                 onClick={() => setPreference(t.id)}
                 className={cn(
-                  'rounded-xl border px-4 py-2 text-sm font-semibold transition',
+                  'rounded-xl border px-4 py-2 text-sm font-semibold transition-[transform,border-color,background-color,color] duration-200 active:scale-[0.98]',
                   preference === t.id
-                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
-                    : 'border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800',
+                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white shadow-glow'
+                    : 'border-zinc-300 hover:-translate-y-px hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800',
                 )}
               >
                 {t.label}
@@ -641,7 +637,7 @@ export function SettingsModal(): React.JSX.Element {
                 title={a.label}
                 onClick={() => setAccent(a.id)}
                 className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded-full transition',
+                  'flex h-9 w-9 items-center justify-center rounded-full transition-transform duration-200 ease-spring hover:scale-110 active:scale-95',
                   accentId === a.id && 'ring-2 ring-[var(--accent)] ring-offset-2 dark:ring-offset-zinc-900',
                 )}
                 style={{ backgroundColor: a.base }}
@@ -664,11 +660,10 @@ export function SettingsModal(): React.JSX.Element {
                 Ctrl+K e Esc funcionam sempre.
               </span>
             </span>
-            <input
-              type="checkbox"
+            <Switch
               checked={shortcutsEnabled}
-              onChange={(e) => setShortcutsEnabled(e.target.checked)}
-              className="h-5 w-5 accent-[var(--accent)]"
+              onChange={setShortcutsEnabled}
+              label="Atalhos de letra (N, P, T, /, ?)"
             />
           </label>
           <button

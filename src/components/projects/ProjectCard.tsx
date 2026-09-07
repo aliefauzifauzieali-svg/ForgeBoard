@@ -21,7 +21,7 @@ export function ProjectCard({ project }: { project: Project }): React.JSX.Elemen
   return (
     <article
       data-testid={`project-card-${project.id}`}
-      className="card group flex flex-col p-5 transition hover:-translate-y-0.5 hover:shadow-pop animate-fade-up"
+      className="card group flex min-w-0 flex-col p-5 transition hover:-translate-y-0.5 hover:shadow-pop animate-fade-up"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">

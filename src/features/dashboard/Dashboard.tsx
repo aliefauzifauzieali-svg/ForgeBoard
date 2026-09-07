@@ -186,7 +186,7 @@ export function Dashboard(): React.JSX.Element {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section aria-labelledby="overdue-heading" className="card p-4">
+        <section aria-labelledby="overdue-heading" className="card min-w-0 p-4">
           <h2 id="overdue-heading" className="flex items-center gap-2 text-sm font-bold">
             <AlertTriangle size={16} className="text-red-500" aria-hidden />
             Tarefas atrasadas
@@ -207,7 +207,7 @@ export function Dashboard(): React.JSX.Element {
           )}
         </section>
 
-        <section aria-labelledby="recent-heading" className="card p-4">
+        <section aria-labelledby="recent-heading" className="card min-w-0 p-4">
           <h2 id="recent-heading" className="flex items-center gap-2 text-sm font-bold">
             <Clock3 size={16} className="text-[var(--accent)]" aria-hidden />
             Tarefas recentes

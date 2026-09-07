@@ -28,6 +28,7 @@ export function KanbanColumn({
     <section
       aria-label={`Coluna ${STATUS_META[status].label}`}
       data-testid={`kanban-column-${status}`}
+      data-column={status}
       onDragOver={(e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
@@ -109,9 +110,10 @@ export function KanbanBoard({
 }): React.JSX.Element {
   return (
     <div
+      data-kanban-region
       className="flex flex-col gap-4 pb-4 stagger lg:-mx-4 lg:flex-row lg:gap-3 lg:overflow-x-auto lg:px-4 lg:snap-x lg:snap-mandatory"
       role="region"
-      aria-label="Quadro Kanban. No computador, arraste tarefas entre as colunas; no touch, use os botões Mover de cada cartão."
+      aria-label="Quadro Kanban. No computador, arraste tarefas entre as colunas; no touch, segure e arraste ou use os botões Mover de cada cartão."
     >
       {COLUMNS.map((status) => (
         <KanbanColumn

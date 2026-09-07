@@ -3,7 +3,7 @@ import type { Task } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { isOverdue, toDateOnly } from '../../utils/date';
-import { PriorityBadge } from '../ui/Badges';
+import { PriorityBadge, TagChip } from '../ui/Badges';
 
 export function TaskRow({ task, projectName }: { task: Task; projectName?: string }): React.JSX.Element {
   const openEditTask = useUIStore((s) => s.openEditTask);
@@ -18,7 +18,7 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
   return (
     <li
       data-testid={`task-row-${task.id}`}
-      className="flex animate-fade-up items-center gap-3 rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5 transition hover:shadow-card dark:border-zinc-800 dark:bg-zinc-900"
+      className="flex min-w-0 animate-fade-up items-center gap-3 rounded-xl border border-zinc-200/80 bg-white px-3 py-2.5 transition hover:shadow-card dark:border-zinc-800 dark:bg-zinc-900"
     >
       <button
         type="button"
@@ -42,7 +42,6 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
           {projectName ? `${projectName} · ` : ''}
           {task.dueDate ? toDateOnly(task.dueDate) : 'Sem prazo'}
           {overdue ? ' · Atrasada' : ''}
-          {tagNames.length > 0 ? ` · #${tagNames.slice(0, 2).join(' #')}` : ''}
           {task.recurrence ? (
             <span className="ml-1 inline-flex items-center gap-0.5 align-middle">
               <Repeat size={11} aria-hidden />
@@ -50,6 +49,13 @@ export function TaskRow({ task, projectName }: { task: Task; projectName?: strin
             </span>
           ) : null}
         </span>
+        {tagNames.length > 0 ? (
+          <span className="mt-1 flex flex-wrap gap-1" aria-label={`Etiquetas: ${tagNames.join(', ')}`}>
+            {tagNames.slice(0, 2).map((name) => (
+              <TagChip key={name} label={name} />
+            ))}
+          </span>
+        ) : null}
       </button>
       <PriorityBadge value={task.priority} />
     </li>

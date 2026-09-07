@@ -100,6 +100,14 @@
   }
 }
 
+/* Alvo do arrasto por toque (long-press): mesmo destaque da coluna em drop. */
+.touch-drop-target {
+  border-color: var(--accent) !important;
+  box-shadow:
+    0 12px 32px rgb(16 24 40 / 0.16),
+    0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+
 /* Entrada escalonada de listas: o pai marca, os filhos animam com atraso.
    Só afeta elementos que já animam (ex.: cards); nós estáveis não repetem. */
 .stagger > *:nth-child(2) {

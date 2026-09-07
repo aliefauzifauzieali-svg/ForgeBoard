@@ -47,7 +47,7 @@ try {
       `<html><body style="margin:0;padding:0">${doc}</body></html>`,
       { waitUntil: 'load' },
     );
-    await page.screenshot({ path: fileURLToPath(new URL(file, OUT)), clip: { x: 0, y: 0, width: size, height: size } });
+    await page.screenshot({ path: fileURLToPath(new URL(file, OUT)), clip: { x: 0, y: 0, width: size, height: size }, omitBackground: true });
     console.log(`ok: icons/${file} (${size}x${size})`);
   }
 } finally {

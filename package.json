@@ -1,7 +1,7 @@
 {
   "name": "forgeboard",
   "private": true,
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "ForgeBoard — dashboard pessoal de projetos e tarefas, local-first.",
   "type": "module",
   "engines": {

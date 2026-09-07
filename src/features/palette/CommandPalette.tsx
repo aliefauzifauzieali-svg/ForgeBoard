@@ -157,7 +157,7 @@ export function CommandPalette(): React.JSX.Element | null {
 
   return (
     <div
-      className={`fixed inset-0 z-[60] flex items-start justify-center bg-zinc-950/50 p-4 pt-[12vh] backdrop-blur-[2px] ${
+      className={`fixed inset-0 z-[60] flex items-start justify-center bg-zinc-950/60 p-4 pt-[12vh] backdrop-blur-md ${
         leaving ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'
       }`}
       onKeyDown={(e) => {
@@ -176,8 +176,8 @@ export function CommandPalette(): React.JSX.Element | null {
         aria-modal="true"
         aria-label="Paleta de comandos e busca global"
         data-testid="command-palette"
-        className={`flex max-h-[70dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-pop dark:bg-zinc-900 ${
-          leaving ? 'animate-fade-out-scale' : 'animate-fade-up'
+        className={`flex max-h-[70dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-pop dark:border-zinc-800 dark:bg-zinc-900 ${
+          leaving ? 'animate-fade-out-scale' : 'animate-pop-in'
         }`}
       >
         <div className="flex items-center gap-2 border-b border-zinc-200 px-4 transition-colors focus-within:border-[var(--accent)] dark:border-zinc-800 dark:focus-within:border-[var(--accent-bright)]">

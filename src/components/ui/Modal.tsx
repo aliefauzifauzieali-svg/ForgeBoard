@@ -56,7 +56,7 @@ export function Modal({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-6 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/60 p-0 backdrop-blur-md sm:items-center sm:p-6 ${
         leaving ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'
       }`}
       onMouseDown={(e) => {
@@ -69,8 +69,8 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         aria-describedby={description ? descriptionId : undefined}
-        className={`flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-pop dark:bg-zinc-900 sm:rounded-2xl ${
-          leaving ? 'animate-fade-out-scale' : 'animate-fade-up'
+        className={`flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-zinc-200 bg-white shadow-pop dark:border-zinc-800 dark:bg-zinc-900 sm:rounded-2xl ${
+          leaving ? 'animate-fade-out-scale' : 'animate-pop-in'
         } ${wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'}`}
       >
         <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">

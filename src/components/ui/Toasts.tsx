@@ -32,7 +32,7 @@ function ToastCard({ toast }: { toast: ToastItem }): React.JSX.Element {
       role="status"
       data-testid={`toast-${toast.id}`}
       className={cn(
-        'card animate-fade-up flex w-full items-center gap-2.5 !rounded-xl px-3.5 py-2.5 shadow-pop',
+        'card animate-toast-in flex w-full items-center gap-2.5 !rounded-xl px-3.5 py-2.5 shadow-pop',
         STYLE[toast.kind],
       )}
     >

@@ -30,7 +30,7 @@ export function ConfirmDialog(): React.JSX.Element {
         </button>
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+          className="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-red-500 hover:shadow-pop active:scale-[0.98]"
           onClick={() => {
             confirm.action?.();
             closeConfirm();

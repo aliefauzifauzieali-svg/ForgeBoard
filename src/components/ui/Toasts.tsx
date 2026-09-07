@@ -50,7 +50,7 @@ function ToastCard({ toast }: { toast: ToastItem }): React.JSX.Element {
       {toast.action ? (
         <button
           type="button"
-          className="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-indigo-600 hover:bg-indigo-600/10 dark:text-indigo-400"
+          className="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] dark:text-[var(--accent-bright)]"
           onClick={() => {
             toast.action?.run();
             dismissToast(toast.id);

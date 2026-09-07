@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --accent: #4f46e5;
+  --accent-dark: #4338ca;
+  --accent-bright: #818cf8;
+  --accent-glow: rgb(79 70 229 / 0.25);
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
@@ -15,10 +22,11 @@
     transition-timing-function: ease-out;
   }
   :focus-visible {
-    @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950;
+    @apply outline-none ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-950;
+    --tw-ring-color: var(--accent);
   }
   ::selection {
-    @apply bg-indigo-600/20;
+    background-color: color-mix(in srgb, var(--accent) 20%, transparent);
   }
 }
 
@@ -27,13 +35,27 @@
     @apply rounded-2xl border border-zinc-200/80 bg-white shadow-card transition-colors dark:border-zinc-800 dark:bg-zinc-900;
   }
   .input {
-    @apply w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 transition-colors focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500;
+    @apply w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 transition-colors dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500;
+  }
+  .input:focus {
+    border-color: var(--accent);
   }
   .label {
     @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md hover:shadow-indigo-600/25 active:scale-[0.98] active:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+    background-color: var(--accent);
+  }
+  .btn-primary:hover {
+    background-color: var(--accent);
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1),
+      0 10px 15px -3px var(--accent-glow);
+  }
+  .btn-primary:active {
+    background-color: var(--accent-dark);
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 hover:shadow-sm active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:shadow-none disabled:active:scale-100;

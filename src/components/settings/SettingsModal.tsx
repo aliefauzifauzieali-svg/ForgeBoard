@@ -10,6 +10,7 @@ import { RELEASES_URL, getAppVersion } from '../../services/appInfo';
 import { isTauri } from '../../utils/platform';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { usePrefsStore } from '../../stores/usePrefsStore';
+import { ACCENT_OPTIONS, useAccentStore } from '../../stores/useAccentStore';
 import { useThemeStore } from '../../stores/useThemeStore';
 import { useUIStore } from '../../stores/useUIStore';
 import type { ThemePreference } from '../../types';
@@ -135,7 +136,7 @@ function TagsManager(): React.JSX.Element {
                         onClick={() => updateTag(tag.id, { color: c })}
                         className={cn(
                           'h-5 w-5 rounded-full border-2 border-white dark:border-zinc-900',
-                          tag.color === c && 'ring-2 ring-indigo-500',
+                          tag.color === c && 'ring-2 ring-[var(--accent)]',
                         )}
                         style={{ backgroundColor: c }}
                       />
@@ -210,7 +211,7 @@ function BackupSection(): React.JSX.Element {
               </span>
               <button
                 type="button"
-                className="shrink-0 rounded-lg px-2 py-1 font-bold text-indigo-600 hover:bg-indigo-600/10 dark:text-indigo-400"
+                className="shrink-0 rounded-lg px-2 py-1 font-bold text-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] dark:text-[var(--accent-bright)]"
                 onClick={() =>
                   askConfirm({
                     title: 'Restaurar backup',
@@ -272,7 +273,7 @@ function NotificationsSection(): React.JSX.Element {
           type="checkbox"
           checked={enabled}
           onChange={(e) => void toggle(e.target.checked)}
-          className="h-5 w-5 accent-indigo-600"
+          className="h-5 w-5 accent-[var(--accent)]"
         />
       </label>
       {enabled ? (
@@ -371,7 +372,7 @@ function UpdatesSection(): React.JSX.Element {
       {state === 'installing' ? (
         <div className="mt-2" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Baixando atualização">
           <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-            <div className="h-full bg-indigo-600 transition-[width]" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-[var(--accent)] transition-[width]" style={{ width: `${progress}%` }} />
           </div>
           <p className="mt-1 text-xs tabular-nums text-zinc-600 dark:text-zinc-400">{progress}%</p>
         </div>
@@ -540,7 +541,7 @@ function AboutSection(): React.JSX.Element {
           target="_blank"
           rel="noreferrer"
           onClick={onReleasesClick}
-          className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+            className="font-semibold text-[var(--accent)] hover:underline dark:text-[var(--accent-bright)]"
         >
           Ver releases no GitHub
         </a>
@@ -565,6 +566,8 @@ export function SettingsModal(): React.JSX.Element {
   const shortcutsEnabled = usePrefsStore((s) => s.shortcutsEnabled);
   const setShortcutsEnabled = usePrefsStore((s) => s.setShortcutsEnabled);
   const setShortcutsOpen = useUIStore((s) => s.setShortcutsOpen);
+  const accentId = useAccentStore((s) => s.accentId);
+  const setAccent = useAccentStore((s) => s.setAccent);
 
   return (
     <Modal open={open} title="Configurações" description="Preferências salvas neste dispositivo." onClose={() => setOpen(false)} wide>
@@ -581,11 +584,35 @@ export function SettingsModal(): React.JSX.Element {
                 className={cn(
                   'rounded-xl border px-4 py-2 text-sm font-semibold transition',
                   preference === t.id
-                    ? 'border-indigo-600 bg-indigo-600 text-white'
+                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                     : 'border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800',
                 )}
               >
                 {t.label}
+              </button>
+            ))}
+          </div>
+          <div role="radiogroup" aria-label="Cor de destaque" className="mt-3 flex flex-wrap gap-1.5">
+            {ACCENT_OPTIONS.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                role="radio"
+                aria-checked={accentId === a.id}
+                aria-label={`Cor de destaque ${a.label}`}
+                title={a.label}
+                onClick={() => setAccent(a.id)}
+                className={cn(
+                  'flex h-9 w-9 items-center justify-center rounded-full transition',
+                  accentId === a.id && 'ring-2 ring-[var(--accent)] ring-offset-2 dark:ring-offset-zinc-900',
+                )}
+                style={{ backgroundColor: a.base }}
+              >
+                {accentId === a.id ? (
+                  <span aria-hidden className="text-sm font-black text-white">
+                    ✓
+                  </span>
+                ) : null}
               </button>
             ))}
           </div>
@@ -603,12 +630,12 @@ export function SettingsModal(): React.JSX.Element {
               type="checkbox"
               checked={shortcutsEnabled}
               onChange={(e) => setShortcutsEnabled(e.target.checked)}
-              className="h-5 w-5 accent-indigo-600"
+              className="h-5 w-5 accent-[var(--accent)]"
             />
           </label>
           <button
             type="button"
-            className="mt-2 text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+            className="mt-2 text-xs font-semibold text-[var(--accent)] hover:underline dark:text-[var(--accent-bright)]"
             onClick={() => {
               setOpen(false);
               setShortcutsOpen(true);

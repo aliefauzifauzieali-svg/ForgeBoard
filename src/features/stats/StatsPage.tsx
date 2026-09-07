@@ -113,7 +113,7 @@ function StatsView(): React.JSX.Element {
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-          <BarChart3 size={24} aria-hidden className="text-indigo-600 dark:text-indigo-400" />
+          <BarChart3 size={24} aria-hidden className="text-[var(--accent)] dark:text-[var(--accent-bright)]" />
           Estatísticas
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -187,7 +187,7 @@ function StatsView(): React.JSX.Element {
                 className={cn(
                   'rounded-xl border px-3 py-2 text-xs font-semibold transition',
                   period === p
-                    ? 'border-indigo-600 bg-indigo-600 text-white'
+                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                     : 'border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800',
                 )}
               >
@@ -212,7 +212,7 @@ function StatsView(): React.JSX.Element {
           <button
             type="button"
             onClick={() => setSelectedDay(null)}
-            className="inline-flex items-center gap-1 rounded-full bg-indigo-600/10 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:text-indigo-300"
+            className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] px-2.5 py-1 text-xs font-bold text-[var(--accent-dark)] dark:text-[var(--accent-bright)]"
           >
             Dia {selectedDay.split('-').reverse().join('/')} <X size={13} aria-hidden /> Limpar
           </button>

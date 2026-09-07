@@ -47,7 +47,7 @@ export function KanbanColumn({
       className={cn(
         'flex w-72 shrink-0 snap-start animate-fade-up flex-col rounded-2xl border bg-zinc-50/80 p-3 transition dark:bg-zinc-900/60 sm:w-80',
         over
-          ? 'border-indigo-500 shadow-pop ring-2 ring-indigo-500/40'
+          ? 'border-[var(--accent)] shadow-pop ring-2 ring-[color-mix(in_srgb,var(--accent)_40%,transparent)]'
           : 'border-zinc-200 dark:border-zinc-800',
       )}
     >
@@ -58,7 +58,7 @@ export function KanbanColumn({
             className={cn(
               'h-2 w-2 rounded-full',
               status === 'backlog' && 'bg-zinc-400',
-              status === 'in-progress' && 'bg-indigo-500',
+              status === 'in-progress' && 'bg-[var(--accent)]',
               status === 'done' && 'bg-emerald-500',
             )}
           />

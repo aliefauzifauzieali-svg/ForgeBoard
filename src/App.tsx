@@ -18,6 +18,7 @@ import { StatsPage } from './pages/StatsPage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useDueNotifications } from './hooks/useDueNotifications';
 import { useThemeEffect } from './stores/useThemeStore';
+import { useAccentEffect } from './stores/useAccentStore';
 import { useUIStore } from './stores/useUIStore';
 
 /** Região aria-live: anuncia mutações (criar/mover/excluir…) para leitores de tela. */
@@ -32,6 +33,7 @@ function LiveRegion(): React.JSX.Element {
 
 export default function App(): React.JSX.Element {
   useThemeEffect();
+  useAccentEffect();
   useEffect(() => {
     // Splash inicial (index.html): remove após o primeiro paint do React.
     document.getElementById('boot-splash')?.remove();
@@ -45,7 +47,7 @@ export default function App(): React.JSX.Element {
     <div className="min-h-dvh">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-indigo-600 focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-[var(--accent)] focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
       >
         Pular para o conteúdo
       </a>

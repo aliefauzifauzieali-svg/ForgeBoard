@@ -51,7 +51,7 @@ export function StatusBadge({ value }: { value: TaskStatus }): React.JSX.Element
         className={cn(
           'h-1.5 w-1.5 rounded-full',
           value === 'backlog' && 'bg-zinc-500',
-          value === 'in-progress' && 'bg-indigo-500',
+          value === 'in-progress' && 'bg-[var(--accent)]',
           value === 'done' && 'bg-emerald-500',
         )}
       />

@@ -26,7 +26,7 @@ function Hi({ text, query }: { text: string; query: string }): React.JSX.Element
     <>
       {parts.map((p, i) =>
         p.hit ? (
-          <mark key={i} className="rounded bg-indigo-600/20 px-px text-inherit">
+          <mark key={i} className="rounded bg-[color-mix(in_srgb,var(--accent)_20%,transparent)] px-px text-inherit">
             {p.text}
           </mark>
         ) : (
@@ -180,7 +180,7 @@ export function CommandPalette(): React.JSX.Element | null {
           leaving ? 'animate-fade-out-scale' : 'animate-fade-up'
         }`}
       >
-        <div className="flex items-center gap-2 border-b border-zinc-200 px-4 transition-colors focus-within:border-indigo-500 dark:border-zinc-800 dark:focus-within:border-indigo-400">
+        <div className="flex items-center gap-2 border-b border-zinc-200 px-4 transition-colors focus-within:border-[var(--accent)] dark:border-zinc-800 dark:focus-within:border-[var(--accent-bright)]">
           <Search size={18} aria-hidden className="shrink-0 text-zinc-400" />
           <input
             role="combobox"
@@ -234,7 +234,7 @@ export function CommandPalette(): React.JSX.Element | null {
                     onMouseEnter={() => setActive(i)}
                     className={cn(
                       'flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm',
-                      i === active ? 'bg-indigo-600/10 text-zinc-900 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300',
+                      i === active ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-zinc-900 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300',
                       item.disabled && 'opacity-40',
                     )}
                   >

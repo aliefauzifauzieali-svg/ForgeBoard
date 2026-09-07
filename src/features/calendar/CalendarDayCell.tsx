@@ -64,11 +64,11 @@ export function CalendarDayCell({
         'flex flex-col gap-1 rounded-xl border p-1.5 transition sm:p-2',
         minHeight ?? 'min-h-16 sm:min-h-24',
         bucket.isToday
-          ? 'border-indigo-500/60 bg-indigo-600/[0.04] dark:bg-indigo-500/10'
+          ? 'border-[color-mix(in_srgb,var(--accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]'
           : bucket.isOutside
             ? 'border-zinc-200 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-900/30'
             : 'border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60',
-        over && 'border-indigo-500 ring-2 ring-indigo-500/40',
+        over && 'border-[var(--accent)] ring-2 ring-[color-mix(in_srgb,var(--accent)_40%,transparent)]',
       )}
     >
       <div className="flex items-center justify-between gap-1 px-0.5">
@@ -79,9 +79,9 @@ export function CalendarDayCell({
           aria-label={`Dia ${bucket.iso}${bucket.isToday ? ' (hoje)' : ''}: criar tarefa`}
           title={`Criar tarefa em ${toDateOnlyString(bucket.date)}`}
           className={cn(
-            'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums transition hover:ring-2 hover:ring-indigo-500/50',
+            'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums transition hover:ring-2 hover:ring-[color-mix(in_srgb,var(--accent)_50%,transparent)]',
             bucket.isToday
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-[var(--accent)] text-white'
               : bucket.isOutside
                 ? 'text-zinc-500 dark:text-zinc-400'
                 : 'text-zinc-600 dark:text-zinc-300',
@@ -119,7 +119,7 @@ export function CalendarDayCell({
         <button
           type="button"
           onClick={() => onOpenDay(bucket.iso)}
-          className="rounded-md px-1 py-0.5 text-left text-[11px] font-bold text-indigo-600 hover:bg-indigo-600/10 dark:text-indigo-400"
+          className="rounded-md px-1 py-0.5 text-left text-[11px] font-bold text-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] dark:text-[var(--accent-bright)]"
         >
           +{hidden} {hidden === 1 ? 'tarefa' : 'tarefas'}
         </button>

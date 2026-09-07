@@ -60,7 +60,7 @@ export function TaskFiltersBar(): React.JSX.Element {
       <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-300">
         <input
           type="checkbox"
-          className="h-4 w-4 accent-indigo-600"
+          className="h-4 w-4 accent-[var(--accent)]"
           checked={filters.showOverdueOnly}
           onChange={(e) => setFilters({ showOverdueOnly: e.target.checked })}
         />
@@ -70,7 +70,7 @@ export function TaskFiltersBar(): React.JSX.Element {
       {activeCount > 0 || filters.search ? (
         <button
           type="button"
-          className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+          className="text-xs font-semibold text-[var(--accent)] hover:underline dark:text-[var(--accent-bright)]"
           onClick={resetFilters}
         >
           Limpar
@@ -94,7 +94,7 @@ export function TaskFiltersBar(): React.JSX.Element {
                   className={cn(
                     'rounded-full border px-2.5 py-1 text-xs font-semibold transition',
                     filters.statuses.includes(s)
-                      ? 'border-indigo-600 bg-indigo-600 text-white'
+                      ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                       : 'border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800',
                   )}
                 >
@@ -115,7 +115,7 @@ export function TaskFiltersBar(): React.JSX.Element {
                   className={cn(
                     'rounded-full border px-2.5 py-1 text-xs font-semibold transition',
                     filters.priorities.includes(p)
-                      ? 'border-indigo-600 bg-indigo-600 text-white'
+                      ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                       : 'border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800',
                   )}
                 >

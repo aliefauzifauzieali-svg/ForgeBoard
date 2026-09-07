@@ -23,7 +23,7 @@ export function InstallButton(): React.JSX.Element | null {
   return (
     <div
       data-testid="install-button"
-      className="flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-600/[0.06] p-2 pl-3 dark:border-indigo-500/30 dark:bg-indigo-500/10"
+      className="flex items-center gap-2 rounded-2xl border border-[color-mix(in_srgb,var(--accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--accent)_6%,transparent)] p-2 pl-3 dark:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]"
     >
       <p className="min-w-0 flex-1 text-xs font-semibold">Instale o ForgeBoard</p>
       <button type="button" className="btn-primary !px-3 !py-1.5 !text-xs" disabled={busy} onClick={() => void install()}>

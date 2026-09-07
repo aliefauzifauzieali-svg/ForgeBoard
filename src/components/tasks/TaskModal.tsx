@@ -386,7 +386,7 @@ function TaskForm(): React.JSX.Element {
                       }}
                       onMouseEnter={() => setTagActive(i)}
                       className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm ${
-                        i === tagActive ? 'bg-indigo-600/10' : ''
+                        i === tagActive ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]' : ''
                       }`}
                     >
                       <span aria-hidden className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />

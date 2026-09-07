@@ -15,7 +15,7 @@ export function EmptyState({
     <div className="card flex flex-col items-center px-6 py-12 text-center animate-fade-up">
       <span
         aria-hidden
-        className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400"
+        className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] dark:text-[var(--accent-bright)]"
       >
         <Icon size={24} />
       </span>

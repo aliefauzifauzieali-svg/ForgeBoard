@@ -67,7 +67,7 @@ export function CalendarView(): React.JSX.Element {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
-            <CalendarDays size={24} aria-hidden className="text-indigo-600 dark:text-indigo-400" />
+            <CalendarDays size={24} aria-hidden className="text-[var(--accent)] dark:text-[var(--accent-bright)]" />
             Calendário
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -143,7 +143,7 @@ export function CalendarView(): React.JSX.Element {
           aparece{undated.length === 1 ? '' : 'm'} aqui.{' '}
           <button
             type="button"
-            className="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+            className="font-bold text-[var(--accent)] hover:underline dark:text-[var(--accent-bright)]"
             onClick={goDashboard}
           >
             Ver no dashboard

@@ -278,7 +278,7 @@ export function Sidebar(): React.JSX.Element {
         <div className="flex items-center gap-2.5 px-5 pb-4 pt-5">
           <span
             aria-hidden
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-lg font-black text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-lg font-black text-white"
           >
             F
           </span>
@@ -296,12 +296,12 @@ export function Sidebar(): React.JSX.Element {
             className={cn(
               'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
               view.kind === 'dashboard'
-                ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300'
+                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
             {view.kind === 'dashboard' ? (
-              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
             ) : null}
             <LayoutDashboard size={17} aria-hidden />
             Dashboard
@@ -313,12 +313,12 @@ export function Sidebar(): React.JSX.Element {
             className={cn(
               'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
               view.kind === 'calendar'
-                ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300'
+                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
             {view.kind === 'calendar' ? (
-              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
             ) : null}
             <CalendarDays size={17} aria-hidden />
             Calendário
@@ -330,12 +330,12 @@ export function Sidebar(): React.JSX.Element {
             className={cn(
               'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition',
               view.kind === 'stats'
-                ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300'
+                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                 : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
             )}
           >
             {view.kind === 'stats' ? (
-              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+              <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
             ) : null}
             <BarChart3 size={17} aria-hidden />
             Estatísticas

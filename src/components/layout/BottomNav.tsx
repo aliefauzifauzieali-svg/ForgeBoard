@@ -25,7 +25,7 @@ export function BottomNav(): React.JSX.Element {
           aria-current={view.kind === 'dashboard' ? 'page' : undefined}
           className={cn(
             'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold',
-            view.kind === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-400',
+            view.kind === 'dashboard' ? 'text-[var(--accent)] dark:text-[var(--accent-bright)]' : 'text-zinc-600 dark:text-zinc-400',
           )}
         >
           <Home size={20} aria-hidden />
@@ -37,7 +37,7 @@ export function BottomNav(): React.JSX.Element {
           onClick={() => currentProjectId && openProject(currentProjectId)}
           className={cn(
             'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold disabled:opacity-40',
-            view.kind === 'project' ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-400',
+            view.kind === 'project' ? 'text-[var(--accent)] dark:text-[var(--accent-bright)]' : 'text-zinc-600 dark:text-zinc-400',
           )}
         >
           <KanbanSquare size={20} aria-hidden />
@@ -49,7 +49,7 @@ export function BottomNav(): React.JSX.Element {
           aria-current={view.kind === 'calendar' ? 'page' : undefined}
           className={cn(
             'flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold',
-            view.kind === 'calendar' ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-600 dark:text-zinc-400',
+            view.kind === 'calendar' ? 'text-[var(--accent)] dark:text-[var(--accent-bright)]' : 'text-zinc-600 dark:text-zinc-400',
           )}
         >
           <CalendarDays size={20} aria-hidden />

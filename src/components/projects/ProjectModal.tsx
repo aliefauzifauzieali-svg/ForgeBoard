@@ -105,7 +105,7 @@ function ProjectForm(): React.JSX.Element {
               className={cn(
                 'h-9 w-9 rounded-full transition',
                 color === c
-                  ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-zinc-900'
+                  ? 'ring-2 ring-[var(--accent)] ring-offset-2 dark:ring-offset-zinc-900'
                   : 'hover:scale-110',
               )}
               style={{ backgroundColor: c }}

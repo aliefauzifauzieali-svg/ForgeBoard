@@ -50,7 +50,7 @@ export function StatCard({
           aria-hidden
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-            accent ?? 'bg-indigo-600/10 text-indigo-600 dark:text-indigo-400',
+            accent ?? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] dark:text-[var(--accent-bright)]',
           )}
         >
           {icon}

@@ -14,7 +14,7 @@ export function FocusTimer(): React.JSX.Element {
   return (
     <section aria-labelledby="focus-heading" className="card p-4">
       <h2 id="focus-heading" className="flex items-center gap-2 text-sm font-bold">
-        <Timer size={16} aria-hidden className="text-indigo-500" />
+        <Timer size={16} aria-hidden className="text-[var(--accent)]" />
         Modo Foco
         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] tabular-nums dark:bg-zinc-800">
           {state.completed} {state.completed === 1 ? 'ciclo' : 'ciclos'}
@@ -30,7 +30,7 @@ export function FocusTimer(): React.JSX.Element {
             className={cn(
               'rounded-lg px-3 py-1 text-xs font-semibold transition',
               state.mode === m
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-[var(--accent)] text-white'
                 : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700',
             )}
           >

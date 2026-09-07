@@ -1,5 +1,5 @@
 import { Suspense, use, useMemo, useState } from 'react';
-import { BarChart3, CalendarDays, X } from 'lucide-react';
+import { AlertTriangle, BarChart3, CheckCircle2, Clock3, FolderKanban, ListChecks, Tag, X } from 'lucide-react';
 import { ActivityBars } from '../../components/charts/ActivityBars';
 import { ProgressLines } from '../../components/charts/ProgressLines';
 import { StatCard } from '../../components/ui/Stats';
@@ -122,33 +122,33 @@ function StatsView(): React.JSX.Element {
       </div>
 
       <section aria-label="Resumo" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <StatCard icon={<CalendarDays size={20} />} label="Tarefas" value={stats.totalTasks} />
+        <StatCard icon={<ListChecks size={20} />} label="Tarefas" value={stats.totalTasks} />
         <StatCard
-          icon={<CalendarDays size={20} />}
+          icon={<CheckCircle2 size={20} />}
           label="Concluídas"
           value={stats.doneTasks}
           accent="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
         />
         <StatCard
-          icon={<CalendarDays size={20} />}
+          icon={<AlertTriangle size={20} />}
           label="Atrasadas"
           value={stats.overdueTasks}
           accent="bg-red-500/10 text-red-600 dark:text-red-400"
         />
         <StatCard
-          icon={<CalendarDays size={20} />}
+          icon={<FolderKanban size={20} />}
           label="Projetos ativos"
           value={projects.filter((p) => tasks.some((t) => t.projectId === p.id && t.status !== 'done')).length}
           accent="bg-sky-600/10 text-sky-600 dark:text-sky-400"
         />
         <StatCard
-          icon={<CalendarDays size={20} />}
+          icon={<Tag size={20} />}
           label="Etiquetas"
           value={tags.length}
           accent="bg-violet-500/10 text-violet-600 dark:text-violet-400"
         />
         <StatCard
-          icon={<CalendarDays size={20} />}
+          icon={<Clock3 size={20} />}
           label="Lead time"
           value={lead.averageDays === null ? '—' : `${lead.averageDays}d`}
           hint={`${lead.completed} conclusões no período`}

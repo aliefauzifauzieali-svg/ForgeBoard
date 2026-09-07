@@ -45,18 +45,21 @@ export function StatCard({
 }): React.JSX.Element {
   return (
     <div className="card animate-fade-up p-4 transition-shadow hover:shadow-pop">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-start gap-2">
         <span
           aria-hidden
           className={cn(
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+            'flex h-9 w-9 items-center justify-center rounded-xl',
             accent ?? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] dark:text-[var(--accent-bright)]',
           )}
         >
           {icon}
         </span>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+          <p
+            title={label}
+            className="truncate text-[11px] font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400"
+          >
             {label}
           </p>
           <p className="text-2xl font-bold tabular-nums leading-tight">{value}</p>

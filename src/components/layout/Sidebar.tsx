@@ -363,12 +363,15 @@ export function Sidebar(): React.JSX.Element {
                     onClick={() => openProject(p.id)}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition',
+                      'relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition',
                       active
-                        ? 'bg-zinc-900 font-semibold text-white dark:bg-white dark:text-zinc-900'
+                        ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] font-semibold text-[var(--accent-dark)] dark:text-[var(--accent-bright)]'
                         : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
                     )}
                   >
+                    {active ? (
+                      <span aria-hidden className="absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-[var(--accent)] dark:bg-[var(--accent-bright)]" />
+                    ) : null}
                     <span
                       aria-hidden
                       className="h-2.5 w-2.5 shrink-0 rounded-full"

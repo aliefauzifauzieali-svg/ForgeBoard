@@ -3,44 +3,51 @@ import { isTauri } from '../utils/platform';
 export interface DesktopUpdateInfo {
   available: boolean;
   version: string | null;
+  /** true quando há instalador novo (mudança nativa possível). */
+  bundleUpdate: boolean;
 }
 
+interface CheckResult {
+  available: boolean;
+  version: string | null;
+  bundle_update: boolean;
+}
+
+let pending: { version: string } | null = null;
+
 /**
- * Verifica atualização do app desktop via tauri-plugin-updater
- * (`latest.json` do GitHub Releases, assinatura minisign).
- * Fora do Tauri retorna `{ available: false }` sem tocar na rede.
+ * Verifica atualização do frontend desktop: compara a versão instalada
+ * (pasta `frontend/`) com o `latest.json` da release. Sem rede além do GET
+ * feito no Rust. Fora do Tauri retorna indisponível.
  */
 export async function checkDesktopUpdate(): Promise<DesktopUpdateInfo> {
-  if (!isTauri()) return { available: false, version: null };
-  const { check } = await import('@tauri-apps/plugin-updater');
-  const update = await check();
-  if (!update) return { available: false, version: null };
-  return { available: true, version: update.version };
+  if (!isTauri()) return { available: false, version: null, bundleUpdate: false };
+  const { invoke } = await import('@tauri-apps/api/core');
+  const r = await invoke<CheckResult>('frontend_check');
+  if (r.available && r.version) {
+    pending = { version: r.version };
+    return { available: true, version: r.version, bundleUpdate: r.bundle_update };
+  }
+  pending = null;
+  return { available: false, version: null, bundleUpdate: r.bundle_update };
 }
 
 /**
- * Baixa, instala e reinicia com a nova versão. Requer confirmação
- * explícita da UI antes de chamar (o relaunch fecha o app).
+ * Baixa o zip da versão, troca a pasta com backup e recarrega a janela —
+ * sem reinstalar o `.exe`, sem admin. Requer confirmação explícita da UI.
  */
 export async function installDesktopUpdate(onProgress?: (pct: number) => void): Promise<void> {
   if (!isTauri()) throw new Error('Atualização desktop disponível só no Tauri');
-  const { check } = await import('@tauri-apps/plugin-updater');
-  const { relaunch } = await import('@tauri-apps/plugin-process');
-  const update = await check();
-  if (!update) return;
-  let downloaded = 0;
-  let total = 0;
-  await update.downloadAndInstall((e) => {
-    if (e.event === 'Started') {
-      downloaded = 0;
-      total = e.data.contentLength ?? 0;
-      onProgress?.(0);
-    } else if (e.event === 'Progress') {
-      downloaded += e.data.chunkLength;
-      if (total > 0) onProgress?.(Math.min(100, Math.round((downloaded / total) * 100)));
-    } else if (e.event === 'Finished') {
-      onProgress?.(100);
-    }
-  });
-  await relaunch();
+  let target = pending;
+  if (!target) {
+    const checked = await checkDesktopUpdate();
+    if (!checked.available || !checked.version) return;
+    target = { version: checked.version };
+  }
+  onProgress?.(0);
+  const { invoke } = await import('@tauri-apps/api/core');
+  await invoke('frontend_apply', { version: target.version });
+  onProgress?.(100);
+  pending = null;
+  window.location.reload();
 }

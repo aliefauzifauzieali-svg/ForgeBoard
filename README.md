@@ -183,11 +183,24 @@ reiniciar", com progresso). Pacotes verificados por assinatura minisign.
   instaladores (Windows: `-setup.exe`; Linux: `.AppImage`; macOS: `.app.tar.gz`).
 - Teste manual: instale uma versão antiga, publique tag maior, abra o app —
   o toast indica a nova versão; instale por Configurações e confirme a versão.
-- Empacotamento: os assets vão **embutidos no binário** (padrão Tauri) e o
-  updater baixa o instalador completo (~2–4 MB). Pasta externa de assets foi
-  avaliada e rejeitada: exige protocolo customizado em Rust, layout de
-  instalador próprio e revalidação de segurança — sem benefício, pois a causa
-  de telas desatualizadas nunca foi o embutimento (ver abaixo).
+- Empacotamento: a janela abre `forgeboard://localhost/index.html`, servido
+  da pasta `%APPDATA%\com.forgeboard.desktop\frontend\` via protocolo
+  customizado (`src-tauri/src/frontend.rs`, anti-traversal + MIME). No
+  primeiro boot (ou com versão divergente), a pasta é populada dos recursos
+  embutidos e carimbada com `version.json`; o binário continua instalável
+  offline normalmente.
+- Atualização incremental: Configurações > Atualizações baixa
+  `forgeboard-web-<tag>.zip` da release, extrai, valida (`index.html`),
+  troca com backup (restaura em erro) e recarrega — sem reinstalar o `.exe`,
+  sem admin. O instalador completo (.msi/-setup.exe) segue existindo para
+  primeira instalação e mudanças nativas (Rust).
+- Origem e dados: a página roda em `http://forgeboard.localhost`
+  (contexto seguro: IndexedDB, módulos ES e fetch funcionam). Na estreia, o
+  IndexedDB da origem antiga (`http_tauri.localhost`) é copiado uma vez;
+  localStorage recomeça (tema/cor/timer se reconfiguram sozinhos).
+- Teste manual: feche o app, apague a pasta `frontend`, abra de novo (ela é
+  recriada da versão do bundle); publique tag maior e atualize por
+  Configurações > Atualizações.
 - Service worker **só no navegador** (`initPWA` pula o registro no Tauri e no
   Capacitor nativo). Registrar o SW no shell desktop fazia o workbox servir
   shell antigo após upgrades (prova: `workbox-precache-v2-http://tauri.localhost/`

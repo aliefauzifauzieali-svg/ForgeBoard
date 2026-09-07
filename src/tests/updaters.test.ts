@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   checkAndroidUpdate,
   compareVersions,
@@ -34,13 +34,63 @@ describe('updateServer', () => {
   });
 });
 
+vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
+
+const WIN = window as unknown as Record<string, unknown>;
+const SAVED_TAURI = Object.getOwnPropertyDescriptor(window, '__TAURI_INTERNALS__');
+
+async function invokeMock(): Promise<ReturnType<typeof vi.fn>> {
+  const mod = (await import('@tauri-apps/api/core')) as unknown as { invoke: ReturnType<typeof vi.fn> };
+  return mod.invoke;
+}
+
 describe('desktopUpdater (web)', () => {
   it('check fora do Tauri não há update', async () => {
-    await expect(checkDesktopUpdate()).resolves.toEqual({ available: false, version: null });
+    await expect(checkDesktopUpdate()).resolves.toEqual({ available: false, version: null, bundleUpdate: false });
   });
 
   it('install fora do Tauri lança', async () => {
     await expect(installDesktopUpdate()).rejects.toThrow(/só no Tauri/);
+  });
+});
+
+describe('desktopUpdater (Tauri simulado)', () => {
+  beforeEach(() => {
+    WIN.__TAURI_INTERNALS__ = {};
+  });
+
+  afterEach(() => {
+    if (SAVED_TAURI !== undefined) Object.defineProperty(window, '__TAURI_INTERNALS__', SAVED_TAURI);
+    else delete WIN.__TAURI_INTERNALS__;
+  });
+
+  it('check repassa check do backend e guarda pendência', async () => {
+    const invoke = await invokeMock();
+    invoke.mockResolvedValueOnce({ available: true, version: '9.9.9', bundle_update: false, bundle_version: '1.5.1' });
+    await expect(checkDesktopUpdate()).resolves.toEqual({ available: true, version: '9.9.9', bundleUpdate: false });
+    expect(invoke).toHaveBeenCalledWith('frontend_check');
+  });
+
+  it('install aplica, recarrega e avisa progresso', async () => {
+    const invoke = await invokeMock();
+    invoke.mockResolvedValueOnce({ available: true, version: '9.9.9', bundle_update: false, bundle_version: '1.5.1' });
+    await checkDesktopUpdate();
+    invoke.mockResolvedValueOnce(undefined);
+    const reload = vi.fn();
+    Object.defineProperty(window, 'location', { value: { reload }, configurable: true });
+    const pct: number[] = [];
+    await installDesktopUpdate((p) => pct.push(p));
+    expect(invoke).toHaveBeenCalledWith('frontend_apply', { version: '9.9.9' });
+    expect(pct[0]).toBe(0);
+    expect(pct[pct.length - 1]).toBe(100);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('install sem pendência verifica antes', async () => {
+    const invoke = await invokeMock();
+    invoke.mockResolvedValueOnce({ available: false, version: null, bundle_update: false, bundle_version: '1.5.1' });
+    await installDesktopUpdate();
+    expect(invoke).toHaveBeenCalledWith('frontend_check');
   });
 });
 

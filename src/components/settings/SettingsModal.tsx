@@ -308,6 +308,7 @@ function UpdatesSection(): React.JSX.Element {
   const pushToast = useUIStore((s) => s.pushToast);
   const [state, setState] = useState<'idle' | 'checking' | 'available' | 'ready' | 'installing' | 'error'>('idle');
   const [version, setVersion] = useState<string | null>(null);
+  const [bundleUpdate, setBundleUpdate] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
 
@@ -317,6 +318,7 @@ function UpdatesSection(): React.JSX.Element {
     autoChecked = true;
     void checkDesktopUpdate().then(
       (info) => {
+        setBundleUpdate(info.bundleUpdate);
         if (info.available) {
           setState('available');
           setVersion(info.version);
@@ -335,6 +337,7 @@ function UpdatesSection(): React.JSX.Element {
     setError('');
     try {
       const info = await checkDesktopUpdate();
+      setBundleUpdate(info.bundleUpdate);
       if (info.available) {
         setState('available');
         setVersion(info.version);
@@ -364,11 +367,17 @@ function UpdatesSection(): React.JSX.Element {
     <div>
       <p className="text-xs text-zinc-600 dark:text-zinc-400">
         {state === 'available' && version
-          ? `Versão ${version} disponível.`
+          ? `Versão ${version} disponível (só arquivos, sem reinstalar).`
           : state === 'ready'
             ? 'Você está na versão mais recente.'
             : 'Busca novas versões no GitHub Releases.'}
       </p>
+      {bundleUpdate && state !== 'available' ? (
+        <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+          Há instalador novo (.exe/.msi) na página de releases — necessário só
+          quando o app nativo muda.
+        </p>
+      ) : null}
       {state === 'installing' ? (
         <div className="mt-2" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Baixando atualização">
           <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
@@ -394,7 +403,7 @@ function UpdatesSection(): React.JSX.Element {
         </button>
         {state === 'available' ? (
           <button type="button" className="btn-primary text-xs" onClick={() => void install()}>
-            <Download size={14} aria-hidden /> Instalar e reiniciar
+            <Download size={14} aria-hidden /> Baixar e aplicar
           </button>
         ) : null}
       </div>

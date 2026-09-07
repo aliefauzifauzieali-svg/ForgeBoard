@@ -45,9 +45,10 @@ export function ActivityBars({
                 width={barW}
                 height={h}
                 rx={3}
-                fill={d.count === 0 ? '#d4d4d8' : '#6366f1'}
+                fill={d.count === 0 ? undefined : 'var(--accent)'}
+                className={d.count === 0 ? 'fill-zinc-300 dark:fill-zinc-700' : undefined}
                 opacity={selected ? 1 : d.count === 0 ? 0.6 : 0.85}
-                stroke={selected ? '#312e81' : 'none'}
+                stroke={selected ? 'var(--accent-dark)' : 'none'}
                 strokeWidth={selected ? 2 : 0}
               >
                 <title>{`${d.label}: ${d.count}`}</title>

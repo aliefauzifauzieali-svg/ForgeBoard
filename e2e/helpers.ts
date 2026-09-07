@@ -144,7 +144,9 @@ export async function expectNoSeriousViolations(page: Page): Promise<void> {
   // Espera animações de entrada terminarem (opacidade 1): sem isso o axe
   // mede contraste no meio do fade e gera falsos positivos.
   await page.waitForFunction(() => {
-    const animated = Array.from(document.querySelectorAll('.animate-fade-up, .animate-fade-in'));
+    const animated = Array.from(
+      document.querySelectorAll('.animate-fade-up, .animate-fade-in, .animate-pop-in, .animate-toast-in'),
+    );
     return animated.every((el) => getComputedStyle(el).opacity === '1');
   });
   const results = await new AxeBuilder({ page }).analyze();

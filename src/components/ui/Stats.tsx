@@ -21,7 +21,7 @@ export function ProgressBar({
         className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
       >
         <div
-          className="h-full rounded-full transition-all duration-300"
+          className="h-full rounded-full transition-[width] duration-500 ease-out"
           style={{ width: `${safe}%`, backgroundColor: color }}
         />
       </div>
@@ -44,12 +44,12 @@ export function StatCard({
   accent?: string;
 }): React.JSX.Element {
   return (
-    <div className="card animate-fade-up p-4 transition-shadow hover:shadow-pop">
+    <div className="card card-hover group animate-fade-up p-4">
       <div className="flex flex-col items-start gap-2">
         <span
           aria-hidden
           className={cn(
-            'flex h-9 w-9 items-center justify-center rounded-xl',
+            'flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-200 ease-spring group-hover:scale-105',
             accent ?? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] dark:text-[var(--accent-bright)]',
           )}
         >
@@ -62,7 +62,7 @@ export function StatCard({
           >
             {label}
           </p>
-          <p className="text-2xl font-bold tabular-nums leading-tight">{value}</p>
+          <p className="text-2xl font-bold tabular-nums leading-tight tracking-tight">{value}</p>
         </div>
       </div>
       {hint ? <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">{hint}</p> : null}

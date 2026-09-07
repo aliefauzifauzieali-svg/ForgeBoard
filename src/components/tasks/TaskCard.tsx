@@ -1,4 +1,4 @@
-import { AlertCircle, CalendarDays, ChevronLeft, ChevronRight, Copy, ListChecks, Pencil, Repeat, Trash2 } from 'lucide-react';
+import { AlertCircle, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Copy, ListChecks, Pencil, Repeat, Trash2 } from 'lucide-react';
 import type { Task } from '../../types';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -136,18 +136,20 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
             disabled={idx <= 0}
             aria-label={`Mover ${task.title} para a coluna anterior`}
             onClick={() => idx > 0 && moveTask(task.id, ORDER[idx - 1]!)}
-            className="icon-btn !h-7 !w-7 disabled:opacity-30"
+            className="icon-btn !h-7 !w-7 disabled:opacity-30 max-sm:!h-11 max-sm:!w-11"
           >
-            <ChevronLeft size={15} />
+            <ChevronLeft size={15} aria-hidden className="hidden sm:block" />
+            <ChevronUp size={18} aria-hidden className="sm:hidden" />
           </button>
           <button
             type="button"
             disabled={idx >= ORDER.length - 1}
             aria-label={`Mover ${task.title} para a próxima coluna`}
             onClick={() => idx < ORDER.length - 1 && moveTask(task.id, ORDER[idx + 1]!)}
-            className="icon-btn !h-7 !w-7 disabled:opacity-30"
+            className="icon-btn !h-7 !w-7 disabled:opacity-30 max-sm:!h-11 max-sm:!w-11"
           >
-            <ChevronRight size={15} />
+            <ChevronRight size={15} aria-hidden className="hidden sm:block" />
+            <ChevronDown size={18} aria-hidden className="sm:hidden" />
           </button>
         </span>
       </div>

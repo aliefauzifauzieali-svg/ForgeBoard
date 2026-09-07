@@ -26,7 +26,7 @@ test.describe('responsivo (mobile)', () => {
     await expect(page.getByText('Mobile E2E').first()).toBeVisible();
   });
 
-  test('kanban com rolagem horizontal mostra as 3 colunas', async ({ page }) => {
+  test('kanban empilha na vertical com as 3 colunas visíveis', async ({ page }) => {
     await page.getByRole('button', { name: 'Abrir menu' }).click();
     await page.getByRole('button', { name: 'Novo projeto (P)' }).click();
     await page.getByLabel('Nome *', { exact: true }).fill('Quadro Mobile');
@@ -37,13 +37,30 @@ test.describe('responsivo (mobile)', () => {
     await openProject(page, 'Quadro Mobile');
     await createTask(page, 'Tarefa mobile');
 
-    // Em 412px nem todas cabem na viewport, mas todas existem e a região rola.
+    // Em 412px as colunas empilham: todas visíveis sem rolagem horizontal.
     await expect(page.getByTestId('kanban-column-backlog')).toBeVisible();
-    await expect(page.getByTestId('kanban-column-in-progress')).toBeAttached();
-    await expect(page.getByTestId('kanban-column-done')).toBeAttached();
+    await expect(page.getByTestId('kanban-column-in-progress')).toBeVisible();
+    await expect(page.getByTestId('kanban-column-done')).toBeVisible();
     const scrollable = await page
       .getByRole('region', { name: /quadro kanban/i })
       .evaluate((el) => el.scrollWidth > el.clientWidth);
-    expect(scrollable).toBe(true);
+    expect(scrollable).toBe(false);
+  });
+
+  test('mover tarefa pelos botões cima/baixo no mobile', async ({ page }) => {
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
+    await page.getByRole('button', { name: 'Novo projeto (P)' }).click();
+    await page.getByLabel('Nome *', { exact: true }).fill('Mover Mobile');
+    await page
+      .getByRole('dialog', { name: 'Novo projeto' })
+      .getByRole('button', { name: 'Criar projeto' })
+      .click();
+    await openProject(page, 'Mover Mobile');
+    await createTask(page, 'Mover eu');
+
+    await page.getByRole('button', { name: 'Mover Mover eu para a próxima coluna' }).click();
+    await expect(
+      page.getByTestId('kanban-column-in-progress').getByText('Mover eu'),
+    ).toBeVisible();
   });
 });

@@ -45,7 +45,7 @@ export function KanbanColumn({
         if (id) moveTask(id, status);
       }}
       className={cn(
-        'flex w-72 shrink-0 snap-start animate-fade-up flex-col rounded-2xl border bg-zinc-50/80 p-3 transition dark:bg-zinc-900/60 sm:w-80',
+        'flex w-full flex-col rounded-2xl border bg-zinc-50/80 p-3 transition animate-fade-up dark:bg-zinc-900/60 lg:w-72 lg:shrink-0 lg:snap-start xl:w-80',
         over
           ? 'border-[var(--accent)] shadow-pop ring-2 ring-[color-mix(in_srgb,var(--accent)_40%,transparent)]'
           : 'border-zinc-200 dark:border-zinc-800',
@@ -83,9 +83,12 @@ export function KanbanColumn({
       <div className="flex min-h-24 flex-col gap-2">
         {tasks.length === 0 ? (
           <p className="rounded-xl border border-dashed border-zinc-300 px-3 py-6 text-center text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
-            Arraste tarefas para cá
-            <br />
-            ou crie uma nova.
+            <span className="hidden sm:inline">
+              Arraste tarefas para cá
+              <br />
+              ou{' '}
+            </span>
+            crie uma nova.
           </p>
         ) : (
           tasks.map((t) => <TaskCard key={t.id} task={t} projectColor={projectColor} />)
@@ -106,9 +109,9 @@ export function KanbanBoard({
 }): React.JSX.Element {
   return (
     <div
-      className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 lg:mx-0 lg:px-0 stagger"
+      className="flex flex-col gap-4 pb-4 stagger lg:-mx-4 lg:flex-row lg:gap-3 lg:overflow-x-auto lg:px-4 lg:snap-x lg:snap-mandatory"
       role="region"
-      aria-label="Quadro Kanban. Arraste tarefas entre as colunas ou use os botões Mover de cada cartão."
+      aria-label="Quadro Kanban. No computador, arraste tarefas entre as colunas; no touch, use os botões Mover de cada cartão."
     >
       {COLUMNS.map((status) => (
         <KanbanColumn

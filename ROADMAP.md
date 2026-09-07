@@ -275,6 +275,22 @@ Distribuição como app instalável, sem mudar lógica, storage ou PWA.
 
 ---
 
+## Fase 15 — Produtividade avançada ✅ concluída em 2026-09-06
+
+- [x] Modo Foco (Pomodoro 25/5) no Dashboard com persistência em
+      localStorage e notificação por ciclo (`features/focus/`).
+- [x] Gráficos: verificado que barras de conclusões + donut de prioridades
+      já existiam como SVG próprio (acessível, responsivo, testado) —
+      `recharts` rejeitado como dependência pesada desnecessária.
+- [x] Busca fuzzy na paleta (Levenshtein com teto + penalidade).
+- [x] Notas rápidas com autosave em IndexedDB (`kv.quickNotes`).
+- [x] Cor de destaque customizável (6 opções, localStorage, CSS vars).
+- [x] Gates verdes: typecheck, lint, Vitest, build, E2E dev + PWA, axe.
+
+**Concluída quando:** 4 features com commits atômicos + 1 verificação sem código + gates verdes.
+
+---
+
 ## Pós-roadmap (fora de escopo — só após a Fase 8)
 
 Contas, autenticação, sincronização, backend, compartilhamento e colaboração.

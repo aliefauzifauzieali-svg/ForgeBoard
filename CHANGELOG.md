@@ -8,6 +8,19 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Modo Foco (Pomodoro 25/5) no Dashboard: iniciar/pausar/reiniciar, troca
+  de modo, contagem de ciclos, estado em localStorage e notificação
+  (toast + sistema) ao fim de cada ciclo.
+- Busca fuzzy na paleta: tolera erros de digitação (Levenshtein com teto
+  por tamanho do token, com penalidade no ranking).
+- Notas rápidas no Dashboard: textarea com salvamento automático
+  (IndexedDB, `kv.quickNotes`, teto de 5000 caracteres).
+- Cor de destaque customizável (6 opções) em Configurações > Aparência,
+  salva em localStorage e aplicada via variáveis CSS.
+- Gráficos do Dashboard (barras de conclusões + donut de prioridades) já
+  existiam como SVG próprio acessível/responsivo: sem `recharts`
+  (dependência pesada desnecessária).
+
 - Empacotamento Desktop com **Tauri v2** (`src-tauri/`, id `com.forgeboard.app`,
   janela 1200×800): `npm run tauri:dev` / `npm run tauri:build` geram
   instaladores para Windows, Linux e macOS a partir do mesmo `dist/`.

@@ -37,7 +37,7 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
       onClickCapture={touch.handlers.onClickCapture}
       aria-label={`Tarefa ${task.title}. Status ${task.status}. Prioridade ${task.priority}.`}
       style={touch.dragStyle}
-      className="group cursor-grab rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition hover:-translate-y-px hover:shadow-card focus-visible:ring-2 active:cursor-grabbing dark:border-zinc-700/80 dark:bg-zinc-900"
+      className="group cursor-grab rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition-[transform,box-shadow,border-color] duration-200 ease-spring hover:-translate-y-px hover:border-zinc-300 hover:shadow-card focus-visible:ring-2 active:cursor-grabbing dark:border-zinc-700/80 dark:bg-zinc-900 dark:hover:border-zinc-600"
     >
       <div className="flex items-start gap-2">
         {projectColor ? (

@@ -61,7 +61,7 @@ export function CalendarDayCell({
       }}
       onDrop={onDrop}
       className={cn(
-        'flex flex-col gap-1 rounded-xl border p-1.5 transition sm:p-2',
+        'flex flex-col gap-1 rounded-xl border p-1.5 transition-[border-color,box-shadow,background-color] duration-200 sm:p-2',
         minHeight ?? 'min-h-16 sm:min-h-24',
         bucket.isToday
           ? 'border-[color-mix(in_srgb,var(--accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--accent)_4%,transparent)] dark:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]'

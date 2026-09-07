@@ -1,9 +1,17 @@
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
-import type { Task } from '../../types';
+import type { Task, TaskPriority } from '../../types';
 import { useUIStore } from '../../stores/useUIStore';
 import { STATUS_META } from '../../utils/constants';
 import { isOverdue } from '../../utils/date';
 import { cn } from '../../utils/core';
+
+/** Faixa lateral do chip por prioridade (tom suave, só decorativa). */
+const PRIORITY_EDGE: Record<TaskPriority, string> = {
+  low: 'border-l-sky-400 dark:border-l-sky-500',
+  medium: 'border-l-amber-400 dark:border-l-amber-500',
+  high: 'border-l-orange-400 dark:border-l-orange-500',
+  critical: 'border-l-red-500 dark:border-l-red-500',
+};
 
 /**
  * Cartão compacto de tarefa no calendário. Arrastar entre dias remarca o
@@ -40,10 +48,11 @@ export function CalendarTaskChip({
       title={`${task.title}${projectName ? ` · ${projectName}` : ''}`}
       aria-label={`${task.title}. Status ${STATUS_META[task.status].label}. Ativar para editar; arraste para outro dia para remarcar.${overdue ? ' Atrasada.' : ''}`}
       className={cn(
-        'flex w-full cursor-grab items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-xs font-medium transition hover:shadow-card active:cursor-grabbing',
+        'flex w-full cursor-grab items-center gap-1.5 rounded-lg border border-l-2 py-1.5 pl-2 pr-2 text-left text-xs font-medium transition-[transform,box-shadow,border-color] duration-200 ease-spring hover:-translate-y-px hover:shadow-card active:cursor-grabbing',
+        PRIORITY_EDGE[task.priority],
         overdue
           ? 'border-red-300 bg-red-50 text-red-900 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200'
-          : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200',
+          : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600',
         done && !overdue && 'opacity-75',
       )}
     >

@@ -127,7 +127,7 @@ export function CalendarView(): React.JSX.Element {
         </div>
       </div>
 
-      <div key={`${mode}-${toDateOnlyString(cursor)}`} className="animate-fade-in">
+      <div key={`${mode}-${toDateOnlyString(cursor)}`} className="animate-fade-up">
         {mode === 'month' ? (
         <MonthView cursor={cursor} tasks={tasks} colors={colors} onOpenDay={openDay} onNewTask={(iso) => openNewTask(null, 'backlog', iso)} />
       ) : mode === 'week' ? (

@@ -48,7 +48,7 @@ export function KanbanColumn({
         if (id) moveTask(id, status);
       }}
       className={cn(
-        'flex w-full flex-col rounded-2xl border bg-zinc-50/80 p-3 transition animate-fade-up dark:bg-zinc-900/60 lg:w-72 lg:shrink-0 lg:snap-start xl:w-80',
+        'flex w-full animate-fade-up flex-col rounded-2xl border bg-zinc-50/80 p-3 transition-[border-color,box-shadow] duration-200 ease-spring dark:bg-zinc-900/60 lg:w-72 lg:shrink-0 lg:snap-start xl:w-80',
         // `dragging` vem do quadro: sem arrasto ativo (ex.: cancelado com
         // Esc, que não dispara dragleave/drop), nenhum destaque sobrevive.
         over && dragging

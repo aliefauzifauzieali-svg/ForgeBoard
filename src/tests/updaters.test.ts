@@ -4,6 +4,7 @@ import {
   compareVersions,
   installAndroidUpdate,
   isNativeAndroid,
+  normalizeBody,
   resolveAndroidUpdate,
 } from '../services/androidUpdater';
 import { checkDesktopUpdate, installDesktopUpdate } from '../services/desktopUpdater';
@@ -140,5 +141,12 @@ describe('resolveAndroidUpdate (puro)', () => {
     expect(compareVersions('1.5.0', '1.5.1')).toBe(-1);
     expect(compareVersions('1.5.1', '1.5.1')).toBe(0);
     expect(compareVersions('1.10.0', '1.9.9')).toBe(1);
+  });
+
+  it('normalizeBody aceita objeto ou JSON em string', () => {
+    const obj = { version: '1.5.4' };
+    expect(normalizeBody(obj)).toBe(obj);
+    expect(normalizeBody(JSON.stringify(obj))).toEqual(obj);
+    expect(normalizeBody('lixo')).toBe('lixo');
   });
 });

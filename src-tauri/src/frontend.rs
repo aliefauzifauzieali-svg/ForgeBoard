@@ -137,19 +137,46 @@ fn profile_dir(app: &AppHandle) -> Option<PathBuf> {
   None
 }
 
-/// Garante a pasta do frontend populada na versão do bundle. Idempotente.
+/// Decisão de seed: nunca apaga pasta mais nova (é assim que updates
+/// incrementais sobrevivem a reinícios). Só popula quando falta tudo.
+#[derive(Debug, PartialEq, Eq)]
+enum SeedDecision {
+  /// Pasta íntegra na versão corrente: não toca.
+  UpToDate,
+  /// Sem `version.json` ou sem `index.html`: popula dos recursos.
+  SeedFresh,
+  /// Pasta válida de outra versão (ex.: update aplicado): preserva.
+  KeepNewer,
+}
+
+fn decide_seed(installed: Option<&str>, pkg: &str, has_index: bool) -> SeedDecision {
+  if !has_index {
+    return SeedDecision::SeedFresh;
+  }
+  match installed {
+    None => SeedDecision::SeedFresh,
+    Some(v) if v == pkg => SeedDecision::UpToDate,
+    Some(_) => SeedDecision::KeepNewer,
+  }
+}
+
+/// Garante a pasta do frontend populada. Idempotente e sem downgrade:
+/// uma pasta válida nunca é apagada (updates sobrevivem ao reboot).
 pub fn ensure_frontend(app: &AppHandle) -> Option<PathBuf> {
   let live = live_dir(app)?;
   let pkg = package_version(app);
-  let needs_seed = read_version(&live).as_deref() != Some(pkg.as_str());
-  if needs_seed {
-    if let Some(seed) = seed_dir(app) {
-      let _ = std::fs::remove_dir_all(&live);
-      if copy_dir_recursive(&seed, &live).is_ok() {
-        write_version(&live, &pkg);
-        migrate_indexeddb(app);
+  let has_index = live.join("index.html").is_file();
+  match decide_seed(read_version(&live).as_deref(), pkg.as_str(), has_index) {
+    SeedDecision::SeedFresh => {
+      if let Some(seed) = seed_dir(app) {
+        let _ = std::fs::remove_dir_all(&live);
+        if copy_dir_recursive(&seed, &live).is_ok() {
+          write_version(&live, &pkg);
+          migrate_indexeddb(app);
+        }
       }
     }
+    SeedDecision::UpToDate | SeedDecision::KeepNewer => {}
   }
   if live.join("index.html").is_file() {
     Some(live)
@@ -267,6 +294,14 @@ pub struct FrontendStatus {
   pub bundle_version: String,
   /// true quando o manifesto supera o bundle (mudança nativa possível).
   pub bundle_update: bool,
+}
+
+/// Versão da interface em disco (pasta `frontend/`); cai no bundle quando ausente.
+#[tauri::command]
+pub fn frontend_version(app: AppHandle) -> String {
+  live_dir(&app)
+    .and_then(|d| read_version(&d))
+    .unwrap_or_else(|| package_version(&app))
 }
 
 /// Versão do manifesto vs. instalada (pasta) e vs. bundle (nativo).
@@ -411,5 +446,18 @@ mod tests {
       web_zip_url("1.5.1"),
       "https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases/download/v1.5.1/forgeboard-web-v1.5.1.zip"
     );
+  }
+
+  #[test]
+  fn decide_seed_nunca_apaga_pasta_valida() {
+    use SeedDecision::*;
+    // Pasta íntegra na versão do bundle: não toca.
+    assert_eq!(decide_seed(Some("1.5.2"), "1.5.2", true), UpToDate);
+    // Pasta de update aplicado (mais nova que o bundle): PRESERVA.
+    // (Era o bug: reabrir o app apagava o update e oferecia de novo.)
+    assert_eq!(decide_seed(Some("1.5.4"), "1.5.2", true), KeepNewer);
+    // Sem version.json ou sem index.html: popula do zero.
+    assert_eq!(decide_seed(None, "1.5.2", true), SeedFresh);
+    assert_eq!(decide_seed(Some("1.5.2"), "1.5.2", false), SeedFresh);
   }
 }

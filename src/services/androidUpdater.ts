@@ -51,6 +51,17 @@ export function resolveAndroidUpdate(
   return { available: true, version, bundleUrl, apkUrl: typeof apkUrl === 'string' ? apkUrl : null };
 }
 
+/** CapacitorHttp devolve string quando o content-type não é JSON
+ * (release assets vêm como `application/octet-stream`). */
+export function normalizeBody(data: unknown): unknown {
+  if (typeof data !== 'string') return data;
+  try {
+    return JSON.parse(data) as unknown;
+  } catch {
+    return data;
+  }
+}
+
 /**
  * Verifica atualização do app Android: baixa o manifesto da release,
  * compara com a versão embutida e oferece o bundle OTA (+ APK manual).
@@ -65,7 +76,7 @@ export async function checkAndroidUpdate(): Promise<AndroidUpdateState> {
     const { CapacitorHttp } = await import('@capacitor/core');
     const res = await CapacitorHttp.get({ url: ANDROID_MANIFEST_URL });
     status = res.status;
-    manifest = res.data;
+    manifest = normalizeBody(res.data);
   } catch {
     return { available: false, reason: 'unreachable' };
   }

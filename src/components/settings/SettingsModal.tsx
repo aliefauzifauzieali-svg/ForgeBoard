@@ -6,7 +6,7 @@ import { cn } from '../../utils/core';
 import { getNotificationPermission, requestNotificationPermission, type NotifyPermission } from '../../services/notifications';
 import { checkDesktopUpdate, installDesktopUpdate } from '../../services/desktopUpdater';
 import { checkAndroidUpdate, installAndroidUpdate, isNativeAndroid } from '../../services/androidUpdater';
-import { RELEASES_URL, getAppVersion } from '../../services/appInfo';
+import { RELEASES_URL, getAppVersion, getFrontendVersion } from '../../services/appInfo';
 import { isTauri } from '../../utils/platform';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { usePrefsStore } from '../../stores/usePrefsStore';
@@ -535,10 +535,12 @@ function AndroidUpdatesSection(): React.JSX.Element | null {
 function AboutSection(): React.JSX.Element {
   const pushToast = useUIStore((s) => s.pushToast);
   const [version, setVersion] = useState<string | null>(null);
+  const [frontendVersion, setFrontendVersion] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     void getAppVersion().then(setVersion);
+    void getFrontendVersion().then(setFrontendVersion);
   }, []);
 
   // No desktop o WebView não abre links externos: copia em vez disso.
@@ -563,7 +565,13 @@ function AboutSection(): React.JSX.Element {
     <div>
       <p className="text-sm font-bold">ForgeBoard</p>
       <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
-        Versão instalada: {version ? <strong className="tabular-nums">{version}</strong> : '…'}
+        Versão instalada:{' '}
+        {version ? <strong className="tabular-nums">{version}</strong> : '…'}
+        {frontendVersion && frontendVersion !== version ? (
+          <>
+            {' '}· Interface: <strong className="tabular-nums">{frontendVersion}</strong>
+          </>
+        ) : null}
       </p>
       <p className="mt-1 text-xs">
         <a

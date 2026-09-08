@@ -24,9 +24,6 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
     <article
       data-testid={`task-card-${task.id}`}
       onPointerDown={drag.handlers.onPointerDown}
-      onPointerMove={drag.handlers.onPointerMove}
-      onPointerUp={drag.handlers.onPointerUp}
-      onPointerCancel={drag.handlers.onPointerCancel}
       onClickCapture={drag.handlers.onClickCapture}
       onContextMenu={(e) => {
         // No Android, o toque longo abre seleção/menu do sistema e mata o

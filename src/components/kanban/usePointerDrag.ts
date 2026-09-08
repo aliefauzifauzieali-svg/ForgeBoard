@@ -64,9 +64,6 @@ export function usePointerDrag(task: Task): {
   dragging: boolean;
   handlers: {
     onPointerDown: (e: ReactPointerEvent<HTMLElement>) => void;
-    onPointerMove: (e: ReactPointerEvent<HTMLElement>) => void;
-    onPointerUp: (e: ReactPointerEvent<HTMLElement>) => void;
-    onPointerCancel: () => void;
     onClickCapture: (e: ReactMouseEvent<HTMLElement>) => void;
   };
 } {
@@ -191,19 +188,57 @@ export function usePointerDrag(task: Task): {
   );
 
   // Esc cancela; limpa timer/fantasma/loop ao desmontar.
+  // Move/up/cancel são ouvidos na JANELA (não no card, sem
+  // setPointerCapture): o gesto continua fora do card e cliques nos
+  // botões internos seguem intactos.
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape' && draggingRef.current) endDrag(false);
     };
+    const onMove = (e: PointerEvent): void => {
+      if (!e.isPrimary || e.pointerId !== pointerId.current) return;
+      lastPt.current = { x: e.clientX, y: e.clientY };
+      const o = origin.current;
+      if (!o) return;
+      if (!draggingRef.current) {
+        const dist = Math.hypot(e.clientX - o.x, e.clientY - o.y);
+        // Toque que andou antes do atraso = rolagem; mouse precisa do limiar.
+        if (isTouch.current ? dist > TOUCH_TOLERANCE_PX : dist > MOUSE_THRESHOLD_PX) {
+          if (isTouch.current) {
+            cancelPress();
+            return;
+          }
+          beginDrag();
+          return;
+        }
+        return;
+      }
+      glowColumn(columnAt(e.clientX, e.clientY));
+      moveGhost(e.clientX, e.clientY);
+    };
+    const onUp = (e: PointerEvent): void => {
+      if (!e.isPrimary || e.pointerId !== pointerId.current) return;
+      endDrag(true);
+    };
+    const onCancel = (e: PointerEvent): void => {
+      if (!e.isPrimary || e.pointerId !== pointerId.current) return;
+      endDrag(false);
+    };
     window.addEventListener('keydown', onKey);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
     return () => {
       window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
       cancelPress();
       stopScrollLoop();
       clearColumnGlow();
       removeGhost();
     };
-  }, [cancelPress, endDrag, removeGhost, stopScrollLoop]);
+  }, [beginDrag, cancelPress, endDrag, moveGhost, removeGhost, stopScrollLoop]);
 
   return {
     dragging,
@@ -215,41 +250,9 @@ export function usePointerDrag(task: Task): {
         pointerId.current = e.pointerId;
         isTouch.current = e.pointerType !== 'mouse';
         cardEl.current = e.currentTarget;
-        try {
-          e.currentTarget.setPointerCapture(e.pointerId);
-        } catch {
-          /* sem captura: gestos curtos continuam funcionando */
-        }
         if (isTouch.current) {
           pressTimer.current = window.setTimeout(beginDrag, TOUCH_DELAY_MS);
         }
-      },
-      onPointerMove: (e) => {
-        if (!e.isPrimary || e.pointerId !== pointerId.current) return;
-        lastPt.current = { x: e.clientX, y: e.clientY };
-        const o = origin.current;
-        if (!o) return;
-        if (!draggingRef.current) {
-          const dist = Math.hypot(e.clientX - o.x, e.clientY - o.y);
-          // Toque que andou antes do atraso = rolagem; mouse precisa do limiar.
-          if (isTouch.current ? dist > TOUCH_TOLERANCE_PX : dist > MOUSE_THRESHOLD_PX) {
-            if (isTouch.current) {
-              cancelPress();
-              return;
-            }
-            beginDrag();
-            return;
-          }
-          return;
-        }
-        glowColumn(columnAt(e.clientX, e.clientY));
-        moveGhost(e.clientX, e.clientY);
-      },
-      onPointerUp: () => {
-        endDrag(true);
-      },
-      onPointerCancel: () => {
-        endDrag(false);
       },
       onClickCapture: (e) => {
         if (justDragged.current) {

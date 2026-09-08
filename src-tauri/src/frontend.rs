@@ -3,14 +3,14 @@
 //! - Esquema `forgeboard://localhost/` lê `%APPDATA%/…/frontend/` (Linux/macOS:
 //!   equivalente via `app_data_dir`), populado dos recursos embutidos no
 //!   primeiro boot ou quando a versão diverge do bundle.
-//! - `frontend_check` / `frontend_apply` implementam o update incremental:
-//!   baixa `forgeboard-web-<tag>.zip` da release, troca a pasta com backup
-//!   e recarrega — sem MSI, sem admin.
+//! - Atualização do app (binário completo): plugin oficial
+//!   `tauri-plugin-updater` acionado pelo frontend
+//!   (`checkBinaryUpdate`/`installBinaryUpdate` em `desktopUpdater.ts`).
+//!   Não há mais OTA só-de-frontend: o instalador é a única via.
 //! - Migração de dados: o IndexedDB do esquema antigo (`http_tauri.localhost`)
 //!   é copiado para o novo (`http_forgeboard.localhost`) uma única vez.
 //!   localStorage não migra (espelhos rederivados do IDB no boot).
 
-use std::io::Cursor;
 use std::path::{Component, Path, PathBuf};
 use std::sync::OnceLock;
 use tauri::{AppHandle, Manager};
@@ -18,11 +18,8 @@ use tauri::{AppHandle, Manager};
 pub const SCHEME: &str = "forgeboard";
 const SEED_DIR: &str = "frontend-seed";
 const LIVE_DIR: &str = "frontend";
-const BACKUP_DIR: &str = "frontend.bak";
 const VERSION_FILE: &str = "version.json";
 const MARKER_MIGRATED: &str = ".idb-migrated";
-const MANIFEST_URL: &str =
-  "https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases/latest/download/latest.json";
 
 static FRONTEND_DIR: OnceLock<PathBuf> = OnceLock::new();
 
@@ -260,151 +257,6 @@ pub fn serve_asset(app: &AppHandle, uri_path: &str) -> (Vec<u8>, &'static str, u
   }
 }
 
-fn parse_triplet(v: &str) -> [u64; 3] {
-  let mut out = [0u64; 3];
-  for (i, part) in v.split('.').take(3).enumerate() {
-    out[i] = part.parse().unwrap_or(0);
-  }
-  out
-}
-
-/// -1/0/1 comparando `a.b.c` numericamente.
-pub fn compare_versions(a: &str, b: &str) -> i32 {
-  let (pa, pb) = (parse_triplet(a), parse_triplet(b));
-  if pa == pb {
-    0
-  } else if pa < pb {
-    -1
-  } else {
-    1
-  }
-}
-
-fn web_zip_url(version: &str) -> String {
-  format!(
-    "https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases/download/v{version}/forgeboard-web-v{version}.zip"
-  )
-}
-
-#[derive(serde::Serialize)]
-pub struct FrontendStatus {
-  pub available: bool,
-  pub version: Option<String>,
-  /// Versão do bundle nativo (para avisar de instalador novo).
-  pub bundle_version: String,
-  /// true quando o manifesto supera o bundle (mudança nativa possível).
-  pub bundle_update: bool,
-}
-
-/// Versão da interface em disco (pasta `frontend/`); cai no bundle quando ausente.
-#[tauri::command]
-pub fn frontend_version(app: AppHandle) -> String {
-  live_dir(&app)
-    .and_then(|d| read_version(&d))
-    .unwrap_or_else(|| package_version(&app))
-}
-
-/// Versão do manifesto vs. instalada (pasta) e vs. bundle (nativo).
-/// O zip (`v<versão>` + `forgeboard-web-<tag>.zip`, publicado pelo CI) é
-/// derivado por convenção em `frontend_apply`.
-#[tauri::command]
-pub async fn frontend_check(app: AppHandle) -> Result<FrontendStatus, String> {
-  let installed = live_dir(&app)
-    .and_then(|d| read_version(&d))
-    .unwrap_or_else(|| "0.0.0".to_owned());
-  let bundle = package_version(&app);
-  let resp = reqwest::get(MANIFEST_URL)
-    .await
-    .map_err(|e| format!("falha ao buscar manifesto: {e}"))?;
-  if resp.status() == reqwest::StatusCode::NOT_FOUND {
-    return Err(
-      "manifesto não encontrado (HTTP 404): confira se o repositório é público ou se a release existe".to_owned(),
-    );
-  }
-  let body = resp
-    .error_for_status()
-    .map_err(|e| format!("manifesto HTTP inválido: {e}"))?
-    .json::<serde_json::Value>()
-    .await
-    .map_err(|e| format!("manifesto inválido: {e}"))?;
-  let latest = body
-    .get("version")
-    .and_then(|v| v.as_str())
-    .unwrap_or_default();
-  if latest.is_empty() {
-    return Err("manifesto sem versão".to_owned());
-  }
-  Ok(FrontendStatus {
-    available: compare_versions(&installed, latest) < 0,
-    version: Some(latest.to_owned()),
-    bundle_update: compare_versions(&bundle, latest) < 0,
-    bundle_version: bundle,
-  })
-}
-
-/// Baixa o zip da versão, extrai para pasta temporária e troca com backup.
-/// Em erro, restaura o backup. Requer `frontend_check` prévio implícito.
-#[tauri::command]
-pub async fn frontend_apply(app: AppHandle, version: String) -> Result<(), String> {
-  let Some(root) = data_root(&app) else {
-    return Err("diretório de dados indisponível".to_owned());
-  };
-  let live = root.join(LIVE_DIR);
-  let next = root.join("frontend.next");
-  let backup = root.join(BACKUP_DIR);
-  let _ = std::fs::remove_dir_all(&next);
-
-  let url = web_zip_url(&version);
-  let bytes = reqwest::get(&url)
-    .await
-    .map_err(|e| format!("falha ao baixar: {e}"))?
-    .error_for_status()
-    .map_err(|e| format!("download HTTP inválido: {e}"))?
-    .bytes()
-    .await
-    .map_err(|e| format!("falha ao ler download: {e}"))?;
-
-  let mut archive =
-    zip::ZipArchive::new(Cursor::new(bytes)).map_err(|e| format!("zip inválido: {e}"))?;
-  for i in 0..archive.len() {
-    let mut file = archive.by_index(i).map_err(|e| format!("zip inválido: {e}"))?;
-    let Some(path) = file.enclosed_name() else {
-      continue;
-    };
-    let out = next.join(path);
-    if file.is_dir() {
-      std::fs::create_dir_all(&out).map_err(|e| format!("falha ao extrair: {e}"))?;
-    } else {
-      if let Some(parent) = out.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| format!("falha ao extrair: {e}"))?;
-      }
-      let mut target = std::fs::File::create(&out).map_err(|e| format!("falha ao extrair: {e}"))?;
-      std::io::copy(&mut file, &mut target).map_err(|e| format!("falha ao extrair: {e}"))?;
-    }
-  }
-  if !next.join("index.html").is_file() {
-    let _ = std::fs::remove_dir_all(&next);
-    return Err("pacote sem index.html".to_owned());
-  }
-
-  let _ = std::fs::remove_dir_all(&backup);
-  let had_live = live.is_dir();
-  if had_live {
-    std::fs::rename(&live, &backup).map_err(|e| format!("falha no backup: {e}"))?;
-  }
-  let swapped = std::fs::rename(&next, &live).is_ok();
-  if !swapped {
-    if had_live {
-      let _ = std::fs::rename(&backup, &live);
-    }
-    let _ = std::fs::remove_dir_all(&next);
-    return Err("falha ao trocar a pasta".to_owned());
-  }
-  write_version(&live, &version);
-  let _ = std::fs::remove_dir_all(&backup);
-  Ok(())
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -430,22 +282,6 @@ mod tests {
     assert_eq!(mime_for(Path::new("a.svg")), "image/svg+xml");
     assert_eq!(mime_for(Path::new("a.png")), "image/png");
     assert_eq!(mime_for(Path::new("a.xyz")), "application/octet-stream");
-  }
-
-  #[test]
-  fn compara_versoes() {
-    assert_eq!(compare_versions("1.5.1", "1.5.1"), 0);
-    assert_eq!(compare_versions("1.5.0", "1.5.1"), -1);
-    assert_eq!(compare_versions("1.10.0", "1.9.9"), 1);
-    assert_eq!(compare_versions("2.0", "10.0.0"), -1);
-  }
-
-  #[test]
-  fn zip_url_por_convencao() {
-    assert_eq!(
-      web_zip_url("1.5.1"),
-      "https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases/download/v1.5.1/forgeboard-web-v1.5.1.zip"
-    );
   }
 
   #[test]

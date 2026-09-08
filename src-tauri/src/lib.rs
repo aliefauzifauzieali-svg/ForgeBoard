@@ -19,11 +19,7 @@ pub fn run() {
       let response = builder.body(bytes).unwrap_or_default();
       responder.respond(response);
     })
-    .invoke_handler(tauri::generate_handler![
-      frontend::frontend_check,
-      frontend::frontend_apply,
-      frontend::frontend_version
-    ])
+    .invoke_handler(tauri::generate_handler![])
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(

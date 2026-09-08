@@ -20,21 +20,3 @@ export async function getAppVersion(): Promise<string> {
   }
   return packageVersion;
 }
-
-/**
- * Versão da interface em disco (pasta `frontend/` do desktop). É o código
- * que está RODANDO — pode ser mais nova que o bundle após update
- * incremental. Fora do Tauri, igual à versão do app.
- */
-export async function getFrontendVersion(): Promise<string> {
-  if (isTauri()) {
-    try {
-      const { invoke } = await import('@tauri-apps/api/core');
-      const v = await invoke<string>('frontend_version');
-      if (v) return v;
-    } catch {
-      /* cai no fallback abaixo */
-    }
-  }
-  return packageVersion;
-}

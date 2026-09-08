@@ -43,6 +43,11 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Fixed
 
+- Drag-and-drop no app desktop (Windows): `dragDropEnabled: false` na
+  janela principal — o handler de file-drop do Tauri revogava o IDropTarget
+  nativo do WebView2 e a página nunca recebia `dragover`/`drop` (a doc
+  oficial exige `false` p/ HTML5 DnD no Windows). Sem impacto no app: nenhum
+  listener de `tauri://drag-drop` (import é via `<input type=file>`).
 - Drop por toque no Kanban: a coluna de destino é resolvida antes de
   remover o marcador do card arrastado (solturas rápidas não caem mais na
   coluna de origem).

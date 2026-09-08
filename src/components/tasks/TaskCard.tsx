@@ -4,7 +4,7 @@ import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { isOverdue, toDateOnly } from '../../utils/date';
 import { PriorityBadge, StatusBadge, TagChip } from '../ui/Badges';
-import { useTouchDrag } from '../kanban/useTouchDrag';
+import { usePointerDrag } from '../kanban/usePointerDrag';
 
 const ORDER: Task['status'][] = ['backlog', 'in-progress', 'done'];
 
@@ -15,34 +15,27 @@ export function TaskCard({ task, projectColor }: { task: Task; projectColor?: st
   const duplicateTask = useBoardStore((s) => s.duplicateTask);
   const moveTask = useBoardStore((s) => s.moveTask);
   const allTags = useBoardStore((s) => s.tags);
-  const touch = useTouchDrag(task);
+  const drag = usePointerDrag(task);
 
   const overdue = isOverdue(task.dueDate, task.status);
   const idx = ORDER.indexOf(task.status);
 
-  const onDragStart = (e: React.DragEvent): void => {
-    e.dataTransfer.setData('text/task-id', task.id);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
   return (
     <article
       data-testid={`task-card-${task.id}`}
-      draggable
-      onDragStart={onDragStart}
-      onPointerDown={touch.handlers.onPointerDown}
-      onPointerMove={touch.handlers.onPointerMove}
-      onPointerUp={touch.handlers.onPointerUp}
-      onPointerCancel={touch.handlers.onPointerCancel}
-      onClickCapture={touch.handlers.onClickCapture}
+      onPointerDown={drag.handlers.onPointerDown}
+      onPointerMove={drag.handlers.onPointerMove}
+      onPointerUp={drag.handlers.onPointerUp}
+      onPointerCancel={drag.handlers.onPointerCancel}
+      onClickCapture={drag.handlers.onClickCapture}
       onContextMenu={(e) => {
         // No Android, o toque longo abre seleção/menu do sistema e mata o
         // gesto (pointercancel) — suprime durante o arrasto por toque.
-        if (touch.dragging) e.preventDefault();
+        if (drag.dragging) e.preventDefault();
       }}
       aria-label={`Tarefa ${task.title}. Status ${task.status}. Prioridade ${task.priority}.`}
-      style={touch.dragStyle}
-      className="group cursor-grab select-none rounded-lg border border-zinc-200 bg-white p-3 shadow-sm [-webkit-touch-callout:none] [touch-action:pan-y] transition-[transform,box-shadow,border-color] duration-200 ease-spring hover:-translate-y-px hover:border-zinc-300 hover:shadow-card focus-visible:ring-2 active:cursor-grabbing dark:border-white/[0.06] dark:bg-[#1A1A1E] dark:hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
+      style={drag.dragging ? { opacity: 0.4 } : undefined}
+      className="group cursor-grab select-none rounded-lg border border-zinc-200 bg-white p-3 shadow-sm [-webkit-touch-callout:none] [touch-action:pan-y] transition-[transform,box-shadow,border-color,opacity] duration-200 ease-spring hover:-translate-y-px hover:border-zinc-300 hover:shadow-card focus-visible:ring-2 active:cursor-grabbing dark:border-white/[0.06] dark:bg-[#1A1A1E] dark:hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
     >
       <div className="flex items-start gap-2">
         {projectColor ? (

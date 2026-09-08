@@ -79,10 +79,10 @@ test.describe('kanban com mouse (desktop)', () => {
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
     await page.mouse.down();
     await page.mouse.move(to.x + to.width / 2, to.y + 120, { steps: 16 });
-    await expect(col).toHaveClass(/border-\[var\(--accent\)\]/);
+    await expect(col).toHaveClass(/touch-drop-target/);
     await page.keyboard.press('Escape');
     await page.mouse.up();
-    await expect(col).not.toHaveClass(/border-\[var\(--accent\)\]/);
+    await expect(col).not.toHaveClass(/touch-drop-target/);
     await expect(page.getByTestId('kanban-column-backlog').getByText('Arrastar com mouse')).toBeVisible();
   });
 });

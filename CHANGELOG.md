@@ -43,6 +43,9 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Fixed
 
+- Auto-update desktop instala o binário: Configurações > Sobre oferece
+  "Baixar e instalar o app" quando o executável está atrás do `latest.json`
+  (plugin oficial, com progresso; o OTA de frontend segue para a interface).
 - Drag-and-drop no app desktop (Windows): `dragDropEnabled: false` na
   janela principal — o handler de file-drop do Tauri revogava o IDropTarget
   nativo do WebView2 e a página nunca recebia `dragover`/`drop` (a doc
@@ -51,6 +54,9 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Drop por toque no Kanban: a coluna de destino é resolvida antes de
   remover o marcador do card arrastado (solturas rápidas não caem mais na
   coluna de origem).
+- Arrasto por toque no Android: cards com seleção/callout desativados e
+  `touch-action: pan-y` (o menu do sistema no toque longo matava o gesto
+  com `pointercancel`); menu de contexto suprimido durante o arrasto.
 - Teste E2E (Pixel 7) do arrasto por toque: long-press move a tarefa de
   coluna; toque rápido com movimento não inicia arrasto.
 

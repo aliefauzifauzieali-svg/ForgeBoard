@@ -8,7 +8,7 @@ sintéticos) e `e2e/kanban-mouse.spec.ts`.
 
 ## Pré-requisito
 
-- APK da release ≥ 1.6.4 (`forgeboard-v1.6.4.apk` em
+- APK da release ≥ 1.6.5 (`forgeboard-v1.6.5.apk` em
   https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases) instalado
   no celular (versões anteriores usam o sistema antigo de arrasto).
 

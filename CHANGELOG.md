@@ -11,6 +11,9 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Drag-and-drop universal por Pointer Events no Kanban: caminho único para
   mouse e toque, com fantasma do cartão, coluna alvo por geometria,
   autoscroll e Esc para cancelar (substitui HTML5 DnD + hook de toque).
+- Overlay de captura durante o arrasto (`touch-action: none`, sem seleção
+  nem menu do sistema, trava de scroll): firewall contra o sequestro de
+  gestos no WebView Android.
 
 - Kanban por toque: segurar o cartão (~450ms) inicia o arrasto entre colunas,
   com destaque da coluna de destino, autoscroll nas bordas e Esc para

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Pencil, Plus, RefreshCw, Settings2, Trash2, Upload } from 'lucide-react';
+import { BellOff, BellRing, Download, Info, Pencil, Plus, RefreshCw, Settings2, Trash2, Upload } from 'lucide-react';
 import { PROJECT_COLORS } from '../../utils/constants';
 import { toDateTime } from '../../utils/date';
 import { cn } from '../../utils/core';
@@ -290,10 +290,35 @@ function NotificationsSection(): React.JSX.Element {
           <span className="text-zinc-600 dark:text-zinc-400">de antecedência</span>
         </div>
       ) : null}
-      {permission === 'denied' || note ? (
-        <p role={permission === 'denied' ? 'alert' : 'status'} className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-          {note || 'Notificações do sistema bloqueadas neste navegador.'}
-        </p>
+      {permission === 'denied' ? (
+        <div
+          role="alert"
+          className="mt-3 flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5"
+        >
+          <BellOff size={16} aria-hidden className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-200">Notificações bloqueadas</p>
+            <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300/90">
+              O navegador/WebView negou a permissão. Libere nas configurações do site e tente de novo.
+            </p>
+            <button
+              type="button"
+              className="btn-ghost mt-2 text-xs"
+              onClick={() => void toggle(true)}
+            >
+              <BellRing size={14} aria-hidden />
+              Permitir notificações
+            </button>
+          </div>
+        </div>
+      ) : note ? (
+        <div
+          role="status"
+          className="mt-3 flex items-start gap-2.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]"
+        >
+          <Info size={16} aria-hidden className="mt-0.5 shrink-0 text-zinc-500" />
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">{note}</p>
+        </div>
       ) : null}
     </div>
   );

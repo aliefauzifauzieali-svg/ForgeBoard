@@ -9,8 +9,9 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 ### Added
 
 - Seção Manutenção nas Configurações: "Reinstalar o app" (desktop, com
-  progresso e confirmação) e "Restaurar padrão" (todos, apaga dados locais
-  com confirmação e aviso).
+  progresso e confirmação), "Limpar dados do app" (mantém backups),
+  "Restaurar fábrica" (apaga tudo, confirmação dupla) e "Limpar cache"
+  (sessão + Cache Storage, sem apagar dados).
 - Drag-and-drop universal por Pointer Events no Kanban: caminho único para
   mouse e toque, com fantasma do cartão, coluna alvo por geometria,
   autoscroll e Esc para cancelar (substitui HTML5 DnD + hook de toque).
@@ -60,6 +61,10 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Fixed
 
+- Instalador Windows sempre com a interface atual: seed repovoa a pasta
+  quando o bundle é mais novo que o instalado (antes, `KeepNewer` mantinha
+  UI velha para sempre).
+- Dropdowns (`select`) com seta própria e opções escuras no dark mode.
 - Toggle das Configurações: pino proporcional (`translate-x-full`, sem px
   fixo) — alinhado em qualquer fonte-raiz/zoom, sem overflow.
 - Layout das Configurações: status de permissão em bloco de aviso âmbar com

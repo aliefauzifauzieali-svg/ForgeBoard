@@ -8,6 +8,10 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Drag-and-drop universal por Pointer Events no Kanban: caminho único para
+  mouse e toque, com fantasma do cartão, coluna alvo por geometria,
+  autoscroll e Esc para cancelar (substitui HTML5 DnD + hook de toque).
+
 - Kanban por toque: segurar o cartão (~450ms) inicia o arrasto entre colunas,
   com destaque da coluna de destino, autoscroll nas bordas e Esc para
   cancelar; botões Mover de cada cartão seguem como alternativa.
@@ -41,11 +45,18 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
   flutuante com indicador de ativo; inputs com glow de foco na cor de
   destaque; botões de tema/destaque com microinterações.
 
+### Removed
+
+- Updater antigo só-de-interface no desktop (`frontend_check` /
+  `frontend_apply` e comandos Rust): atualização agora é só via instalador
+  oficial (plugin `tauri-plugin-updater`); Sobre mostra só a versão
+  instalada.
+
 ### Fixed
 
 - Auto-update desktop instala o binário: Configurações > Sobre oferece
   "Baixar e instalar o app" quando o executável está atrás do `latest.json`
-  (plugin oficial, com progresso; o OTA de frontend segue para a interface).
+  (plugin oficial, com progresso).
 - Drag-and-drop no app desktop (Windows): `dragDropEnabled: false` na
   janela principal — o handler de file-drop do Tauri revogava o IDropTarget
   nativo do WebView2 e a página nunca recebia `dragover`/`drop` (a doc

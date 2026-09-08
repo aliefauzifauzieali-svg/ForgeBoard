@@ -23,11 +23,15 @@ export async function checkBinaryUpdate(): Promise<BinaryUpdateInfo> {
  * Baixa e instala o novo binário (NSIS/MSI) e encerra o app para o
  * instalador assumir (no Windows ele reinicia o app). Requer confirmação
  * explícita da UI. Progresso em % quando o tamanho é conhecido.
+ * Com `reinstall: true`, baixa e aplica mesmo sem versão nova (reparo).
  */
-export async function installBinaryUpdate(onProgress?: (pct: number) => void): Promise<void> {
+export async function installBinaryUpdate(
+  onProgress?: (pct: number) => void,
+  opts?: { reinstall?: boolean },
+): Promise<void> {
   if (!isTauri()) throw new Error('Atualização do aplicativo disponível só no Tauri');
   const { check } = await import('@tauri-apps/plugin-updater');
-  const update = await check();
+  const update = await check(opts?.reinstall === true ? { allowDowngrades: true } : undefined);
   if (!update) return;
   let total = 0;
   let received = 0;

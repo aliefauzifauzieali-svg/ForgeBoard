@@ -12,7 +12,7 @@ import {
   readQuarantine,
   schedulePrefsPersist,
 } from '../storage/boardStorage';
-import { dangerouslyDeleteDatabase, getKV, KV_BOARD, KV_PREFERENCES, setKV } from '../storage/idb';
+import { clearLocalData, dangerouslyDeleteDatabase, getKV, KV_BOARD, KV_PREFERENCES, setKV } from '../storage/idb';
 import { STORAGE_KEY } from '../utils/constants';
 import type { BoardData } from '../types';
 
@@ -166,5 +166,17 @@ describe('preferências', () => {
     const initial = await loadInitialData();
     expect(initial.preferences.theme).toBe('system');
     expect(initial.preferences.lastView).toEqual({ kind: 'dashboard' });
+  });
+});
+
+describe('clearLocalData (reset de fábrica)', () => {
+  beforeEach(reset);
+
+  it('limpa localStorage e banco', async () => {
+    window.localStorage.setItem('forgeboard:theme', 'dark');
+    await setKV(KV_BOARD, BOARD);
+    await clearLocalData();
+    expect(window.localStorage.length).toBe(0);
+    await expect(getKV(KV_BOARD)).resolves.toBeNull();
   });
 });

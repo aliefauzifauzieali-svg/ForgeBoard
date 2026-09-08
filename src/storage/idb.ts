@@ -112,9 +112,22 @@ export async function clearAllData(): Promise<void> {
   await tx.done;
 }
 
-/** Apaga o banco inteiro (testes + reset total). Fecha a conexão antes. */
-export async function dangerouslyDeleteDatabase(): Promise<void> {
+/** Reset de fábrica (pós-confirmação na UI): limpa espelhos + banco todo. */
+export async function clearLocalData(): Promise<void> {
   try {
+    window.localStorage.clear();
+  } catch {
+    /* ignore */
+  }
+  try {
+    await dangerouslyDeleteDatabase();
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Apaga o banco inteiro (testes + reset total). Fecha a conexão antes. */
+export async function dangerouslyDeleteDatabase(): Promise<void> {  try {
     (await dbPromise?.catch(() => null))?.close();
   } catch {
     /* ignore */

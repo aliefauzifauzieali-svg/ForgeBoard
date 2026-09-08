@@ -102,6 +102,18 @@ describe('desktopUpdater (Tauri simulado)', () => {
     expect(pct).toContain(40);
     expect(pct[pct.length - 1]).toBe(100);
   });
+
+  it('install com reinstall permite mesma versão', async () => {
+    const check = await updaterCheckMock();
+    check.mockClear();
+    const downloadAndInstall = vi.fn(async (onEvent: (ev: unknown) => void) => {
+      onEvent({ event: 'Finished' });
+    });
+    check.mockResolvedValueOnce({ version: '1.6.2', currentVersion: '1.6.2', downloadAndInstall });
+    await installBinaryUpdate(undefined, { reinstall: true });
+    expect(check).toHaveBeenCalledWith({ allowDowngrades: true });
+    expect(downloadAndInstall).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('androidUpdater (web)', () => {

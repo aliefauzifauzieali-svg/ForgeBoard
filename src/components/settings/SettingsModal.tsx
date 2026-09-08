@@ -576,6 +576,98 @@ function AboutSection(): React.JSX.Element {
   );
 }
 
+/** Manutenção: reinstalar o app (desktop) e reset de fábrica (todos). */
+function MaintenanceSection(): React.JSX.Element {
+  const askConfirm = useUIStore((s) => s.askConfirm);
+  const pushToast = useUIStore((s) => s.pushToast);
+  const [reinstalling, setReinstalling] = useState(false);
+  const [reinstallProgress, setReinstallProgress] = useState(0);
+  const [reinstallError, setReinstallError] = useState('');
+
+  const reinstall = async (): Promise<void> => {
+    setReinstalling(true);
+    setReinstallError('');
+    setReinstallProgress(0);
+    try {
+      await installBinaryUpdate((pct) => setReinstallProgress(pct), { reinstall: true });
+      pushToast({ kind: 'success', message: 'Aplicativo reinstalado — o instalador vai reiniciar o app.' });
+    } catch (err) {
+      setReinstalling(false);
+      setReinstallError(err instanceof Error ? err.message : 'Falha ao reinstalar.');
+    }
+  };
+
+  const factoryReset = async (): Promise<void> => {
+    const { clearLocalData } = await import('../../storage/idb');
+    await clearLocalData();
+    window.location.reload();
+  };
+
+  return (
+    <div className="space-y-3">
+      {isTauri() ? (
+        <div>
+          <p className="text-sm font-semibold">Reinstalar o app</p>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+            Baixa o instalador mais recente e reinstala (resolve problemas sem desinstalar manualmente).
+          </p>
+          {reinstalling ? (
+            <div className="mt-2" role="progressbar" aria-valuenow={reinstallProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Reinstalando o aplicativo">
+              <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <div className="h-full bg-[var(--accent)] transition-[width]" style={{ width: `${reinstallProgress}%` }} />
+              </div>
+              <p className="mt-1 text-xs tabular-nums text-zinc-600 dark:text-zinc-400">{reinstallProgress}%</p>
+            </div>
+          ) : null}
+          {reinstallError ? (
+            <p role="alert" className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
+              {reinstallError}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="btn-ghost mt-2 text-xs"
+            disabled={reinstalling}
+            onClick={() =>
+              askConfirm({
+                title: 'Reinstalar o app',
+                description: 'Baixa o instalador mais recente e reinstala o aplicativo. Seus dados são mantidos.',
+                confirmLabel: 'Reinstalar',
+                action: () => void reinstall(),
+              })
+            }
+          >
+            <RefreshCw size={14} aria-hidden />
+            {reinstalling ? 'Reinstalando…' : 'Reinstalar o app'}
+          </button>
+        </div>
+      ) : null}
+      <div>
+        <p className="text-sm font-semibold">Restaurar padrão</p>
+        <p className="mt-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+          Apaga TODOS os dados deste dispositivo (projetos, tarefas, etiquetas, backups e preferências). Exporte um
+          backup antes, se quiser guardar.
+        </p>
+        <button
+          type="button"
+          className="btn-ghost mt-2 text-xs hover:!text-red-600"
+          onClick={() =>
+            askConfirm({
+              title: 'Restaurar padrão',
+              description: 'Todos os dados serão apagados permanentemente e o app vai recomeçar vazio. Deseja continuar?',
+              confirmLabel: 'Apagar tudo',
+              action: () => void factoryReset(),
+            })
+          }
+        >
+          <Trash2 size={14} aria-hidden />
+          Restaurar padrão
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Configurações: aparência, atalhos, notificações, etiquetas e backups. */
 export function SettingsModal(): React.JSX.Element {
   const open = useUIStore((s) => s.settingsOpen);
@@ -676,6 +768,10 @@ export function SettingsModal(): React.JSX.Element {
 
         <Section title="Backup e restauração">
           <BackupSection />
+        </Section>
+
+        <Section title="Manutenção">
+          <MaintenanceSection />
         </Section>
 
         <p className="flex items-center gap-1.5 text-[11px] text-zinc-500">

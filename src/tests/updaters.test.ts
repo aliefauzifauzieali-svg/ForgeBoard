@@ -7,7 +7,7 @@ import {
   normalizeBody,
   resolveAndroidUpdate,
 } from '../services/androidUpdater';
-import { checkDesktopUpdate, installDesktopUpdate } from '../services/desktopUpdater';
+import { checkBinaryUpdate, checkDesktopUpdate, installBinaryUpdate, installDesktopUpdate } from '../services/desktopUpdater';
 import { RELEASES_URL, getAppVersion } from '../services/appInfo';
 import { isTauri } from '../utils/platform';
 import { ANDROID_UPDATE_URL } from '../services/updateServer';
@@ -36,6 +36,12 @@ describe('updateServer', () => {
 });
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
+vi.mock('@tauri-apps/plugin-updater', () => ({ check: vi.fn() }));
+
+async function updaterCheckMock(): Promise<ReturnType<typeof vi.fn>> {
+  const mod = (await import('@tauri-apps/plugin-updater')) as unknown as { check: ReturnType<typeof vi.fn> };
+  return mod.check;
+}
 
 const WIN = window as unknown as Record<string, unknown>;
 const SAVED_TAURI = Object.getOwnPropertyDescriptor(window, '__TAURI_INTERNALS__');
@@ -92,6 +98,64 @@ describe('desktopUpdater (Tauri simulado)', () => {
     invoke.mockResolvedValueOnce({ available: false, version: null, bundle_update: false, bundle_version: '1.5.1' });
     await installDesktopUpdate();
     expect(invoke).toHaveBeenCalledWith('frontend_check');
+  });
+});
+
+describe('binaryUpdater (web)', () => {
+  it('check fora do Tauri não há update', async () => {
+    await expect(checkBinaryUpdate()).resolves.toEqual({ available: false, version: null, currentVersion: null });
+  });
+
+  it('install fora do Tauri lança', async () => {
+    await expect(installBinaryUpdate()).rejects.toThrow(/só no Tauri/);
+  });
+});
+
+describe('binaryUpdater (Tauri simulado)', () => {
+  beforeEach(() => {
+    WIN.__TAURI_INTERNALS__ = {};
+  });
+
+  afterEach(() => {
+    if (SAVED_TAURI !== undefined) Object.defineProperty(window, '__TAURI_INTERNALS__', SAVED_TAURI);
+    else delete WIN.__TAURI_INTERNALS__;
+  });
+
+  it('check sem update retorna indisponível', async () => {
+    const check = await updaterCheckMock();
+    check.mockResolvedValueOnce(null);
+    await expect(checkBinaryUpdate()).resolves.toEqual({ available: false, version: null, currentVersion: null });
+  });
+
+  it('check com update repassa versão e atual', async () => {
+    const check = await updaterCheckMock();
+    check.mockResolvedValueOnce({ version: '9.9.9', currentVersion: '1.6.2' });
+    await expect(checkBinaryUpdate()).resolves.toEqual({ available: true, version: '9.9.9', currentVersion: '1.6.2' });
+  });
+
+  it('install sem update não baixa nada', async () => {
+    const check = await updaterCheckMock();
+    check.mockClear();
+    check.mockResolvedValueOnce(null);
+    await installBinaryUpdate();
+    expect(check).toHaveBeenCalledTimes(1);
+  });
+
+  it('install baixa com progresso acumulado e 100 no fim', async () => {
+    const check = await updaterCheckMock();
+    const downloadAndInstall = vi.fn(async (onEvent: (ev: unknown) => void) => {
+      onEvent({ event: 'Started', data: { contentLength: 1000 } });
+      onEvent({ event: 'Progress', data: { chunkLength: 400 } });
+      onEvent({ event: 'Progress', data: { chunkLength: 600 } });
+      onEvent({ event: 'Finished' });
+    });
+    check.mockResolvedValueOnce({ version: '9.9.9', currentVersion: '1.6.2', downloadAndInstall });
+    const pct: number[] = [];
+    await installBinaryUpdate((p) => pct.push(p));
+    expect(downloadAndInstall).toHaveBeenCalledTimes(1);
+    expect(pct[0]).toBe(0);
+    expect(pct).toContain(40);
+    expect(pct[pct.length - 1]).toBe(100);
   });
 });
 

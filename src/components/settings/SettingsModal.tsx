@@ -4,7 +4,7 @@ import { PROJECT_COLORS } from '../../utils/constants';
 import { toDateTime } from '../../utils/date';
 import { cn } from '../../utils/core';
 import { getNotificationPermission, requestNotificationPermission, type NotifyPermission } from '../../services/notifications';
-import { checkDesktopUpdate, installDesktopUpdate } from '../../services/desktopUpdater';
+import { checkDesktopUpdate, installBinaryUpdate, installDesktopUpdate } from '../../services/desktopUpdater';
 import { checkAndroidUpdate, installAndroidUpdate, isNativeAndroid } from '../../services/androidUpdater';
 import { RELEASES_URL, getAppVersion, getFrontendVersion } from '../../services/appInfo';
 import { isTauri } from '../../utils/platform';
@@ -307,6 +307,9 @@ function UpdatesSection(): React.JSX.Element {
   const [bundleUpdate, setBundleUpdate] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [binState, setBinState] = useState<'idle' | 'installing' | 'error'>('idle');
+  const [binProgress, setBinProgress] = useState(0);
+  const [binError, setBinError] = useState('');
 
   // Verificação automática silenciosa ao abrir o app (uma vez por sessão).
   useEffect(() => {
@@ -347,6 +350,19 @@ function UpdatesSection(): React.JSX.Element {
     }
   };
 
+  const installBin = async (): Promise<void> => {
+    setBinState('installing');
+    setBinError('');
+    setBinProgress(0);
+    try {
+      await installBinaryUpdate((pct) => setBinProgress(pct));
+      pushToast({ kind: 'success', message: 'Aplicativo atualizado — o instalador vai reiniciar o app.' });
+    } catch (err) {
+      setBinState('error');
+      setBinError(err instanceof Error ? err.message : 'Falha ao instalar.');
+    }
+  };
+
   const install = async (): Promise<void> => {
     setState('installing');
     setError('');
@@ -369,10 +385,36 @@ function UpdatesSection(): React.JSX.Element {
             : 'Busca novas versões no GitHub Releases.'}
       </p>
       {bundleUpdate && state !== 'available' ? (
-        <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-          Há instalador novo (.exe/.msi) na página de releases — necessário só
-          quando o app nativo muda.
-        </p>
+        <div className="mt-2 rounded-xl border border-zinc-200 px-2.5 py-2 dark:border-zinc-800">
+          <p className="text-xs font-semibold">
+            Nova versão do aplicativo{version ? ` (${version})` : ''} — atualiza o binário.
+          </p>
+          <p className="mt-0.5 text-[11px] text-zinc-600 dark:text-zinc-400">
+            Baixa o instalador e aplica ao sair (o frontend pode já estar atualizado).
+          </p>
+          {binState === 'installing' ? (
+            <div className="mt-2" role="progressbar" aria-valuenow={binProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Baixando nova versão do aplicativo">
+              <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <div className="h-full bg-[var(--accent)] transition-[width]" style={{ width: `${binProgress}%` }} />
+              </div>
+              <p className="mt-1 text-xs tabular-nums text-zinc-600 dark:text-zinc-400">{binProgress}%</p>
+            </div>
+          ) : null}
+          {binState === 'error' ? (
+            <p role="alert" className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
+              {binError}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="btn-primary mt-2 text-xs"
+            disabled={binState === 'installing'}
+            onClick={() => void installBin()}
+          >
+            <Download size={14} aria-hidden />
+            {binState === 'installing' ? 'Baixando…' : 'Baixar e instalar o app'}
+          </button>
+        </div>
       ) : null}
       {state === 'installing' ? (
         <div className="mt-2" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Baixando atualização">

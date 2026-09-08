@@ -173,7 +173,7 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
         </label>
         <select
           id="export-format"
-          className="input min-w-0 flex-1 !px-2 !py-2 text-xs"
+          className="input min-w-0 flex-1 !py-2 text-xs"
           value={format}
           onChange={(e) => setFormat(e.target.value as ExportFormat)}
           aria-label="Formato de exportação"
@@ -189,7 +189,7 @@ export function DataButtons({ onDone }: { onDone?: () => void }): React.JSX.Elem
         </label>
         <select
           id="csv-target"
-          className="input min-w-0 flex-1 !px-2 !py-2 text-xs"
+          className="input min-w-0 flex-1 !py-2 text-xs"
           value={target}
           onChange={(e) => setTargetId(e.target.value)}
           aria-label="Projeto de destino do CSV"

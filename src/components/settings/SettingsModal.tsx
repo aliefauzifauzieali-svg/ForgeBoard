@@ -622,9 +622,21 @@ function MaintenanceSection(): React.JSX.Element {
     }
   };
 
+  const clearData = async (): Promise<void> => {
+    const { clearAppDataPreservingBackups } = await import('../../storage/idb');
+    await clearAppDataPreservingBackups();
+    window.location.reload();
+  };
+
   const factoryReset = async (): Promise<void> => {
     const { clearLocalData } = await import('../../storage/idb');
     await clearLocalData();
+    window.location.reload();
+  };
+
+  const clearCache = async (): Promise<void> => {
+    const { clearAppCache } = await import('../../services/cache');
+    await clearAppCache();
     window.location.reload();
   };
 
@@ -668,25 +680,77 @@ function MaintenanceSection(): React.JSX.Element {
         </div>
       ) : null}
       <div>
-        <p className="text-sm font-semibold">Restaurar padrão</p>
-        <p className="mt-0.5 text-xs font-medium text-red-600 dark:text-red-400">
-          Apaga TODOS os dados deste dispositivo (projetos, tarefas, etiquetas, backups e preferências). Exporte um
-          backup antes, se quiser guardar.
+        <p className="text-sm font-semibold">Limpar dados do app</p>
+        <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+          Apaga projetos, tarefas, etiquetas, preferências e histórico, mas <strong>MANTÉM os backups salvos</strong>.
         </p>
         <button
           type="button"
           className="btn-ghost mt-2 text-xs hover:!text-red-600"
           onClick={() =>
             askConfirm({
-              title: 'Restaurar padrão',
-              description: 'Todos os dados serão apagados permanentemente e o app vai recomeçar vazio. Deseja continuar?',
-              confirmLabel: 'Apagar tudo',
-              action: () => void factoryReset(),
+              title: 'Limpar dados do app',
+              description: 'Os dados do app serão apagados, mas os backups salvos serão mantidos. Deseja continuar?',
+              confirmLabel: 'Limpar dados',
+              action: () => void clearData(),
             })
           }
         >
           <Trash2 size={14} aria-hidden />
-          Restaurar padrão
+          Limpar dados do app
+        </button>
+      </div>
+      <div>
+        <p className="text-sm font-semibold">Restaurar fábrica</p>
+        <p className="mt-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+          Apaga TUDO deste dispositivo, incluindo os backups salvos. Exporte um backup antes, se quiser guardar.
+        </p>
+        <button
+          type="button"
+          className="btn-ghost mt-2 text-xs hover:!text-red-600"
+          onClick={() =>
+            askConfirm({
+              title: 'Restaurar fábrica',
+              description: 'Todos os dados, incluindo backups, serão apagados permanentemente. Deseja continuar?',
+              confirmLabel: 'Continuar',
+              // Adiado: o ConfirmDialog fecha o atual logo após a ação;
+              // sem o timeout, o segundo diálogo morreria junto.
+              action: () =>
+                window.setTimeout(() => {
+                  askConfirm({
+                    title: 'Confirmar restauração',
+                    description: 'Última chance: tudo será apagado e o app vai recomeçar vazio. Confirmar?',
+                    confirmLabel: 'Apagar tudo',
+                    action: () => void factoryReset(),
+                  });
+                }, 50),
+            })
+          }
+        >
+          <Trash2 size={14} aria-hidden />
+          Restaurar fábrica
+        </button>
+      </div>
+      <div>
+        <p className="text-sm font-semibold">Limpar cache</p>
+        <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+          Limpa arquivos temporários (sessão e cache) sem apagar dados. Útil se a interface parecer desatualizada.
+          Requer internet para recarregar.
+        </p>
+        <button
+          type="button"
+          className="btn-ghost mt-2 text-xs"
+          onClick={() =>
+            askConfirm({
+              title: 'Limpar cache',
+              description: 'Os arquivos temporários serão removidos e o app vai recarregar. Seus dados serão mantidos.',
+              confirmLabel: 'Limpar cache',
+              action: () => void clearCache(),
+            })
+          }
+        >
+          <RefreshCw size={14} aria-hidden />
+          Limpar cache
         </button>
       </div>
     </div>

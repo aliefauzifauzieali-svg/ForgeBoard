@@ -12,7 +12,7 @@ import {
   readQuarantine,
   schedulePrefsPersist,
 } from '../storage/boardStorage';
-import { clearLocalData, dangerouslyDeleteDatabase, getKV, KV_BOARD, KV_PREFERENCES, setKV } from '../storage/idb';
+import { clearAppDataPreservingBackups, clearLocalData, dangerouslyDeleteDatabase, getBackup, getKV, KV_BOARD, KV_PREFERENCES, putBackup, setKV } from '../storage/idb';
 import { STORAGE_KEY } from '../utils/constants';
 import type { BoardData } from '../types';
 
@@ -178,5 +178,17 @@ describe('clearLocalData (reset de fábrica)', () => {
     await clearLocalData();
     expect(window.localStorage.length).toBe(0);
     await expect(getKV(KV_BOARD)).resolves.toBeNull();
+  });
+});
+
+describe('clearAppDataPreservingBackups', () => {
+  beforeEach(reset);
+
+  it('limpa board e espelhos mas mantém backups', async () => {
+    await setKV(KV_BOARD, BOARD);
+    await putBackup({ id: 'b1', createdAt: '2026-01-01T00:00:00.000Z', reason: 'manual', snapshot: BOARD });
+    await clearAppDataPreservingBackups();
+    await expect(getKV(KV_BOARD)).resolves.toBeNull();
+    await expect(getBackup('b1')).resolves.toMatchObject({ id: 'b1' });
   });
 });

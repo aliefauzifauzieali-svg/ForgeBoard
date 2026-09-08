@@ -136,35 +136,53 @@ fn profile_dir(app: &AppHandle) -> Option<PathBuf> {
 
 /// Decisão de seed: nunca apaga pasta mais nova (é assim que updates
 /// incrementais sobrevivem a reinícios). Só popula quando falta tudo.
+/// Exceção: bundle MAIS NOVO que a pasta sempre vence (instalador novo
+/// traz interface nova; sem isso o app reabriria a UI velha para sempre).
 #[derive(Debug, PartialEq, Eq)]
 enum SeedDecision {
   /// Pasta íntegra na versão corrente: não toca.
   UpToDate,
   /// Sem `version.json` ou sem `index.html`: popula dos recursos.
   SeedFresh,
-  /// Pasta válida de outra versão (ex.: update aplicado): preserva.
+  /// Bundle mais novo que a pasta (upgrade via instalador): repovoa.
+  UpgradeBundle,
+  /// Pasta válida de outra versão (ex.: downgrade): preserva.
   KeepNewer,
 }
 
+fn cmp_triplet(a: &str, b: &str) -> std::cmp::Ordering {
+  let triplet = |v: &str| -> [u64; 3] {
+    let mut out = [0u64; 3];
+    for (i, part) in v.split('.').take(3).enumerate() {
+      out[i] = part.parse().unwrap_or(0);
+    }
+    out
+  };
+  triplet(a).cmp(&triplet(b))
+}
+
 fn decide_seed(installed: Option<&str>, pkg: &str, has_index: bool) -> SeedDecision {
+  use std::cmp::Ordering;
   if !has_index {
     return SeedDecision::SeedFresh;
   }
   match installed {
     None => SeedDecision::SeedFresh,
     Some(v) if v == pkg => SeedDecision::UpToDate,
+    Some(v) if cmp_triplet(v, pkg) == Ordering::Less => SeedDecision::UpgradeBundle,
     Some(_) => SeedDecision::KeepNewer,
   }
 }
 
 /// Garante a pasta do frontend populada. Idempotente e sem downgrade:
-/// uma pasta válida nunca é apagada (updates sobrevivem ao reboot).
+/// uma pasta válida nunca é apagada (updates sobrevivem ao reboot), mas
+/// um bundle mais novo sempre repovoa (upgrade via instalador vence).
 pub fn ensure_frontend(app: &AppHandle) -> Option<PathBuf> {
   let live = live_dir(app)?;
   let pkg = package_version(app);
   let has_index = live.join("index.html").is_file();
   match decide_seed(read_version(&live).as_deref(), pkg.as_str(), has_index) {
-    SeedDecision::SeedFresh => {
+    SeedDecision::SeedFresh | SeedDecision::UpgradeBundle => {
       if let Some(seed) = seed_dir(app) {
         let _ = std::fs::remove_dir_all(&live);
         if copy_dir_recursive(&seed, &live).is_ok() {
@@ -289,9 +307,11 @@ mod tests {
     use SeedDecision::*;
     // Pasta íntegra na versão do bundle: não toca.
     assert_eq!(decide_seed(Some("1.5.2"), "1.5.2", true), UpToDate);
-    // Pasta de update aplicado (mais nova que o bundle): PRESERVA.
-    // (Era o bug: reabrir o app apagava o update e oferecia de novo.)
-    assert_eq!(decide_seed(Some("1.5.4"), "1.5.2", true), KeepNewer);
+    // Bundle mais novo que a pasta (upgrade via instalador): repovoa.
+    // (Era o bug: instalar .exe/.msi novo mantinha a interface velha.)
+    assert_eq!(decide_seed(Some("1.5.2"), "1.6.9", true), UpgradeBundle);
+    // Pasta mais nova que o bundle (downgrade): PRESERVA.
+    assert_eq!(decide_seed(Some("1.6.9"), "1.5.2", true), KeepNewer);
     // Sem version.json ou sem index.html: popula do zero.
     assert_eq!(decide_seed(None, "1.5.2", true), SeedFresh);
     assert_eq!(decide_seed(Some("1.5.2"), "1.5.2", false), SeedFresh);

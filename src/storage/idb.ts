@@ -126,6 +126,28 @@ export async function clearLocalData(): Promise<void> {
   }
 }
 
+/**
+ * Limpa os dados do app PRESERVANDO backups: esvazia `kv` (board,
+ * preferências, notas) + `activity` e os espelhos, mas mantém o store
+ * `backups` intacto.
+ */
+export async function clearAppDataPreservingBackups(): Promise<void> {
+  try {
+    window.localStorage.clear();
+  } catch {
+    /* ignore */
+  }
+  try {
+    const db = await getDB();
+    const tx = db.transaction(['kv', 'activity'], 'readwrite');
+    await tx.objectStore('kv').clear();
+    await tx.objectStore('activity').clear();
+    await tx.done;
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Apaga o banco inteiro (testes + reset total). Fecha a conexão antes. */
 export async function dangerouslyDeleteDatabase(): Promise<void> {  try {
     (await dbPromise?.catch(() => null))?.close();

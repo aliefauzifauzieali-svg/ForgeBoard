@@ -111,6 +111,17 @@ Gates antes de commit/push: typecheck, lint, testes relevantes (ou suite),
   falhar lá — verifique ratios reais (axe dump com `fgColor/bgColor`), não chute.
 - Falha `color-contrast` em elemento ok? Cheque `:hover` sob o cursor do
   Playwright + animações não cobertas pelo helper do axe.
+- DnD do Kanban morto SÓ no app desktop (navegador ok)? É o
+  `dragDropEnabled` (padrão true): o wry revoga o IDropTarget nativo do
+  WebView2 (`RevokeDragDrop` + alvo só-arquivos em
+  `wry/src/webview2/drag_drop.rs`) e a página nunca recebe `dragover`/`drop`
+  (docs oficiais exigem `false` p/ HTML5 DnD no Windows). O app não usa
+  file-drop (zero listeners `tauri://drag-drop`), então a janela principal
+  tem `"dragDropEnabled": false` — NÃO reative sem reler isso.
+- Para dirigir o app real via CDP:
+  `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9223` +
+  `node scripts/cdp-kanban-check.mjs 9223` (arrasto real no WebView2 com
+  contadores de eventos; Playwright não roda WebView2 no CI).
 
 ## Pendências conhecidas (não bloqueiam)
 

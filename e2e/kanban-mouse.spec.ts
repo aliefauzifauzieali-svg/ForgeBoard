@@ -85,4 +85,19 @@ test.describe('kanban com mouse (desktop)', () => {
     await expect(col).not.toHaveClass(/touch-drop-target/);
     await expect(page.getByTestId('kanban-column-backlog').getByText('Arrastar com mouse')).toBeVisible();
   });
+
+  test('overlay e fantasma são removidos após soltar (cliques voltam)', async ({ page }) => {
+    await mouseDragCard(page, 'task-card-t1', 'kanban-column-in-progress');
+    await expect(page.getByTestId('kanban-column-in-progress').getByText('Arrastar com mouse')).toBeVisible();
+    const leftover = await page.evaluate(() => ({
+      overlays: document.querySelectorAll('[data-drag-overlay]').length,
+      ghosts: Array.from(document.querySelectorAll('article[aria-hidden="true"]')).length,
+      bodyTouchAction: document.body.style.touchAction,
+      bodyUserSelect: document.body.style.userSelect,
+    }));
+    expect(leftover).toEqual({ overlays: 0, ghosts: 0, bodyTouchAction: '', bodyUserSelect: '' });
+    // A UI segue interativa: mover pelos botões funciona após o arrasto.
+    await page.getByRole('button', { name: 'Mover Arrastar com mouse para a próxima coluna' }).click();
+    await expect(page.getByTestId('kanban-column-done').getByText('Arrastar com mouse')).toBeVisible();
+  });
 });

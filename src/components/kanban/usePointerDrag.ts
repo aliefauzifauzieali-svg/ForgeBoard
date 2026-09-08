@@ -57,7 +57,10 @@ function clearColumnGlow(): void {
  *   card preserva a rolagem vertical nativa.
  * - Um fantasma (clone fixo, sem `data-testid`) segue o cursor/dedo via
  *   `transform` direto no DOM (sem re-render por movimento); a origem fica
- *   esmaecida. Soltura fora de coluna = sem-op. Esc cancela.
+ *   esmaecida. Ao confirmar, um overlay transparente cobre a tela com
+ *   `touch-action: none` (firewall contra scroll/seleção/menu do sistema no
+ *   Android) e trava `touchmove` não-passiva; tudo é removido na soltura.
+ *   Soltura fora de coluna = sem-op. Esc cancela.
  * - Botões Mover seguem como fallback (não removidos).
  */
 export function usePointerDrag(task: Task): {
@@ -80,6 +83,8 @@ export function usePointerDrag(task: Task): {
   const raf = useRef(0);
   const cardEl = useRef<HTMLElement | null>(null);
   const ghostEl = useRef<HTMLElement | null>(null);
+  const overlayEl = useRef<HTMLElement | null>(null);
+  const bodyPrev = useRef({ touchAction: '', userSelect: '', touchCallout: '' });
   const stateRef = useRef({ id: task.id, status: task.status });
   useEffect(() => {
     stateRef.current = { id: task.id, status: task.status };
@@ -131,6 +136,45 @@ export function usePointerDrag(task: Task): {
     ghostEl.current = null;
   }, []);
 
+  /**
+   * Overlay de captura (só durante o arrasto): cobre a tela com
+   * `touch-action: none` e trava seleção/callout. No Android WebView, o
+   * gesto nativo (scroll, seleção, menu, pull-to-refresh) é decidido pelo
+   * elemento sob o dedo — com o overlay no topo, o sistema não tem o que
+   * sequestrar e o `pointercancel` não chega. Eventos borbulham até a
+   * janela, onde os listeners já instalados os tratam.
+   */
+  const showOverlay = useCallback((): void => {
+    const body = document.body;
+    bodyPrev.current = {
+      touchAction: body.style.touchAction,
+      userSelect: body.style.userSelect,
+      touchCallout: (body.style as CSSStyleDeclaration & { webkitTouchCallout?: string }).webkitTouchCallout ?? '',
+    };
+    body.style.touchAction = 'none';
+    body.style.userSelect = 'none';
+    (body.style as CSSStyleDeclaration & { webkitTouchCallout?: string }).webkitTouchCallout = 'none';
+    const overlay = document.createElement('div');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('data-drag-overlay', 'true');
+    overlay.style.cssText =
+      'position:fixed;inset:0;z-index:9998;background:transparent;' +
+      'touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;';
+    overlay.oncontextmenu = (e) => e.preventDefault();
+    body.appendChild(overlay);
+    overlayEl.current = overlay;
+  }, []);
+
+  const hideOverlay = useCallback((): void => {
+    overlayEl.current?.remove();
+    overlayEl.current = null;
+    const body = document.body;
+    const prev = bodyPrev.current;
+    body.style.touchAction = prev.touchAction;
+    body.style.userSelect = prev.userSelect;
+    (body.style as CSSStyleDeclaration & { webkitTouchCallout?: string }).webkitTouchCallout = prev.touchCallout;
+  }, []);
+
   const beginDrag = useCallback((): void => {
     const card = cardEl.current;
     const o = origin.current;
@@ -150,16 +194,17 @@ export function usePointerDrag(task: Task): {
     ghost.setAttribute('aria-hidden', 'true');
     ghost.style.cssText =
       `position:fixed;left:0;top:0;width:${rect.width}px;margin:0;` +
-      'pointer-events:none;z-index:100;opacity:0.95;' +
+      'pointer-events:none;z-index:9999;opacity:0.95;' +
       'box-shadow:0 12px 32px rgb(16 24 40 / 0.16);transition:none;';
     document.body.appendChild(ghost);
     ghostEl.current = ghost;
+    showOverlay();
     const pt = lastPt.current ?? o;
     moveGhost(pt.x, pt.y);
     setDragging(true);
     stopScrollLoop();
     raf.current = requestAnimationFrame(scrollLoop);
-  }, [moveGhost, scrollLoop, stopScrollLoop]);
+  }, [moveGhost, scrollLoop, showOverlay, stopScrollLoop]);
 
   const endDrag = useCallback(
     (commit: boolean): void => {
@@ -181,10 +226,11 @@ export function usePointerDrag(task: Task): {
       stopScrollLoop();
       clearColumnGlow();
       removeGhost();
+      hideOverlay();
       if (cardEl.current) cardEl.current.style.touchAction = '';
       setDragging(false);
     },
-    [cancelPress, moveTask, removeGhost, stopScrollLoop],
+    [cancelPress, hideOverlay, moveTask, removeGhost, stopScrollLoop],
   );
 
   // Esc cancela; limpa timer/fantasma/loop ao desmontar.
@@ -224,21 +270,29 @@ export function usePointerDrag(task: Task): {
       if (!e.isPrimary || e.pointerId !== pointerId.current) return;
       endDrag(false);
     };
+    // Trava de scroll (não-passiva): com arrasto ativo, impede o navegador
+    // de assumir o gesto touch no meio do caminho. Só age durante o drag.
+    const onTouchMove = (e: TouchEvent): void => {
+      if (draggingRef.current) e.preventDefault();
+    };
     window.addEventListener('keydown', onKey);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onCancel);
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
     return () => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('touchmove', onTouchMove);
       cancelPress();
       stopScrollLoop();
       clearColumnGlow();
       removeGhost();
+      hideOverlay();
     };
-  }, [beginDrag, cancelPress, endDrag, moveGhost, removeGhost, stopScrollLoop]);
+  }, [beginDrag, cancelPress, endDrag, hideOverlay, moveGhost, removeGhost, stopScrollLoop]);
 
   return {
     dragging,

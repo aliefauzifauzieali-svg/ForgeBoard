@@ -8,6 +8,11 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Notificações nativas no desktop via plugin oficial (toasts do Windows;
+  navegador/Android inalterados) e botão "Baixar APK mais recente" na
+  Manutenção (Android).
+- Redesign do Modo Foco fiel à referência Pomodoro: anel coral em gradiente,
+  timer gigante, stats laterais (sessões/minutos reais) e START em pílula.
 - Seção Manutenção nas Configurações: "Reinstalar o app" (desktop, com
   progresso e confirmação), "Limpar dados do app" (mantém backups),
   "Restaurar fábrica" (apaga tudo, confirmação dupla) e "Limpar cache"

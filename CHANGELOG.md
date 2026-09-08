@@ -60,6 +60,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Fixed
 
+- Toggle das Configurações: pino proporcional (`translate-x-full`, sem px
+  fixo) — alinhado em qualquer fonte-raiz/zoom, sem overflow.
 - Layout das Configurações: status de permissão em bloco de aviso âmbar com
   botão "Permitir notificações"; seção Sobre sempre acessível via scroll.
 - Auto-update desktop instala o binário: Configurações > Sobre oferece

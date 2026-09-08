@@ -608,6 +608,21 @@ function MaintenanceSection(): React.JSX.Element {
   const [reinstalling, setReinstalling] = useState(false);
   const [reinstallProgress, setReinstallProgress] = useState(0);
   const [reinstallError, setReinstallError] = useState('');
+  const [isAndroid, setIsAndroid] = useState(false);
+  const [apkUrl, setApkUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    void isNativeAndroid().then((native) => {
+      setIsAndroid(native);
+      if (!native) return;
+      void checkAndroidUpdate().then(
+        (st) => {
+          if (st.available && st.apkUrl) setApkUrl(st.apkUrl);
+        },
+        () => {},
+      );
+    });
+  }, []);
 
   const reinstall = async (): Promise<void> => {
     setReinstalling(true);
@@ -753,6 +768,23 @@ function MaintenanceSection(): React.JSX.Element {
           Limpar cache
         </button>
       </div>
+      {isAndroid ? (
+        <div>
+          <p className="text-sm font-semibold">Baixar APK mais recente</p>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+            O Android exige instalação manual: baixe o APK e confirme a instalação. Seus dados são mantidos.
+          </p>
+          <a
+            className="btn-ghost mt-2 text-xs"
+            href={apkUrl ?? RELEASES_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Download size={14} aria-hidden />
+            Baixar APK mais recente
+          </a>
+        </div>
+      ) : null}
     </div>
   );
 }

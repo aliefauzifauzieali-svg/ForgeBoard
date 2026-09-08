@@ -57,4 +57,10 @@ test.describe('manutenção', () => {
     await page.getByRole('dialog', { name: 'Configurações' }).waitFor();
     await expect(page.getByRole('button', { name: 'Reinstalar o app' })).toHaveCount(0);
   });
+
+  test('baixar apk aparece só no Android (fora dele fica oculto)', async ({ page }) => {
+    await page.getByRole('button', { name: 'Configurações' }).click();
+    await page.getByRole('dialog', { name: 'Configurações' }).waitFor();
+    await expect(page.getByRole('link', { name: 'Baixar APK mais recente' })).toHaveCount(0);
+  });
 });

@@ -5,6 +5,7 @@ pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_updater::Builder::new().build())
     .plugin(tauri_plugin_process::init())
+    .plugin(tauri_plugin_notification::init())
     .register_asynchronous_uri_scheme_protocol(frontend::SCHEME, |ctx, request, responder| {
       let path = request.uri().path().to_owned();
       let (bytes, mime, status) = frontend::serve_asset(ctx.app_handle(), &path);

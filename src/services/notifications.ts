@@ -1,5 +1,6 @@
 import type { Task } from '../types';
 import { todayDateOnly } from '../utils/date';
+import { isTauri } from '../utils/platform';
 
 export type NotifyPermission = NotificationPermission | 'unsupported';
 
@@ -48,8 +49,17 @@ export function getNotificationPermission(): NotifyPermission {
   return Notification.permission;
 }
 
-/** Pede permissão ao navegador; nunca lança. */
+/** Pede permissão; nunca lança. No desktop usa o plugin nativo (a API do
+ * WebView2 não concede permissão como um navegador comum). */
 export async function requestNotificationPermission(): Promise<NotifyPermission> {
+  if (isTauri()) {
+    try {
+      const { requestPermission } = await import('@tauri-apps/plugin-notification');
+      return await requestPermission();
+    } catch {
+      return 'default';
+    }
+  }
   if (typeof Notification === 'undefined') return 'unsupported';
   try {
     return await Notification.requestPermission();
@@ -61,8 +71,20 @@ export async function requestNotificationPermission(): Promise<NotifyPermission>
 /**
  * Dispara a notificação do sistema quando permitido. Retorna `true` se
  * o navegador aceitou exibir (o toast da UI é responsabilidade do chamador).
+ * No desktop envia via plugin nativo (Windows Toast) de forma assíncrona.
  */
 export function sendLocalNotification(title: string, body: string): boolean {
+  if (isTauri()) {
+    void (async () => {
+      try {
+        const { isPermissionGranted, sendNotification } = await import('@tauri-apps/plugin-notification');
+        if (await isPermissionGranted()) sendNotification({ title, body });
+      } catch {
+        /* ignore */
+      }
+    })();
+    return true;
+  }
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
   try {
     new Notification(title, { body, tag: 'forgeboard-due' });

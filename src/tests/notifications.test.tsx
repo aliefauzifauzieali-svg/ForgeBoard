@@ -1,5 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';import { render } from '@testing-library/react';
 import {
   findDueTasks,
   getNotificationPermission,
@@ -82,6 +81,65 @@ describe('permissão e envio', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+vi.mock('@tauri-apps/plugin-notification', () => ({
+  isPermissionGranted: vi.fn(),
+  requestPermission: vi.fn(),
+  sendNotification: vi.fn(),
+}));
+
+async function notificationPluginMock(): Promise<{
+  isPermissionGranted: ReturnType<typeof vi.fn>;
+  requestPermission: ReturnType<typeof vi.fn>;
+  sendNotification: ReturnType<typeof vi.fn>;
+}> {
+  return (await import('@tauri-apps/plugin-notification')) as unknown as {
+    isPermissionGranted: ReturnType<typeof vi.fn>;
+    requestPermission: ReturnType<typeof vi.fn>;
+    sendNotification: ReturnType<typeof vi.fn>;
+  };
+}
+
+const WIN = window as unknown as Record<string, unknown>;
+const SAVED_TAURI_INTERNALS = Object.getOwnPropertyDescriptor(window, '__TAURI_INTERNALS__');
+
+describe('notificações nativas no Tauri', () => {
+  beforeEach(() => {
+    WIN.__TAURI_INTERNALS__ = {};
+  });
+
+  afterEach(() => {
+    if (SAVED_TAURI_INTERNALS !== undefined) {
+      Object.defineProperty(window, '__TAURI_INTERNALS__', SAVED_TAURI_INTERNALS);
+    } else {
+      delete WIN.__TAURI_INTERNALS__;
+    }
+  });
+
+  it('request repassa o plugin', async () => {
+    const plugin = await notificationPluginMock();
+    plugin.requestPermission.mockResolvedValueOnce('granted');
+    await expect(requestNotificationPermission()).resolves.toBe('granted');
+  });
+
+  it('envio usa o plugin quando permitido', async () => {
+    const plugin = await notificationPluginMock();
+    plugin.isPermissionGranted.mockResolvedValueOnce(true);
+    expect(sendLocalNotification('Oi', 'corpo')).toBe(true);
+    await vi.waitFor(() => {
+      expect(plugin.sendNotification).toHaveBeenCalledWith({ title: 'Oi', body: 'corpo' });
+    });
+  });
+
+  it('envio pula o plugin sem permissão', async () => {
+    const plugin = await notificationPluginMock();
+    plugin.isPermissionGranted.mockResolvedValueOnce(false);
+    plugin.sendNotification.mockClear();
+    expect(sendLocalNotification('Oi', 'corpo')).toBe(true);
+    await Promise.resolve();
+    expect(plugin.sendNotification).not.toHaveBeenCalled();
   });
 });
 

@@ -8,6 +8,9 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Seção Manutenção nas Configurações: "Reinstalar o app" (desktop, com
+  progresso e confirmação) e "Restaurar padrão" (todos, apaga dados locais
+  com confirmação e aviso).
 - Drag-and-drop universal por Pointer Events no Kanban: caminho único para
   mouse e toque, com fantasma do cartão, coluna alvo por geometria,
   autoscroll e Esc para cancelar (substitui HTML5 DnD + hook de toque).
@@ -57,6 +60,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Fixed
 
+- Layout das Configurações: status de permissão em bloco de aviso âmbar com
+  botão "Permitir notificações"; seção Sobre sempre acessível via scroll.
 - Auto-update desktop instala o binário: Configurações > Sobre oferece
   "Baixar e instalar o app" quando o executável está atrás do `latest.json`
   (plugin oficial, com progresso).

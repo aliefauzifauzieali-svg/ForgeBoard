@@ -18,6 +18,10 @@ jobs:
       - run: npm run lint
       - run: npm run test
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      # Browser sem apt primeiro; deps do sistema com tolerância a espelho
+      # instável (dl.google.com já quebrou `apt-get update` com Hash Sum
+      # mismatch em dia de release — o E2E valida de verdade em seguida).
+      - run: npx playwright install chromium
+      - run: sudo apt-get update || (sleep 30 && sudo apt-get update) || true; npx playwright install-deps chromium || true
       - run: npm run test:e2e
       - run: npm run test:e2e:pwa

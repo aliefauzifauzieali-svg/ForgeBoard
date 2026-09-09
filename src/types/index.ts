@@ -20,6 +20,18 @@ export interface Tag {
   createdAt: string;
 }
 
+/** Nota Markdown (Fase 18.1): texto livre fora do fluxo de tarefas. */
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  /** Nomes livres (não vinculados ao registro de etiquetas). */
+  tags: string[];
+  color?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Task {
   id: string;
   projectId: string;
@@ -96,7 +108,8 @@ export interface UserPreferences {
     | { kind: 'dashboard' }
     | { kind: 'project'; projectId: string }
     | { kind: 'calendar' }
-    | { kind: 'stats' };
+    | { kind: 'stats' }
+    | { kind: 'notes' };
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {

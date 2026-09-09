@@ -9,6 +9,7 @@ const DB_VERSION = 2;
 export const KV_BOARD = 'board';
 export const KV_PREFERENCES = 'preferences';
 export const KV_NOTES = 'quickNotes';
+export const KV_NOTE_DOCS = 'notes';
 
 export interface StoredBackup {
   id: string;

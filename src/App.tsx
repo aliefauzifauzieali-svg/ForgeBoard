@@ -15,6 +15,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ProjectPage } from './pages/ProjectPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { StatsPage } from './pages/StatsPage';
+import { NotesPage } from './pages/NotesPage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useDueNotifications } from './hooks/useDueNotifications';
 import { useThemeEffect } from './stores/useThemeStore';
@@ -70,6 +71,8 @@ export default function App(): React.JSX.Element {
               <ProjectPage projectId={view.projectId} />
             ) : view.kind === 'calendar' ? (
               <CalendarPage />
+            ) : view.kind === 'notes' ? (
+              <NotesPage />
             ) : (
               <StatsPage />
             )}

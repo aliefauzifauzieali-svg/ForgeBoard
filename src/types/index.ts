@@ -42,6 +42,44 @@ export interface Habit {
   archived: boolean;
 }
 
+/** Categoria financeira (Fase 18.3). `kind` indica onde ela aparece. */
+export interface FinanceCategory {
+  id: string;
+  name: string;
+  color: string;
+  kind: 'income' | 'expense' | 'both';
+  /** Nativas não podem ser excluídas (podem ser renomeadas). */
+  builtin: boolean;
+}
+
+/** Transação (Fase 18.3): valores em centavos (sem float). */
+export interface Transaction {
+  id: string;
+  kind: 'income' | 'expense';
+  /** Valor em centavos, sempre >= 0. */
+  amountCents: number;
+  categoryId: string;
+  description: string;
+  /** Dia local yyyy-mm-dd. */
+  date: string;
+  projectId: string | null;
+  /** Meta vinculada: criar/excluir ajusta o progresso automaticamente. */
+  goalId: string | null;
+  createdAt: string;
+}
+
+/** Meta financeira (Fase 18.3): valores em centavos. */
+export interface Goal {
+  id: string;
+  name: string;
+  targetCents: number;
+  currentCents: number;
+  /** Prazo opcional (yyyy-mm-dd). */
+  deadline: string | null;
+  createdAt: string;
+  archived: boolean;
+}
+
 export interface Task {
   id: string;
   projectId: string;
@@ -120,7 +158,8 @@ export interface UserPreferences {
     | { kind: 'calendar' }
     | { kind: 'stats' }
     | { kind: 'notes' }
-    | { kind: 'habits' };
+    | { kind: 'habits' }
+    | { kind: 'finance' };
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {

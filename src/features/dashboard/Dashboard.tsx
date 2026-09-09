@@ -19,6 +19,7 @@ import { ProjectCard } from '../../components/projects/ProjectCard';
 import { ActivityBars } from '../../components/charts/ActivityBars';
 import { PriorityDonut } from '../../components/charts/PriorityDonut';
 import { FocusTimer } from '../focus/FocusTimer';
+import { FinanceWidget } from './FinanceWidget';
 import { HabitWidget } from './HabitWidget';
 import { TodayWidget } from './TodayWidget';
 import { QuickNotes } from './QuickNotes';
@@ -235,6 +236,8 @@ export function Dashboard(): React.JSX.Element {
       </div>
 
       <HabitWidget />
+
+      <FinanceWidget />
 
       <section aria-labelledby="all-tasks-heading">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

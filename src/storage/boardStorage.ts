@@ -64,7 +64,7 @@ function sanitizePreferences(input: unknown): UserPreferences {
     lastView:
       p.lastView?.kind === 'project' && typeof p.lastView.projectId === 'string'
         ? { kind: 'project', projectId: p.lastView.projectId }
-        : p.lastView?.kind === 'calendar' || p.lastView?.kind === 'stats' || p.lastView?.kind === 'notes' || p.lastView?.kind === 'habits'
+        : p.lastView?.kind === 'calendar' || p.lastView?.kind === 'stats' || p.lastView?.kind === 'notes' || p.lastView?.kind === 'habits' || p.lastView?.kind === 'finance'
           ? { kind: p.lastView.kind }
           : { kind: 'dashboard' },
   };

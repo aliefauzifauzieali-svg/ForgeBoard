@@ -17,6 +17,7 @@ import { CalendarPage } from './pages/CalendarPage';
 import { StatsPage } from './pages/StatsPage';
 import { NotesPage } from './pages/NotesPage';
 import { HabitsPage } from './pages/HabitsPage';
+import { FinancePage } from './pages/FinancePage';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useDueNotifications } from './hooks/useDueNotifications';
 import { useThemeEffect } from './stores/useThemeStore';
@@ -76,6 +77,8 @@ export default function App(): React.JSX.Element {
               <NotesPage />
             ) : view.kind === 'habits' ? (
               <HabitsPage />
+            ) : view.kind === 'finance' ? (
+              <FinancePage />
             ) : (
               <StatsPage />
             )}

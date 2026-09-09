@@ -9,6 +9,8 @@ export interface FocusState {
   endsAt: number | null;
   /** Ciclos de foco concluídos (sessão acumulada). */
   completed: number;
+  /** Tarefa vinculada ao timer (Timer PRO); null = livre. */
+  taskId: string | null;
 }
 
 export const FOCUS_SEC = 25 * 60;
@@ -18,7 +20,7 @@ export const FOCUS_KEY = 'forgeboard:focus-timer';
 const DURATION: Record<FocusMode, number> = { focus: FOCUS_SEC, break: BREAK_SEC };
 
 export function initialFocus(): FocusState {
-  return { mode: 'focus', remainingSec: FOCUS_SEC, running: false, endsAt: null, completed: 0 };
+  return { mode: 'focus', remainingSec: FOCUS_SEC, running: false, endsAt: null, completed: 0, taskId: null };
 }
 
 function sanitize(raw: unknown): FocusState {
@@ -27,15 +29,16 @@ function sanitize(raw: unknown): FocusState {
   const r = raw as Partial<FocusState>;
   const mode: FocusMode = r.mode === 'break' ? 'break' : 'focus';
   const completed = typeof r.completed === 'number' && Number.isFinite(r.completed) ? Math.max(0, Math.floor(r.completed)) : 0;
+  const taskId = typeof r.taskId === 'string' && r.taskId !== '' ? r.taskId : null;
   const running = r.running === true && typeof r.endsAt === 'number';
   if (!running) {
     const remainingSec =
       typeof r.remainingSec === 'number' && Number.isFinite(r.remainingSec)
         ? Math.min(DURATION[mode], Math.max(0, Math.round(r.remainingSec)))
         : DURATION[mode];
-    return { mode, remainingSec, running: false, endsAt: null, completed };
+    return { mode, remainingSec, running: false, endsAt: null, completed, taskId };
   }
-  return { mode, remainingSec: DURATION[mode], running: true, endsAt: r.endsAt as number, completed };
+  return { mode, remainingSec: DURATION[mode], running: true, endsAt: r.endsAt as number, completed, taskId };
 }
 
 export function loadFocusState(): FocusState {
@@ -70,6 +73,7 @@ export interface Settled {
 export function settleFocus(prev: FocusState, now: number): Settled {
   if (!prev.running || prev.endsAt === null) return { state: prev, finished: [] };
   let { mode, endsAt, completed } = prev;
+  const taskId = prev.taskId;
   const finished: FocusMode[] = [];
   // Trava de sanidade: nunca avança mais de 48h de ciclos de uma vez.
   let guard = ((48 * 3600) / Math.min(FOCUS_SEC, BREAK_SEC)) | 0;
@@ -85,7 +89,7 @@ export function settleFocus(prev: FocusState, now: number): Settled {
     return { state: { ...prev, remainingSec }, finished };
   }
   return {
-    state: { mode, remainingSec: Math.max(0, Math.round((endsAt - now) / 1000)), running: true, endsAt, completed },
+    state: { mode, remainingSec: Math.max(0, Math.round((endsAt - now) / 1000)), running: true, endsAt, completed, taskId },
     finished,
   };
 }

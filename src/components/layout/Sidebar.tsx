@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, Download, LayoutDashboard, NotebookPen, Plus, Settings as SettingsIcon, Upload } from 'lucide-react';
+import { BarChart3, CalendarDays, Download, LayoutDashboard, NotebookPen, Plus, Repeat, Settings as SettingsIcon, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { parseImport } from '../../services/boardIO';
 import { exportBoardNow, type ExportFormat } from '../../services/boardIO';
@@ -248,6 +248,7 @@ export function Sidebar(): React.JSX.Element {
   const goCalendar = useUIStore((s) => s.goCalendar);
   const goStats = useUIStore((s) => s.goStats);
   const goNotes = useUIStore((s) => s.goNotes);
+  const goHabits = useUIStore((s) => s.goHabits);
   const openProject = useUIStore((s) => s.openProject);
   const openNewProject = useUIStore((s) => s.openNewProject);
   const openNewTask = useUIStore((s) => s.openNewTask);
@@ -373,6 +374,27 @@ export function Sidebar(): React.JSX.Element {
               )}
             />
             Notas
+          </button>
+          <button
+            type="button"
+            onClick={goHabits}
+            aria-current={view.kind === 'habits' ? 'page' : undefined}
+            className={cn(
+              'group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition-[transform,background-color,color] duration-200 hover:translate-x-0.5',
+              view.kind === 'habits'
+                ? 'bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent-dark)] dark:bg-white/[0.06] dark:text-zinc-100'
+                : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900',
+            )}
+          >
+            <Repeat
+              size={17}
+              aria-hidden
+              className={cn(
+                'shrink-0 transition-[transform,color] duration-200 group-hover:scale-110',
+                view.kind === 'habits' && 'dark:text-[var(--accent-bright)]',
+              )}
+            />
+            Hábitos
           </button>
 
           <div className="flex items-center justify-between px-3 pb-1 pt-4">

@@ -1,5 +1,8 @@
 import { Crosshair, Flame, Pause, Play, RotateCcw } from 'lucide-react';
+import { useMemo } from 'react';
 import { cn } from '../../utils/core';
+import { minutesByDay, minutesToday, readSessions } from '../../services/focusSessions';
+import { useBoardStore } from '../../stores/useBoardStore';
 import { BREAK_SEC, FOCUS_SEC, formatClock } from './pomodoro';
 import { useFocusTimer } from './useFocusTimer';
 
@@ -13,7 +16,9 @@ const BREAK_GRAD = ['#34D399', '#6EE7B7'];
  * Pomodoro (anel quente, timer gigante, stats laterais, START em pílula).
  */
 export function FocusTimer(): React.JSX.Element {
-  const { state, toggle, reset, switchMode } = useFocusTimer();
+  const { state, toggle, reset, switchMode, setTask } = useFocusTimer();
+  const tasks = useBoardStore((s) => s.tasks);
+  const projects = useBoardStore((s) => s.projects);
   const focus = state.mode === 'focus';
   const total = focus ? FOCUS_SEC : BREAK_SEC;
   const frac = total === 0 ? 0 : Math.max(0, Math.min(1, state.remainingSec / total));
@@ -25,6 +30,15 @@ export function FocusTimer(): React.JSX.Element {
   const tipX = 60 + R * Math.cos(tipAngle);
   const tipY = 60 + R * Math.sin(tipAngle);
   const focusMinutes = state.completed * 25;
+  const openTasks = useMemo(() => tasks.filter((t) => t.status !== 'done'), [tasks]);
+  const projectName = useMemo(() => new Map(projects.map((p) => [p.id, p.name] as const)), [projects]);
+  // Recarrega quando um ciclo conclui (completed muda no mesmo tick do registro).
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- completed é chave intencional de refresh, não dependência de cálculo
+  const sessions = useMemo(() => readSessions(), [state.completed]);
+  const todayMinutes = useMemo(() => minutesToday(sessions), [sessions]);
+  const week = useMemo(() => minutesByDay(sessions, 7), [sessions]);
+  const weekMax = Math.max(1, ...week.map((d) => d.minutes));
+  const history = sessions.slice(0, 5);
 
   return (
     <section aria-labelledby="focus-heading" className="card card-hover p-4 sm:p-5">
@@ -101,6 +115,26 @@ export function FocusTimer(): React.JSX.Element {
         {state.running ? (focus ? 'Foque em uma tarefa.' : 'Respire e descanse.') : 'Timer pausado.'}
       </p>
 
+      <div className="mx-auto mt-3 max-w-xs">
+        <label className="label" htmlFor="focus-task">
+          Tarefa vinculada
+        </label>
+        <select
+          id="focus-task"
+          className="input !py-2 text-sm"
+          value={state.taskId ?? ''}
+          onChange={(e) => setTask(e.target.value === '' ? null : e.target.value)}
+        >
+          <option value="">Nenhuma (livre)</option>
+          {openTasks.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.title}
+              {projectName.get(t.projectId) ? ` · ${projectName.get(t.projectId)}` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="mt-3 flex items-center justify-center gap-2.5">
         <button
           type="button"
@@ -139,6 +173,45 @@ export function FocusTimer(): React.JSX.Element {
             {m === 'focus' ? 'Foco · 25min' : 'Pausa · 5min'}
           </button>
         ))}
+      </div>
+
+      <div className="mx-auto mt-4 max-w-xs">
+        <div className="mb-1.5 flex items-baseline justify-between text-xs">
+          <span className="font-semibold text-zinc-600 dark:text-zinc-400">Hoje</span>
+          <strong className="tabular-nums">
+            {todayMinutes}min · {week[6]?.sessions ?? 0} {week[6]?.sessions === 1 ? 'sessão' : 'sessões'}
+          </strong>
+        </div>
+        <div className="flex h-12 items-end gap-1" role="img" aria-label={`Minutos de foco nos últimos 7 dias: ${week.map((d) => `${d.label}: ${d.minutes}`).join(', ')}.`}>
+          {week.map((d) => (
+            <div
+              key={d.key}
+              title={`${d.label}: ${d.minutes}min · ${d.sessions} ${d.sessions === 1 ? 'sessão' : 'sessões'}`}
+              className="flex-1 rounded-sm"
+              style={{
+                height: `${Math.max(6, Math.round((d.minutes / weekMax) * 100))}%`,
+                backgroundColor: d.minutes > 0 ? from : 'var(--accent)',
+                opacity: d.minutes > 0 ? 1 : 0.25,
+              }}
+            />
+          ))}
+        </div>
+        {history.length > 0 ? (
+          <ul className="mt-3 space-y-1.5" aria-label="Últimas sessões">
+            {history.map((s) => (
+              <li key={s.id} className="flex items-center justify-between gap-2 text-xs">
+                <span className="min-w-0 flex-1 truncate text-zinc-600 dark:text-zinc-400">
+                  {s.taskTitle ?? 'Sem tarefa'}
+                </span>
+                <span className="shrink-0 tabular-nums text-zinc-500">
+                  {new Date(s.startedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  {' · '}
+                  {Math.round(s.durationSec / 60)}min
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
     </section>
   );

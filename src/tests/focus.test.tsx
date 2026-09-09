@@ -20,6 +20,7 @@ const RUNNING_FOCUS = {
   running: true,
   endsAt: 1_000_000 + FOCUS_SEC * 1000,
   completed: 0,
+  taskId: null as string | null,
 };
 
 describe('settleFocus (puro)', () => {

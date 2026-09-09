@@ -42,7 +42,7 @@ test.describe('tarefas', () => {
       .getByRole('button', { name: 'Criar tarefa' })
       .click();
     await page.getByRole('button', { name: 'Dashboard', exact: true }).first().click();
-    await expect(page.getByRole('heading', { name: 'Hoje' })).toBeVisible();
+    await expect(page.getByTestId('today-section').getByRole('heading', { name: 'Hoje' })).toBeVisible();
     await expect(page.getByTestId('today-section').getByText('Hoje E2E')).toBeVisible();
   });
 });

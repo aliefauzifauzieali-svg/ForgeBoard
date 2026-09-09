@@ -32,6 +32,16 @@ export interface Note {
   updatedAt: string;
 }
 
+/** Hábito (Fase 18.2): 0=domingo … 6=sábado. */
+export interface Habit {
+  id: string;
+  name: string;
+  color?: string;
+  schedule: { kind: 'daily' } | { kind: 'weekly'; days: number[] };
+  createdAt: string;
+  archived: boolean;
+}
+
 export interface Task {
   id: string;
   projectId: string;
@@ -109,7 +119,8 @@ export interface UserPreferences {
     | { kind: 'project'; projectId: string }
     | { kind: 'calendar' }
     | { kind: 'stats' }
-    | { kind: 'notes' };
+    | { kind: 'notes' }
+    | { kind: 'habits' };
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {

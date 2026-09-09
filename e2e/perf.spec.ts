@@ -40,7 +40,9 @@ test.describe('performance com volume', () => {
 
     const f0 = Date.now();
     await page.getByLabel(/pesquisar tarefas/i).fill('tarefa 499');
-    await expect(page.getByText('Tarefa 499 com texto para busca').first()).toBeVisible();
+    // Escopo à lista (o select "Tarefa vinculada" do timer também contém o título, em <option> oculta).
+    const list = page.getByRole('region', { name: /Todas as tarefas/ });
+    await expect(list.getByText('Tarefa 499 com texto para busca')).toBeVisible();
     const filterMs = Date.now() - f0;
 
     console.log(`VOLUME boot=${bootMs}ms filter=${filterMs}ms`);

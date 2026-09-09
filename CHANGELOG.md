@@ -8,8 +8,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
-- Widget "Hoje" no Dashboard: atrasadas em foco + vencendo hoje, com
-  sugestão inteligente e contadores.
+- Widget "Hoje" no Dashboard (vencendo hoje + sugestão inteligente).
 - Modelos de projeto (Em branco, Trabalho, Estudos, Pessoal) com tarefas
   iniciais e prazos relativos.
 - Data de última edição no rodapé do modal da tarefa.

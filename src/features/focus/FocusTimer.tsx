@@ -78,14 +78,14 @@ export function FocusTimer(): React.JSX.Element {
             {frac > 0 ? <circle cx={tipX} cy={tipY} r={4} fill={from} /> : null}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
               {focus ? 'Focus time' : 'Break time'}
             </p>
             <p
               key={state.mode}
               role="timer"
               aria-label={`${focus ? 'Foco' : 'Pausa'}: ${formatClock(state.remainingSec)} restantes`}
-              className="animate-fade-in text-6xl font-bold tabular-nums tracking-tight"
+              className="animate-fade-in text-5xl font-bold tabular-nums leading-none tracking-tight"
             >
               {formatClock(state.remainingSec)}
             </p>

@@ -1,5 +1,6 @@
 import type { Project, Task } from '../types';
 import { isOverdue } from '../utils/date';
+import { todayDateOnly } from '../utils/date';
 
 export interface ProjectProgress {
   projectId: string;
@@ -59,6 +60,14 @@ export function overdueTasks(tasks: Task[]): Task[] {
   return tasks
     .filter((t) => isOverdue(t.dueDate, t.status))
     .sort((a, b) => String(a.dueDate).localeCompare(String(b.dueDate)));
+}
+
+/** Abertas com prazo hoje (exclui concluídas e atrasadas de outros dias). */
+export function tasksDueToday(tasks: Task[], todayISO?: string): Task[] {
+  const today = todayISO ?? todayDateOnly();
+  return tasks
+    .filter((t) => t.status !== 'done' && t.dueDate === today)
+    .sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export function recentTasks(tasks: Task[], limit = 6): Task[] {

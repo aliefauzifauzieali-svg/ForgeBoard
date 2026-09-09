@@ -30,4 +30,19 @@ test.describe('tarefas', () => {
     await page.getByRole('button', { name: 'Salvar alterações' }).click();
     await expect(page.getByText('Título novo E2E').first()).toBeVisible();
   });
+
+  test('tarefa com prazo hoje aparece no widget Hoje', async ({ page }) => {
+    const today = new Date();
+    const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    await page.keyboard.press('n');
+    await page.getByLabel('Título *', { exact: true }).fill('Hoje E2E');
+    await page.getByLabel('Prazo (opcional)', { exact: true }).fill(iso);
+    await page
+      .getByRole('dialog', { name: 'Nova tarefa' })
+      .getByRole('button', { name: 'Criar tarefa' })
+      .click();
+    await page.getByRole('button', { name: 'Dashboard', exact: true }).first().click();
+    await expect(page.getByRole('heading', { name: 'Hoje' })).toBeVisible();
+    await expect(page.getByTestId('today-section').getByText('Hoje E2E')).toBeVisible();
+  });
 });

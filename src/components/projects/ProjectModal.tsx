@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PROJECT_COLORS } from '../../utils/constants';
+import { PROJECT_TEMPLATES, templateDueDate } from '../../services/projectTemplates';
 import { useBoardStore } from '../../stores/useBoardStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useIsTouchDevice } from '../../hooks/useIsTouchDevice';
@@ -35,6 +36,7 @@ function ProjectForm(): React.JSX.Element {
   const closeProjectModal = useUIStore((s) => s.closeProjectModal);
   const projects = useBoardStore((s) => s.projects);
   const createProject = useBoardStore((s) => s.createProject);
+  const createTask = useBoardStore((s) => s.createTask);
   const updateProject = useBoardStore((s) => s.updateProject);
 
   const editing = projects.find((p) => p.id === projectModal.editingId) ?? null;
@@ -46,7 +48,17 @@ function ProjectForm(): React.JSX.Element {
   const [color, setColor] = useState<string>(
     () => editing?.color ?? PROJECT_COLORS[Math.floor(Math.random() * PROJECT_COLORS.length)]!,
   );
+  const [templateId, setTemplateId] = useState('blank');
   const [error, setError] = useState('');
+
+  const applyTemplate = (id: string): void => {
+    setTemplateId(id);
+    const tpl = PROJECT_TEMPLATES.find((t) => t.id === id);
+    if (!tpl || id === 'blank') return;
+    setName(tpl.name);
+    setDescription(tpl.description);
+    setColor(tpl.color);
+  };
 
   const submit = (e: React.FormEvent): void => {
     e.preventDefault();
@@ -56,7 +68,23 @@ function ProjectForm(): React.JSX.Element {
     }
     try {
       if (editing) updateProject(editing.id, { name, description, color });
-      else createProject({ name, description, color });
+      else {
+        const project = createProject({ name, description, color });
+        const tpl = PROJECT_TEMPLATES.find((t) => t.id === templateId);
+        for (const t of tpl?.tasks ?? []) {
+          try {
+            createTask({
+              projectId: project.id,
+              title: t.title,
+              description: t.description,
+              priority: t.priority,
+              dueDate: templateDueDate(t.dueInDays),
+            });
+          } catch {
+            /* ignora tarefa inicial inválida */
+          }
+        }
+      }
       closeProjectModal();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar.');
@@ -65,6 +93,32 @@ function ProjectForm(): React.JSX.Element {
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {editing ? null : (
+        <div>
+          <span className="label" id="project-template-label">
+            Modelo
+          </span>
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-labelledby="project-template-label">
+            {PROJECT_TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="radio"
+                aria-checked={templateId === t.id}
+                onClick={() => applyTemplate(t.id)}
+                className={cn(
+                  'rounded-full border px-2.5 py-1 text-xs font-semibold transition',
+                  templateId === t.id
+                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
+                    : 'border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800',
+                )}
+              >
+                {t.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div>
         <label className="label" htmlFor="project-name">
           Nome *

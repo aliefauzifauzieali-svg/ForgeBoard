@@ -19,6 +19,7 @@ import { ProjectCard } from '../../components/projects/ProjectCard';
 import { ActivityBars } from '../../components/charts/ActivityBars';
 import { PriorityDonut } from '../../components/charts/PriorityDonut';
 import { FocusTimer } from '../focus/FocusTimer';
+import { TodayWidget } from './TodayWidget';
 import { QuickNotes } from './QuickNotes';
 import { TaskFiltersBar } from '../../components/tasks/TaskFiltersBar';
 import { TaskRow } from '../../components/tasks/TaskRow';
@@ -185,6 +186,8 @@ export function Dashboard(): React.JSX.Element {
           ))}
         </div>
       </section>
+
+      <TodayWidget projectNameOf={projectNameOf} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section aria-labelledby="overdue-heading" className="card min-w-0 p-4">

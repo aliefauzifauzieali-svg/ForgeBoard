@@ -6,6 +6,7 @@ import {
   overdueTasks,
   projectProgress,
   recentTasks,
+  tasksDueToday,
 } from '../services/boardStats';
 
 const P = (id: string): Project => ({
@@ -112,5 +113,18 @@ describe('overdueTasks / recentTasks', () => {
   it('retorna as mais recentes primeiro respeitando o limite', () => {
     const tasks = [T('1', 'p1', 'backlog'), T('2', 'p1', 'backlog'), T('3', 'p1', 'backlog')];
     expect(recentTasks(tasks, 2).map((t) => t.id)).toEqual(['3', '2']);
+  });
+});
+
+describe('tasksDueToday', () => {
+  const tasks = [
+    T('1', 'p1', 'backlog', { dueDate: '2026-09-06' }),
+    T('2', 'p1', 'in-progress', { dueDate: '2026-09-06' }),
+    T('3', 'p1', 'done', { dueDate: '2026-09-06' }),
+    T('4', 'p1', 'backlog', { dueDate: '2026-09-07' }),
+    T('5', 'p1', 'backlog', { dueDate: null }),
+  ];
+  it('só abertas com prazo hoje', () => {
+    expect(tasksDueToday(tasks, '2026-09-06').map((t) => t.id)).toEqual(['1', '2']);
   });
 });

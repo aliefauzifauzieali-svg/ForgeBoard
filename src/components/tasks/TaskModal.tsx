@@ -6,6 +6,7 @@ import { useUIStore } from '../../stores/useUIStore';
 import { useIsTouchDevice } from '../../hooks/useIsTouchDevice';
 import { PRIORITY_META, STATUS_META } from '../../utils/constants';
 import { parseTags } from '../../utils/core';
+import { toDateTime } from '../../utils/date';
 import { Modal } from '../ui/Modal';
 import { SubtaskEditor } from './SubtaskEditor';
 
@@ -406,13 +407,22 @@ function TaskForm(): React.JSX.Element {
             </p>
           ) : null}
 
-          <div className="flex justify-end gap-2 pt-1">
-            <button type="button" className="btn-ghost" onClick={closeTaskModal}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn-primary">
-              {editing ? 'Salvar alterações' : 'Criar tarefa'}
-            </button>
+          <div className="flex items-center justify-between gap-2 pt-1">
+            {editing ? (
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                Última edição em {toDateTime(editing.updatedAt)}
+              </p>
+            ) : (
+              <span />
+            )}
+            <div className="flex gap-2">
+              <button type="button" className="btn-ghost" onClick={closeTaskModal}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn-primary">
+                {editing ? 'Salvar alterações' : 'Criar tarefa'}
+              </button>
+            </div>
           </div>
         </form>
       )}

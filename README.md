@@ -27,35 +27,7 @@ auto-update, tema claro/escuro e interface em pt-BR.
 - **Produtividade**: paleta de comandos (`Ctrl+K`) + busca global,
   atalhos de teclado, desfazer/refazer, modelos de projeto, importação/
   exportação JSON versionada, CSV/Markdown, gráficos SVG próprios e página
-  de Estatísticas com métricas históricas.
-
-## Screenshots
-
-> Geradas com `node scripts/capture-screenshots.mjs` (após `npm run build`).
-
-| Dashboard | Quadro Kanban |
-|---|---|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Kanban](docs/screenshots/kanban.png) |
-
-| Calendário | Estatísticas |
-|---|---|
-| ![Calendário](docs/screenshots/calendar.png) | ![Estatísticas](docs/screenshots/stats.png) |
-
-| Notas (editor Markdown) | Hábitos |
-|---|---|
-| ![Notas](docs/screenshots/notes.png) | ![Hábitos](docs/screenshots/habits.png) |
-
-| Economia | Modo Foco |
-|---|---|
-| ![Economia](docs/screenshots/finance.png) | ![Modo Foco](docs/screenshots/focus.png) |
-
-| Configurações (Manutenção) | Mobile |
-|---|---|
-| ![Configurações](docs/screenshots/settings.png) | ![Mobile](docs/screenshots/mobile.png) |
-
-| Modo escuro |
-|---|
-| ![Dark](docs/screenshots/dark.png) |
+   de Estatísticas com métricas históricas.
 
 ## Stack
 

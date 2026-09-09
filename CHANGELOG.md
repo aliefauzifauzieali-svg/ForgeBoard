@@ -8,6 +8,12 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Added
 
+- Widget "Hoje" no Dashboard: atrasadas em foco + vencendo hoje, com
+  sugestão inteligente e contadores.
+- Modelos de projeto (Em branco, Trabalho, Estudos, Pessoal) com tarefas
+  iniciais e prazos relativos.
+- Data de última edição no rodapé do modal da tarefa.
+
 - Notificações nativas no desktop via plugin oficial (toasts do Windows;
   navegador/Android inalterados) e botão "Baixar APK mais recente" na
   Manutenção (Android).

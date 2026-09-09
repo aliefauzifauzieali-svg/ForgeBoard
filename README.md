@@ -1,6 +1,6 @@
 # ForgeBoard
 
-Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tarefas recorrentes (diária/semanal/mensal/personalizada), subtarefas com progresso, modo Foco (Pomodoro), notas rápidas, cor de destaque customizável, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, notificações locais de prazo, importação/exportação JSON versionada, exportação CSV/Markdown, importação de CSV e persistência em IndexedDB (com migração do formato antigo) e página de Estatísticas com log de atividades e métricas históricas.
+Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tarefas recorrentes (diária/semanal/mensal/personalizada), subtarefas com progresso, widget Hoje com sugestões, modelos de projeto, modo Foco (Pomodoro), notas rápidas, cor de destaque customizável, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, notificações locais de prazo, importação/exportação JSON versionada, exportação CSV/Markdown, importação de CSV e persistência em IndexedDB (com migração do formato antigo) e página de Estatísticas com log de atividades e métricas históricas.
 
 ## Screenshots
 
@@ -53,7 +53,7 @@ ForgeBoard/
 │   └── persistence.spec.ts
 ├── src/
 │   ├── components/           # UI burra/reutilizável
-│   │   ├── kanban/           # KanbanBoard, KanbanColumn (drag-and-drop nativo)
+│   │   ├── kanban/           # KanbanBoard, KanbanColumn, usePointerDrag (arrasto por Pointer Events)
 │   │   ├── layout/           # Sidebar, TopBar, BottomNav (mobile)
 │   │   ├── projects/         # ProjectCard, ProjectModal
 │   │   ├── tasks/            # TaskCard, TaskRow, TaskModal, TaskFiltersBar

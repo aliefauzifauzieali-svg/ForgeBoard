@@ -4,22 +4,25 @@ Todas as mudanças notáveis do ForgeBoard serão documentadas aqui.
 
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [1.9.0] - 2026-09-09
+
+### Added
+
+- Módulo Economia: página mensal com saldo, gastos por categoria, lista
+  filtrável, modal de transação (projeto e meta opcionais), metas
+  financeiras com progresso automático + aporte manual, 10 categorias
+  padrão personalizáveis e widget "Resumo financeiro" no Dashboard.
+- Timer PRO: vínculo com tarefa e histórico de sessões (minutos de hoje,
+  gráfico de 7 dias, últimas 5).
+- Hábitos diários/semanais: página com check-in, grade de 30 dias,
+  arquivar/excluir e widget "Hábitos de hoje" no Dashboard.
+- Notas Markdown: página dedicada com editor, pré-visualização, etiquetas
+  livres e busca; navegação na Sidebar e BottomNav.
+
 ## [Unreleased]
 
 ### Added
 
-- Módulo Economia: página mensal com saldo (receitas − despesas), gastos
-  por categoria (barras próprias, sem dependências), lista filtrável por
-  tipo/categoria, modal de transação (projeto e meta opcionais), metas
-  financeiras com progresso automático (receita soma, despesa subtrai,
-  trava em zero) + aporte manual, e 10 categorias padrão personalizáveis;
-  widget "Resumo financeiro" no Dashboard (saldo, maior gasto, meta).
-- Timer PRO: vínculo com tarefa (persiste após reload) e histórico de
-  sessões (minutos de hoje, gráfico de 7 dias, últimas 5).
-- Hábitos diários/semanais: página com check-in, grade de 30 dias,
-  arquivar/excluir, e widget "Hábitos de hoje" no Dashboard.
-- Notas Markdown: página dedicada com editor, pré-visualização, etiquetas
-  livres e busca; navegação na Sidebar e BottomNav.
 - Widget "Hoje" no Dashboard (vencendo hoje + sugestão inteligente).
 - Modelos de projeto (Em branco, Trabalho, Estudos, Pessoal) com tarefas
   iniciais e prazos relativos.

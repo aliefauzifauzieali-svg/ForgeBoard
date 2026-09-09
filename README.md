@@ -1,6 +1,33 @@
 # ForgeBoard
 
-Dashboard pessoal de gerenciamento de projetos e tarefas, **local-first**: roda 100% no navegador, sem backend. Projetos com quadro Kanban (Backlog → Em andamento → Concluído), tarefas com prioridade, prazos, tags e filtros, tarefas recorrentes (diária/semanal/mensal/personalizada), subtarefas com progresso, widget Hoje com sugestões, modelos de projeto, modo Foco (Pomodoro), notas rápidas, cor de destaque customizável, calendário mensal/semanal/diário com drag and drop, etiquetas com cores, gráficos de atividade, backup automático, instalável como PWA e 100% funcional offline, tema claro/escuro, atalhos de teclado, paleta de comandos (`Ctrl+K`), desfazer/refazer, toasts, notificações locais de prazo, importação/exportação JSON versionada, exportação CSV/Markdown, importação de CSV e persistência em IndexedDB (com migração do formato antigo) e página de Estatísticas com log de atividades e métricas históricas.
+[![CI](https://github.com/aliefauzifauzieali-svg/ForgeBoard/actions/workflows/ci.yml/badge.svg)](https://github.com/aliefauzifauzieali-svg/ForgeBoard/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/aliefauzifauzieali-svg/ForgeBoard)](https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases/latest)
+
+Suíte de produtividade pessoal **local-first**: roda 100% no dispositivo, sem
+backend, sem contas, sem sincronização. Dados em IndexedDB (com quarentena +
+backups), PWA instalável, apps desktop (Tauri) e Android (Capacitor) com
+auto-update, tema claro/escuro e interface em pt-BR.
+
+## Funcionalidades
+
+- **Tarefas e projetos**: Kanban (Backlog → Em andamento → Concluído) com
+  arrasto por Pointer Events (mouse e toque), prioridades, prazos, etiquetas
+  com cores, subtarefas com progresso e recorrência
+  (diária/semanal/mensal/personalizada).
+- **Dashboard**: estatísticas, widget Hoje (vencendo hoje + sugestão
+  inteligente), atrasadas, recentes, resumos de hábitos e economia.
+- **Calendário** mensal/semanal/diário com drag and drop de prazos.
+- **Notas Markdown**: editor com preview ao vivo, toolbar completa, pastas,
+  etiquetas, fixar, arquivar e duplicar.
+- **Hábitos** diários/semanais com check-in, grade de 30 dias e widget.
+- **Economia**: receitas/despesas mensais, categorias personalizáveis, metas
+  financeiras com progresso automático e widget de saldo.
+- **Modo Foco (Pomodoro 25/5)** com vínculo de tarefa, histórico de sessões
+  e notificações locais de prazo.
+- **Produtividade**: paleta de comandos (`Ctrl+K`) + busca global,
+  atalhos de teclado, desfazer/refazer, modelos de projeto, importação/
+  exportação JSON versionada, CSV/Markdown, gráficos SVG próprios e página
+  de Estatísticas com métricas históricas.
 
 ## Screenshots
 
@@ -47,10 +74,16 @@ ForgeBoard/
 │   ├── tags.spec.ts
 │   ├── data.spec.ts
 │   ├── stats.spec.ts
+│   ├── notes.spec.ts
+│   ├── habits.spec.ts
+│   ├── finance.spec.ts
+│   ├── maintenance.spec.ts
 │   ├── pwa.spec.ts
 │   ├── responsive.spec.ts
 │   ├── a11y.spec.ts
 │   └── persistence.spec.ts
+├── src-tauri/                  # app desktop (Tauri v2: frontend.rs, updater)
+├── android/                    # app Android (projeto Capacitor versionado)
 ├── src/
 │   ├── components/           # UI burra/reutilizável
 │   │   ├── kanban/           # KanbanBoard, KanbanColumn, usePointerDrag (arrasto por Pointer Events)
@@ -61,14 +94,18 @@ ForgeBoard/
 │   │   ├── charts/           # SVG próprios (barras, rosca, linhas — sem lib)
 │   │   └── ui/               # Modal, ConfirmDialog, Toasts, banners, PWA…
 │   ├── features/             # Seções com regra de negócio
-│   │   ├── dashboard/        # estatísticas, projetos, atrasadas, recentes
+│   │   ├── dashboard/        # estatísticas, projetos, atrasadas, recentes + widgets (Hoje, hábitos, economia)
 │   │   ├── palette/          # paleta de comandos + busca global
 │   │   ├── calendar/         # mês/semana/dia + DnD de prazos (date-fns)
 │   │   ├── stats/            # página de Estatísticas + métricas
-│   │   └── project/          # visão do projeto + Kanban filtrado
+│   │   ├── project/          # visão do projeto + Kanban filtrado
+│   │   ├── notes/            # editor Markdown (lista + workspace, toolbar, pastas)
+│   │   ├── habits/           # hábitos + grade de 30 dias
+│   │   ├── finance/          # economia (transações, categorias, metas)
+│   │   └── focus/            # Modo Foco (Pomodoro + sessões)
 │   ├── pages/                # wrappers finos sobre features
 │   ├── hooks/                # atalhos, focus trap
-│   ├── stores/               # board, UI, tema, prefs (Zustand, API síncrona)
+│   ├── stores/               # board, UI, tema, prefs, notas, hábitos, economia (Zustand, API síncrona)
 │   ├── types/                # Project, Task, Tag, BoardData, filtros…
 │   ├── services/             # pura: stats, calendar, query, validation, boot…
 │   ├── storage/              # idb + boardStorage + migrations + activity
@@ -79,7 +116,19 @@ ForgeBoard/
 └── tailwind.config.js
 ```
 
-## Instalação
+## Instalação (usuário)
+
+Baixe o instalador da [**última release**](https://github.com/aliefauzifauzieali-svg/ForgeBoard/releases/latest):
+
+| Plataforma | Arquivo |
+|---|---|
+| Windows | `ForgeBoard_*_x64-setup.exe` (ou `.msi`) |
+| Linux | `.AppImage` / `.deb` / `.rpm` |
+| macOS | `.dmg` (Apple Silicon) |
+| Android | `forgeboard-v*.apk` |
+| Navegador | PWA instalável a partir de qualquer host estático de `dist/` |
+
+## Instalação (desenvolvimento)
 
 Pré-requisitos: **Node.js 20+** e npm.
 
@@ -230,10 +279,11 @@ O workflow `.github/workflows/release.yml` gera instaladores Windows/Linux/macOS
 (Tauri) + APK Android (Capacitor) a cada tag `v*`:
 
 ```powershell
-#1. Sincronize a versão do app com a tag (package.json + src-tauri/tauri.conf.json)
+#1. Sincronize a versão do app com a tag (4 arquivos: package.json,
+#   src-tauri/tauri.conf.json, src-tauri/Cargo.toml, src-tauri/Cargo.lock)
 #2. Commit, tag e push — o resto é automático:
-git tag v1.3.0
-git push origin main v1.3.0
+git tag v1.9.0
+git push origin main v1.9.0
 #3. Acompanhe em Actions > Release; os artefatos vão para a release do GitHub.
 ```
 
@@ -248,7 +298,7 @@ npm run test:e2e      # testes E2E no Chromium (dev + mobile)
 npm run test:e2e:pwa   # E2E do PWA contra o build (SW, offline, update)
 ```
 
-Cobertura unitária: criação de tarefas, mudança de status, `previousStatus`, filtros, ordenação, busca global, undo/redo, calendário (grades, agrupamento, datas), PWA (banner offline, instalação), toasts, persistência (`boardStorage` + quarentena), importação/exportação com validação, cálculo de progresso, guards do store, `saveError`, ErrorBoundary/focus-trap, log de atividades (CRUD/consulta/retenção/upgrade), métricas (throughput, lead time, evolução) e etiquetas. E2E: criar projeto, criar tarefa, mover no Kanban, editar tarefa, paleta de comandos, undo via toast e atalho, calendário (criar/arrastar/sincronia/navegação), PWA (manifest, SW, offline, splash, update com rebuild), estatísticas (resumo, filtros, interatividade), etiquetas e backup/restore, diálogo de atalhos, axe (dashboard/Kanban/modal/paleta/calendário/configurações/estatísticas), reload mantendo os dados, recuperação de quarentena e fluxos mobile.
+Cobertura unitária (~290 testes): tarefas, Kanban, filtros, busca global, undo/redo, calendário, notas (CRUD, fixar, pastas, Markdown), hábitos, economia (transações, metas, categorias), timer PRO, PWA, persistência + quarentena, importação/exportação, métricas e etiquetas. E2E (~79 testes): projetos, tarefas, paleta, calendário, notas, hábitos, economia, estatísticas, etiquetas, backup/restore, manutenção, PWA/offline, axe (todas as visões), quarentena e fluxos mobile.
 
 ## Atalhos de teclado
 
@@ -278,9 +328,9 @@ Teclas simples ignoradas enquanto o foco está em `input`, `textarea`, `select` 
 1. **Camada de armazenamento isolada** (`src/storage/`): a UI nunca toca storage diretamente. Hoje há o IndexedDB (`idb.ts`: `kv` + `backups`) com migrações versionadas (`migrations.ts`); o `localStorage` serve só de espelho do tema e quarentena. Um backend futuro implementa o mesmo repositório (`loadInitialData`/`persistSnapshot`) sem reescrever componentes — só o store passa a chamar o serviço remoto. Stores partem vazios e são hidratados explicitamente no boot (`services/boot.ts`), sem I/O no momento do import.
 2. **Lógica pura fora dos componentes** (`src/services/`): estatísticas, filtros/ordenação e validação de import são funções puras, 100% testáveis sem React. Stores e componentes apenas orquestram.
 3. **Dois stores Zustand com papéis distintos**: `useBoardStore` (dados de domínio + persistência) e `useUIStore` (visão, filtros, modais). Tema em `useThemeStore` com preferência `light|dark|system` persistida e `matchMedia` para o modo sistema.
-4. **Drag-and-drop nativo (HTML5) em vez de biblioteca**: zero dependências, com alternativa por teclado (cada cartão tem botões “Mover para coluna anterior/próxima” operáveis por teclado e título focável que abre a edição — sem interativos aninhados). Playwright testa o movimento via esses botões.
+4. **Drag-and-drop por Pointer Events em vez de biblioteca**: caminho único para mouse e toque (fantasma do cartão, alvo por geometria, Esc cancela), com botões “Mover para coluna anterior/próxima” como alternativa operável por teclado; overlay de captura trava scroll/seleção durante o arrasto no mobile.
 5. **Validação defensiva na importação**: `validateBoardData` nunca lança — retorna `{ ok, errors, data }`; nada é substituído sem passar na validação **e** sem confirmação explícita do usuário (`ConfirmDialog`).
-6. **Sem roteador**: navegação por estado (`view: dashboard | project`), suficiente para app local de página única e evita dependência extra; E2E não depende de URLs.
+6. **Sem roteador**: navegação por estado (`view: dashboard | project | calendar | stats | notes | habits | finance`), suficiente para app local de página única e evita dependência extra; E2E não depende de URLs.
 7. **Tailwind v3 + `darkMode: 'class'`**: modo escuro robusto e testável, incluindo `color-scheme` no `<html>`.
 8. **Dados em camadas**: store síncrono em memória (a UI nunca espera I/O) + `IndexedDB` assíncrono (`idb`, 1 KB) com flush no `pagehide`; `localStorage` só espelha tema/quarentena. Migrações versionadas e idempotentes; backups automáticos + manuais com retenção de 5.
 9. **Log de atividades append-only** (`activity` no mesmo banco, com índices): eventos de domínio com metadados mínimos (títulos para entidades excluídas, sem snapshots); bulk (import/undo/seed usa lote próprio) não polui métricas; retenção de 90 dias com poda no boot; leitura via `use()` + Suspense com cache invalidado na escrita.
@@ -289,18 +339,20 @@ Teclas simples ignoradas enquanto o foco está em `input`, `textarea`, `select` 
 
 - Persistência limitada à cota do IndexedDB do navegador e a um único dispositivo — sem sincronização.
 - Sem colaboração em tempo real, anexos ou contas de usuário (fora do escopo local-first).
-- Drag-and-drop usa HTML5 DnD (sem animações físicas de bibliotecas como dnd-kit); no toque (mobile) o movimento é feito pelos botões “Mover”.
+- Drag-and-drop por Pointer Events (sem físicas de biblioteca como dnd-kit); botões “Mover” seguem como alternativa.
 - Sem migração automática além de `v1 → v3` (versões futuras desconhecidas vão para quarentena em vez de migrar).
 
 ## Possíveis melhorias futuras
 
 - [ ] Backend opcional (REST/Supabase/Firebase) implementando o repositório de dados + sincronização e resolução de conflitos.
+- [x] Apps desktop (Tauri, com auto-update assinado) e Android (Capacitor, com OTA).
+- [x] Notas Markdown, hábitos, economia e timer PRO.
 - [x] Migrações versionadas de schema (`v1 → v3`).
 - [x] Subtarefas com progresso (sem comentários/anexos).
 - [x] Visões de calendário (mês/semana/dia) com drag and drop de prazos.
 - [x] Recorrência de tarefas (diária/semanal/mensal/personalizada).
 - [x] Busca global com paleta de comandos (`Ctrl/⌘+K`), filtro `#etiqueta`, ranking e destaque, e atalhos (`?` lista todos).
-- [ ] Arrastar com `@dnd-kit` + suporte completo a toque.
+- [ ] Sincronização multi-dispositivo (quando houver backend).
 - [x] PWA instalável.
 - [x] Exportação CSV/Markdown e importação de CSV.
 - [x] Testes de acessibilidade automatizados (axe) no CI.

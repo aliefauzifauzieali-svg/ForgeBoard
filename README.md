@@ -41,9 +41,21 @@ auto-update, tema claro/escuro e interface em pt-BR.
 |---|---|
 | ![Calendário](docs/screenshots/calendar.png) | ![Estatísticas](docs/screenshots/stats.png) |
 
-| Modo escuro | Mobile |
+| Notas (editor Markdown) | Hábitos |
 |---|---|
-| ![Dark](docs/screenshots/dark.png) | ![Mobile](docs/screenshots/mobile.png) |
+| ![Notas](docs/screenshots/notes.png) | ![Hábitos](docs/screenshots/habits.png) |
+
+| Economia | Modo Foco |
+|---|---|
+| ![Economia](docs/screenshots/finance.png) | ![Modo Foco](docs/screenshots/focus.png) |
+
+| Configurações (Manutenção) | Mobile |
+|---|---|
+| ![Configurações](docs/screenshots/settings.png) | ![Mobile](docs/screenshots/mobile.png) |
+
+| Modo escuro |
+|---|
+| ![Dark](docs/screenshots/dark.png) |
 
 ## Stack
 

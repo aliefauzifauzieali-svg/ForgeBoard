@@ -117,6 +117,48 @@ try {
     }
 
     await shot('dashboard.png', async () => {});
+    await shot('notes.png', async (page) => {
+      await page.getByRole('button', { name: 'Notas', exact: true }).click();
+      await page.getByRole('heading', { name: 'Notas' }).waitFor();
+      await page.getByRole('button', { name: 'Nova nota' }).click();
+      await page.getByLabel('Título da nota').fill('Ideias para o lançamento');
+      await page
+        .getByLabel('Conteúdo em Markdown')
+        .fill('# Roteiro\n\n- [ ] Definir pauta\n- [ ] Gravar demo\n\n**Foco** em `performance`.\n\n> Feito é melhor que perfeito.');
+      await page.getByRole('button', { name: 'Salvar', exact: true }).click();
+    });
+    await shot('habits.png', async (page) => {
+      await page.getByRole('button', { name: 'Hábitos', exact: true }).click();
+      await page.getByRole('heading', { name: 'Hábitos' }).waitFor();
+      await page.getByRole('button', { name: 'Novo hábito' }).click();
+      await page.getByLabel('Nome').fill('Ler 20 páginas');
+      await page.getByRole('button', { name: 'Criar hábito' }).click();
+      await page.getByText('Ler 20 páginas').waitFor();
+    });
+    await shot('finance.png', async (page) => {
+      await page.getByRole('button', { name: 'Economia', exact: true }).click();
+      await page.getByRole('heading', { name: 'Economia' }).waitFor();
+      for (const [tipo, valor, desc, cat] of [
+        ['Despesa', '49,90', 'Supermercado', 'Alimentação'],
+        ['Receita', '2500,00', 'Salário', 'Salário'],
+      ]) {
+        await page.getByRole('button', { name: 'Nova transação' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Nova transação' });
+        await dialog.getByRole('button', { name: tipo, exact: true }).click();
+        await dialog.getByLabel('Valor (R$)').fill(valor);
+        await dialog.getByLabel('Descrição').fill(desc);
+        await dialog.getByLabel('Categoria').selectOption({ label: cat });
+        await dialog.getByRole('button', { name: 'Adicionar' }).click();
+        await page.getByRole('list', { name: 'Transações do mês' }).getByText(desc, { exact: true }).waitFor();
+      }
+    });
+    await shot('focus.png', async (page) => {
+      await page.getByRole('heading', { name: 'Modo Foco' }).scrollIntoViewIfNeeded();
+    });
+    await shot('settings.png', async (page) => {
+      await page.getByRole('button', { name: 'Configurações' }).click();
+      await page.getByRole('heading', { name: 'Manutenção' }).scrollIntoViewIfNeeded();
+    });
     await shot('kanban.png', async (page) => {
       await page.getByRole('button', { name: 'Abrir projeto Lançamento do site' }).click();
       await page.getByTestId('kanban-column-done').waitFor();
